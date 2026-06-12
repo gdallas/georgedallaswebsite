@@ -201,6 +201,7 @@ Infrastructure runbooks:
 - `docs/runbooks/infra-security.md`
 - `docs/runbooks/database-infrastructure.md`
 - `docs/runbooks/database-backup-restore.md`
+- `docs/runbooks/media-storage.md`
 
 Database backup policy:
 
@@ -209,6 +210,14 @@ Database backup policy:
 - production deletion protection is enabled
 - production database deletion or replacement uses a snapshot policy
 - destructive migrations require a recent backup/snapshot and rollback notes
+
+Media storage policy:
+
+- dev/prod media buckets are separate
+- S3 buckets block public access
+- public delivery goes through CloudFront
+- production media bucket versioning is enabled
+- CMS media writes are limited to documented media prefixes
 
 ---
 

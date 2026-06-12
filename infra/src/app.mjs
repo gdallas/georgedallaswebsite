@@ -4,6 +4,7 @@ import { Construct } from "constructs";
 import { projectEnvironments } from "./environments.mjs";
 import { buildStackName, standardTags } from "./naming.mjs";
 import { DatabaseFoundation } from "./database-foundation.mjs";
+import { MediaFoundation } from "./media-foundation.mjs";
 import { SecurityFoundation } from "./security-foundation.mjs";
 
 class GitHubOidcStack extends Stack {
@@ -40,6 +41,7 @@ class FoundationStack extends Stack {
     new Construct(this, "FoundationBoundary");
     const securityFoundation = new SecurityFoundation(this, props.environment, props.githubOidcProviderArn);
     new DatabaseFoundation(this, props.environment, securityFoundation);
+    new MediaFoundation(this, props.environment, securityFoundation);
   }
 }
 

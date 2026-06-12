@@ -45,3 +45,5 @@ Do not commit AWS credentials, generated state, `.env.local`, or CDK output. Des
 Security roles, OIDC assumptions, KMS keys, and Secrets Manager placeholders are documented in `../docs/runbooks/infra-security.md`.
 
 Database networking, security groups, and RDS PostgreSQL resources are documented in `../docs/runbooks/database-infrastructure.md`.
+
+Media buckets and CloudFront delivery are documented in `../docs/runbooks/media-storage.md`.
