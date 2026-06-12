@@ -1,7 +1,19 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildMediaPublicUrl,
+  buildMediaStorageKey,
+  estimateReadingTime,
+  isNowPagePublic,
+  isPublicBuildVisible,
+  isPublicListingVisible,
+  publicBuildWhere,
+  publicListingWhere,
+  validateLinkUrl,
   validateMediaAltText,
+  validateMediaFileMetadata,
+  validateOptionalExternalUrl,
+  validatePublishingState,
   validateRedirectDestination,
   validateRedirectSource,
   validateSlug
@@ -35,5 +47,115 @@ describe("content validation", () => {
     assert.equal(validateMediaAltText("Portrait of George", { reviewStatus: "public" }), true);
     assert.equal(validateMediaAltText("", { decorative: true, reviewStatus: "public" }), true);
     assert.equal(validateMediaAltText("", { reviewStatus: "public" }), "Public media requires alt text unless it is marked decorative.");
+  });
+
+  it("validates media file metadata and public URLs", () => {
+    assert.equal(validateMediaFileMetadata({ filesize: 1024, mimeType: "image/webp" }), true);
+    assert.equal(validateMediaFileMetadata({ filesize: 1024, mimeType: "text/html" }), "Media file type is not allowed.");
+    assert.equal(validateMediaFileMetadata({ filesize: 11 * 1024 * 1024, mimeType: "image/png" }), "Media file exceeds the 10 MB upload limit.");
+    assert.equal(buildMediaStorageKey("uploads", undefined, "hello world.png"), "uploads/hello world.png");
+    assert.equal(
+      buildMediaPublicUrl("https://media.example.com/", "uploads", undefined, "hello world.png"),
+      "https://media.example.com/uploads/hello%20world.png"
+    );
+  });
+
+  it("rejects invalid publish states", () => {
+    assert.equal(validatePublishingState({ status: "published", visibility: "public" }), "Published content requires a publishedAt date.");
+    assert.equal(
+      validatePublishingState({
+        publishedAt: "2026-01-01T00:00:00.000Z",
+        seoDescription: "Description",
+        seoTitle: "Title",
+        status: "published",
+        visibility: "public"
+      }, { now: "2026-06-12T00:00:00.000Z" }),
+      true
+    );
+    assert.equal(
+      validatePublishingState({
+        publishedAt: "2026-01-01T00:00:00.000Z",
+        seoDescription: "Description",
+        seoTitle: "Title",
+        status: "scheduled",
+        visibility: "public"
+      }, { now: "2026-06-12T00:00:00.000Z" }),
+      "Scheduled content requires a future publishedAt date."
+    );
+  });
+
+  it("filters public build visibility tightly", () => {
+    const now = "2026-06-12T00:00:00.000Z";
+    assert.equal(isPublicBuildVisible({ publishedAt: "2026-06-01T00:00:00.000Z", status: "published", visibility: "public" }, now), true);
+    assert.equal(isPublicBuildVisible({ publishedAt: "2026-06-01T00:00:00.000Z", status: "draft", visibility: "public" }, now), false);
+    assert.equal(isPublicBuildVisible({ publishedAt: "2026-06-01T00:00:00.000Z", status: "published", visibility: "private" }, now), false);
+    assert.equal(isPublicBuildVisible({ publishedAt: "2026-07-01T00:00:00.000Z", status: "published", visibility: "public" }, now), false);
+    assert.deepEqual(publicBuildWhere(now).and[2], {
+      publishedAt: {
+        less_than_equal: "2026-06-12T00:00:00.000Z"
+      }
+    });
+  });
+
+  it("accepts valid project URLs and allows empty optional URLs", () => {
+    assert.equal(validateOptionalExternalUrl(undefined), true);
+    assert.equal(validateOptionalExternalUrl(""), true);
+    assert.equal(validateOptionalExternalUrl("https://github.com/gdallas/georgedallaswebsite"), true);
+  });
+
+  it("rejects invalid project URLs", () => {
+    assert.equal(validateOptionalExternalUrl("not-a-url"), "URL must be a valid http(s) URL.");
+    assert.equal(validateOptionalExternalUrl("javascript:alert(1)"), "URL must use http or https.");
+    assert.equal(validateOptionalExternalUrl("http://localhost:3000/admin"), "URL cannot point to a local or private host.");
+  });
+
+  it("accepts valid link URLs including internal paths", () => {
+    assert.equal(validateLinkUrl("https://www.linkedin.com/in/georgedallas"), true);
+    assert.equal(validateLinkUrl("/writing"), true);
+  });
+
+  it("rejects invalid link URLs", () => {
+    assert.equal(validateLinkUrl(""), "Link URL is required.");
+    assert.equal(validateLinkUrl("//example.com"), "Protocol-relative link URLs are not allowed.");
+    assert.equal(validateLinkUrl("ftp://example.com/file"), "URL must use http or https.");
+    assert.equal(validateLinkUrl("http://127.0.0.1/admin"), "URL cannot point to a local or private host.");
+  });
+
+  it("filters public listing visibility for projects and links", () => {
+    assert.equal(isPublicListingVisible({ status: "published", visibility: "public" }), true);
+    assert.equal(isPublicListingVisible({ status: "draft", visibility: "public" }), false);
+    assert.equal(isPublicListingVisible({ status: "archived", visibility: "public" }), false);
+    assert.equal(isPublicListingVisible({ status: "published", visibility: "private" }), false);
+    assert.equal(isPublicListingVisible({ status: "published", visibility: "unlisted" }), false);
+    assert.deepEqual(publicListingWhere(), {
+      and: [
+        { status: { equals: "published" } },
+        { visibility: { equals: "public" } }
+      ]
+    });
+  });
+
+  it("only exposes the Now page when it is published", () => {
+    assert.equal(isNowPagePublic({ status: "published" }), true);
+    assert.equal(isNowPagePublic({ status: "draft" }), false);
+    assert.equal(isNowPagePublic(undefined), false);
+  });
+
+  it("estimates reading time from rich text content", () => {
+    assert.equal(estimateReadingTime({
+      body: {
+        root: {
+          children: [
+            {
+              children: [
+                {
+                  text: "One two three four five"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }), 1);
   });
 });

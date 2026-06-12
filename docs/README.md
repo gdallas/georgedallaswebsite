@@ -52,3 +52,5 @@ George has registered `georgedallas.com`. Planning documents should use:
 - [`runbooks/media-storage.md`](runbooks/media-storage.md)
 - [`runbooks/cms-security.md`](runbooks/cms-security.md)
 - [`runbooks/cms-content-model.md`](runbooks/cms-content-model.md)
+- [`runbooks/cms-publishing.md`](runbooks/cms-publishing.md)
+- [`runbooks/cms-personal-hub.md`](runbooks/cms-personal-hub.md)
