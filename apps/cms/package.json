@@ -1,0 +1,11 @@
+{
+  "name": "@georgedallas/cms",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node src/index.mjs",
+    "build": "node src/index.mjs",
+    "typecheck": "node ../../scripts/typecheck-package.mjs apps/cms"
+  }
+}

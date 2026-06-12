@@ -1,0 +1,15 @@
+{
+  "name": "@georgedallas/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./config": "./src/config.ts",
+    "./config-runtime": "./src/config.mjs"
+  },
+  "scripts": {
+    "test": "node --test \"src/**/*.test.mjs\"",
+    "typecheck": "node ../../scripts/typecheck-package.mjs packages/shared"
+  }
+}

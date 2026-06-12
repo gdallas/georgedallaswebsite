@@ -1,0 +1,1355 @@
+# Personal Website Hub — Database Architecture Addendum
+
+**Document status:** Recommended architecture  
+**Date:** 2026-06-11  
+**Related document:** Personal Website Hub — Requirements Document  
+**Primary architectural decision:** Build the public website as a fast static-first site, backed by a rich database-powered CMS/admin system.
+
+---
+
+## 1. Executive Summary
+
+The personal website should be built as a **database-backed personal publishing hub** rather than a simple static website alone.
+
+The public website should remain fast, accessible, SEO-friendly, and mostly static. The backend, however, should be treated as a core part of the product: a calm, enjoyable, powerful personal CMS that makes it easy to write, publish, update, organize, and maintain content over time.
+
+The recommended architecture is:
+
+```text
+Astro public website
++ Payload CMS admin/backend
++ PostgreSQL database
++ S3 media storage
++ AWS ECS Fargate backend hosting
++ AWS Amplify or S3/CloudFront frontend hosting
++ EventBridge/Lambda/SQS for background jobs
++ Amazon SES for email
++ AWS Secrets Manager for secrets
+```
+
+This architecture supports the original requirements while also creating room for future backend features such as:
+
+- advanced writing workflow
+- drafts and revisions
+- live previews
+- scheduled publishing
+- WordPress import review queue
+- media library
+- visual timeline
+- bookshelf
+- project management
+- structured links
+- newsletter/subscriber management
+- contact form inbox
+- GitHub project sync
+- ISBN lookup
+- Webmentions
+- privacy-friendly analytics
+- admin dashboard
+- broken link checking
+- content quality checks
+
+The guiding principle is:
+
+> The backend should be dynamic and powerful.  
+> The public website should be static-first, fast, and resilient.
+
+---
+
+## 2. Why a Database-Backed Architecture
+
+A database is justified because the backend is not a secondary concern. The site is intended to be a personal hub that George will update regularly. If the admin experience is unpleasant, the project has failed.
+
+A Git-backed static CMS may be sufficient for a simpler personal blog, but this project has broader ambitions:
+
+- content should be created and edited through a pleasant admin UI
+- content modules should be structured and searchable
+- drafts, previews, scheduling, revision history, and metadata should be supported
+- imported WordPress content needs review, cleanup, relinking, and redirect handling
+- media needs to be managed properly
+- future features may include newsletter subscribers, contact messages, analytics, Webmentions, and sync jobs
+
+Those features are naturally database-backed.
+
+The goal is not to make the public site heavy. The goal is to make the **admin system powerful** while preserving a fast static public experience.
+
+---
+
+## 3. Recommended Stack
+
+| Layer | Recommendation | Purpose |
+|---|---|---|
+| Public frontend | Astro | Fast static-first website, strong content rendering, RSS, sitemap, SEO, structured data |
+| CMS/admin | Payload CMS | Admin UI, authentication, content modelling, rich text, drafts, APIs |
+| Database | PostgreSQL | Source of truth for content, users, workflow, imports, forms, subscribers, analytics |
+| Media storage | Amazon S3 | Uploads, images, book covers, WordPress imports, social images |
+| Backend hosting | AWS ECS Fargate | Containerized CMS/API without managing servers |
+| Frontend hosting | AWS Amplify Hosting or S3 + CloudFront | Static public website deployment |
+| CDN | CloudFront | Fast global delivery for static assets and media |
+| Secrets | AWS Secrets Manager | Database credentials, auth secrets, API keys |
+| Email | Amazon SES | Contact form notifications, subscriber emails, publishing notifications |
+| Jobs | EventBridge + Lambda/SQS | Scheduled publishing, imports, syncs, link checks, ISBN lookups |
+| Search | Pagefind first; Meilisearch/Typesense later if needed | Static public search first, richer search later |
+| Infrastructure | AWS CDK or Terraform | Repeatable infrastructure definition |
+
+---
+
+## 4. High-Level Architecture
+
+```text
+GitHub Monorepo
+│
+├── apps/site
+│   └── Astro public website
+│
+├── apps/cms
+│   └── Payload CMS admin + API
+│
+├── packages/shared
+│   └── shared types, validation, SEO helpers
+│
+├── scripts
+│   ├── wordpress-import
+│   ├── github-sync
+│   ├── isbn-lookup
+│   ├── broken-link-check
+│   └── content-quality-checks
+│
+└── infra
+    └── AWS CDK or Terraform
+```
+
+Production runtime:
+
+```text
+Public visitors
+  ↓
+CloudFront / Amplify Hosting
+  ↓
+Astro public site
+  ↓ build-time fetch or selective API fetch
+Payload CMS API
+  ↓
+PostgreSQL
+  ↓
+S3 media storage
+```
+
+Admin runtime:
+
+```text
+George
+  ↓
+cms.georgedallas.com/admin
+  ↓
+Payload CMS Admin UI
+  ↓
+PostgreSQL + S3
+  ↓
+Publish webhook
+  ↓
+Rebuild Astro site
+```
+
+---
+
+## 5. Public Site Architecture
+
+The public website should be generated by Astro and deployed as static pages wherever possible.
+
+Public routes should include:
+
+```text
+/
+/about
+/now
+/writing
+/writing/[slug]
+/projects
+/bookshelf
+/timeline
+/links
+/contact
+/colophon
+/rss.xml
+/sitemap.xml
+```
+
+The public website should be responsible for:
+
+- homepage
+- bio/about page
+- blog/writing pages
+- Now page
+- projects
+- bookshelf
+- visual timeline
+- links
+- contact page
+- RSS feeds
+- sitemap
+- structured data
+- social metadata
+- accessible HTML
+- fast static delivery
+
+The public site should only render published content:
+
+```text
+status = "published"
+publishedAt <= now()
+visibility = "public"
+```
+
+Drafts, private notes, import issues, admin analytics, and unpublished content should never be included in production builds.
+
+---
+
+## 6. CMS/Admin Architecture
+
+The CMS should be the personal operating system for the website.
+
+The admin should run at:
+
+```text
+cms.georgedallas.com/admin
+```
+
+The CMS should support:
+
+- writing editor
+- drafts
+- revisions
+- scheduled publishing
+- preview links
+- media uploads
+- SEO fields
+- social preview fields
+- homepage controls
+- Now page editing
+- project management
+- bookshelf management
+- timeline management
+- link management
+- WordPress import review queue
+- broken link reports
+- content quality checks
+- newsletter/subscriber management
+- contact form inbox
+- analytics dashboard
+- background job status
+
+The admin dashboard should be customized around George’s actual workflow, not left as a generic CMS screen.
+
+Recommended dashboard sections:
+
+```text
+Today / This Week
+├── Continue latest draft
+├── Update Now page
+├── Add quick link
+├── Add book note
+├── Add timeline entry
+├── Review imported WordPress posts
+├── Broken links needing attention
+├── Scheduled posts
+├── Missing metadata / alt text
+└── Recent site activity
+```
+
+---
+
+## 7. Database Architecture
+
+PostgreSQL should be the primary source of truth.
+
+### 7.1 Core Publishing Tables / Collections
+
+```text
+users
+roles
+sessions
+posts
+pages
+media
+tags
+categories
+redirects
+site_settings
+```
+
+### 7.2 Personal Hub Tables / Collections
+
+```text
+projects
+project_links
+books
+book_notes
+timeline_entries
+links
+now_updates
+notes
+resources
+uses_items
+```
+
+### 7.3 Workflow and Admin Tables / Collections
+
+```text
+drafts
+revisions
+scheduled_publications
+content_tasks
+import_jobs
+imported_items
+import_issues
+audit_log
+broken_link_checks
+content_quality_checks
+```
+
+### 7.4 Growth Feature Tables / Collections
+
+```text
+subscribers
+newsletter_issues
+newsletter_sends
+email_events
+contact_messages
+webmentions
+github_repos
+github_sync_runs
+analytics_events
+daily_page_stats
+content_calendar_items
+```
+
+---
+
+## 8. Recommended Payload Collections
+
+### 8.1 Posts
+
+Purpose: blog/writing content.
+
+Fields:
+
+```text
+title
+slug
+excerpt
+body
+status
+publishedAt
+updatedAt
+author
+tags
+category
+featuredImage
+seoTitle
+seoDescription
+socialImage
+canonicalUrl
+wordpressOriginalId
+wordpressOriginalUrl
+redirectFrom
+readingTime
+visibility
+```
+
+Supports:
+
+- blog posts
+- drafts
+- publishing
+- imported WordPress posts
+- RSS
+- SEO
+- social cards
+- redirects
+- related posts
+- search
+
+---
+
+### 8.2 Pages
+
+Purpose: static editorial pages.
+
+Fields:
+
+```text
+title
+slug
+body
+template
+status
+seoTitle
+seoDescription
+showInNav
+visibility
+```
+
+Used for:
+
+- About
+- Contact
+- Colophon
+- Start Here
+- Resources
+- Uses
+
+---
+
+### 8.3 Now Page
+
+Purpose: fast personal status updates.
+
+This should be a singleton/global, not a normal collection.
+
+Fields:
+
+```text
+currentFocus
+work
+reading
+listening
+watching
+personal
+updatedAt
+status
+```
+
+The admin dashboard should include a prominent “Update Now Page” action.
+
+---
+
+### 8.4 Projects
+
+Purpose: portfolio and project showcase.
+
+Fields:
+
+```text
+title
+slug
+summary
+description
+status
+featured
+technologies
+githubUrl
+liveUrl
+caseStudyUrl
+image
+startDate
+endDate
+relatedPosts
+sortOrder
+```
+
+---
+
+### 8.5 Bookshelf
+
+Purpose: reading log and public bookshelf.
+
+Fields:
+
+```text
+title
+author
+isbn
+coverImage
+status
+rating
+dateStarted
+dateFinished
+notes
+relatedPosts
+externalUrl
+sortOrder
+```
+
+Future support:
+
+- ISBN lookup
+- reading-now widgets
+- book notes
+- related writing
+- public bookshelf filters
+
+---
+
+### 8.6 Timeline
+
+Purpose: visual personal/professional timeline.
+
+Fields:
+
+```text
+title
+date
+type
+summary
+body
+image
+links
+relatedPosts
+relatedProjects
+visibility
+sortOrder
+```
+
+Timeline entries may represent:
+
+- career milestones
+- projects
+- writing milestones
+- personal interests
+- education
+- major site updates
+
+---
+
+### 8.7 Links
+
+Purpose: structured link hub.
+
+Fields:
+
+```text
+title
+url
+description
+category
+icon
+featured
+sortOrder
+visibility
+```
+
+Used for:
+
+- LinkedIn
+- GitHub
+- counselling website
+- other websites
+- social profiles
+- project links
+- recommended resources
+
+---
+
+### 8.8 Media
+
+Purpose: central media library.
+
+Fields:
+
+```text
+filename
+altText
+caption
+credit
+source
+width
+height
+mimeType
+size
+s3Key
+dominantColor
+usedBy
+```
+
+Rules:
+
+- Alt text should be required for public images.
+- Imported WordPress media should be flagged until reviewed.
+- Original image metadata should be preserved where possible.
+
+---
+
+## 9. Media Architecture
+
+Media should be uploaded to S3 and referenced by Payload.
+
+Recommended bucket structure:
+
+```text
+media.georgedallas.com
+  ├── uploads/
+  ├── wordpress-imports/
+  ├── book-covers/
+  ├── project-images/
+  └── social-images/
+```
+
+Media principles:
+
+- S3 bucket private by default
+- CloudFront used for public delivery
+- alt text required for images used in public content
+- captions and credits supported
+- imported media tracked separately
+- social images can be generated/stored separately
+- unused media should be reportable in admin
+
+---
+
+## 10. WordPress Import Architecture
+
+The WordPress migration should be implemented as a repeatable import pipeline, not a one-time manual scrape.
+
+Flow:
+
+```text
+WordPress REST API
+  ↓
+Import worker
+  ↓
+HTML conversion
+  ↓
+Download media to S3
+  ↓
+Create posts/pages in Payload
+  ↓
+Create redirects
+  ↓
+Generate cleanup issues
+  ↓
+Review in admin
+```
+
+Import tables/collections:
+
+```text
+import_jobs
+imported_items
+import_issues
+redirects
+```
+
+Each imported post should store:
+
+```text
+wordpressOriginalId
+wordpressOriginalUrl
+importStatus
+importNotes
+needsReview
+```
+
+Common import issues:
+
+```text
+missing image
+broken embed
+weird formatting
+missing excerpt
+missing alt text
+duplicate slug
+missing redirect
+unsupported shortcode
+```
+
+The admin should include a WordPress import review queue.
+
+---
+
+## 11. Publishing Workflow
+
+Recommended publishing states:
+
+```text
+draft
+in_review
+scheduled
+published
+archived
+```
+
+Basic publishing flow:
+
+```text
+1. George logs into /admin
+2. George creates or edits content
+3. Content is saved as draft
+4. George previews the page
+5. George publishes or schedules it
+6. Payload updates PostgreSQL
+7. Payload triggers a frontend rebuild webhook
+8. Astro rebuilds the public site
+9. CloudFront serves the updated static pages
+```
+
+Scheduled publishing flow:
+
+```text
+Post status = scheduled
+publishedAt = future date
+  ↓
+EventBridge scheduled worker
+  ↓
+Find due posts
+  ↓
+Set status = published
+  ↓
+Trigger frontend rebuild
+```
+
+Preview flow:
+
+```text
+Draft content
+  ↓
+Payload preview API
+  ↓
+Astro preview route
+  ↓
+Private preview URL
+```
+
+---
+
+## 12. Search Architecture
+
+Use two search layers.
+
+### 12.1 Public Search
+
+Start with static search.
+
+Recommended approach:
+
+```text
+Astro build
+  ↓
+Generate static search index
+  ↓
+Public site search works without hitting database
+```
+
+Pagefind is recommended for the first implementation.
+
+### 12.2 Admin Search
+
+Use PostgreSQL full-text search initially.
+
+Searchable admin content:
+
+```text
+posts
+pages
+projects
+books
+timeline_entries
+links
+media
+contact_messages
+import_issues
+```
+
+If search requirements become more advanced, introduce:
+
+```text
+Meilisearch
+Typesense
+OpenSearch
+```
+
+Do not add a separate search server until PostgreSQL search is insufficient.
+
+---
+
+## 13. Newsletter Architecture
+
+Newsletter functionality should be supported by the architecture, but does not need to be fully built in the MVP.
+
+Tables/collections:
+
+```text
+subscribers
+newsletter_issues
+newsletter_sends
+email_events
+```
+
+Subscriber flow:
+
+```text
+Visitor subscribes
+  ↓
+Subscriber stored in PostgreSQL
+  ↓
+Confirmation email sent via SES
+  ↓
+Subscriber confirms
+  ↓
+Subscriber receives future posts/newsletters
+```
+
+Newsletter features:
+
+- confirmed subscribers
+- unsubscribe links
+- draft newsletter issues
+- send history
+- basic email event tracking
+- optional post-to-newsletter workflow
+
+For MVP, it is acceptable to use an external newsletter tool and integrate later.
+
+---
+
+## 14. Contact Form Architecture
+
+Contact form flow:
+
+```text
+Contact form
+  ↓
+API route
+  ↓
+Spam check
+  ↓
+contact_messages table
+  ↓
+Email notification via SES
+  ↓
+Admin dashboard inbox
+```
+
+Fields:
+
+```text
+name
+email
+subject
+message
+sourcePage
+ipHash
+userAgentHash
+status
+createdAt
+repliedAt
+notes
+```
+
+Privacy principles:
+
+- store only what is needed
+- avoid full IP storage where possible
+- provide a clear privacy notice
+- keep contact messages admin-only
+- include spam protection
+
+---
+
+## 15. GitHub Project Sync
+
+GitHub sync should be a background job, not a runtime dependency of the public site.
+
+Flow:
+
+```text
+EventBridge scheduled job
+  ↓
+GitHub API
+  ↓
+github_repos table
+  ↓
+Admin review
+  ↓
+Selected repos become public projects
+```
+
+Principles:
+
+- GitHub data should suggest project updates
+- public Projects page should remain curated
+- do not automatically publish every repository
+- sync failures should not affect the public site
+
+---
+
+## 16. Bookshelf ISBN Lookup
+
+ISBN lookup should be implemented as an admin helper.
+
+Flow:
+
+```text
+George enters ISBN
+  ↓
+Background lookup job
+  ↓
+Fetch title / author / cover / metadata
+  ↓
+Save draft book entry
+  ↓
+George edits notes manually
+```
+
+Principles:
+
+- external metadata should be editable
+- user notes should be primary
+- covers should be stored or cached in S3 where appropriate
+- failed lookups should create admin tasks, not errors on the public site
+
+---
+
+## 17. Webmentions / IndieWeb
+
+Webmentions are a good later-phase feature.
+
+Flow:
+
+```text
+Incoming Webmention
+  ↓
+Validate source URL
+  ↓
+Store in webmentions table
+  ↓
+Moderation queue
+  ↓
+Show approved mentions on posts
+```
+
+Tables/collections:
+
+```text
+webmentions
+webmention_sources
+webmention_moderation_events
+```
+
+Principles:
+
+- all Webmentions require moderation
+- spam protection is required
+- Webmention failure should not affect public pages
+- approved Webmentions can be included at build time
+
+---
+
+## 18. Analytics Architecture
+
+Analytics should be privacy-friendly and focused on site improvement, not surveillance.
+
+Tables/collections:
+
+```text
+analytics_events
+daily_page_stats
+content_stats
+```
+
+Track:
+
+```text
+page path
+referrer domain
+device type
+approximate region if needed
+timestamp bucket
+```
+
+Avoid:
+
+```text
+full IP addresses
+cross-site tracking
+ad IDs
+creepy user profiles
+unnecessary personal data
+```
+
+Admin dashboard can show:
+
+- most read posts
+- popular projects
+- popular outbound links
+- stale pages
+- writing cadence
+- search queries
+- broken links
+- content needing metadata
+
+---
+
+## 19. Security Architecture
+
+Recommended security model:
+
+```text
+Private admin
+  ↓
+Payload authentication
+  ↓
+Role-based access
+  ↓
+Secrets in AWS Secrets Manager
+  ↓
+Database not publicly exposed
+  ↓
+S3 bucket private by default
+  ↓
+CloudFront serves approved media
+```
+
+Recommended roles:
+
+```text
+Owner
+Editor
+Read-only
+API
+```
+
+Security requirements:
+
+- strong admin password
+- 2FA where possible
+- private admin route
+- no draft exposure
+- secrets outside repository
+- least-privilege IAM roles
+- database not publicly accessible
+- regular dependency updates
+- backup and restore process
+- audit log for admin changes
+
+---
+
+## 20. Deployment Architecture
+
+### 20.1 Public Site Deployment
+
+Preferred simple option:
+
+```text
+GitHub
+  ↓
+AWS Amplify Hosting
+  ↓
+Custom domain + HTTPS
+```
+
+Alternative AWS-native option:
+
+```text
+GitHub Actions
+  ↓
+S3
+  ↓
+CloudFront
+  ↓
+Route 53
+```
+
+The public site should be built from published CMS content.
+
+### 20.2 Backend CMS Deployment
+
+Recommended backend deployment:
+
+```text
+GitHub Actions
+  ↓
+Build Docker image
+  ↓
+Push to Amazon ECR
+  ↓
+Deploy to ECS Fargate
+  ↓
+Connect to PostgreSQL + S3
+```
+
+### 20.3 Database
+
+AWS-native recommendation:
+
+```text
+Aurora PostgreSQL Serverless v2
+```
+
+Simpler early-stage alternatives:
+
+```text
+RDS PostgreSQL
+Neon Postgres
+Supabase Postgres
+```
+
+The clean long-term AWS-native target is Aurora or RDS PostgreSQL.
+
+---
+
+## 21. Static vs Dynamic Responsibility
+
+| Feature | Stored in DB? | Public Rendering |
+|---|---:|---|
+| Blog posts | Yes | Static |
+| Pages | Yes | Static |
+| Now page | Yes | Static |
+| Projects | Yes | Static |
+| Bookshelf | Yes | Static |
+| Timeline | Yes | Static |
+| Links | Yes | Static |
+| RSS | Generated from DB content | Static XML |
+| Sitemap | Generated from DB content | Static XML |
+| Contact messages | Yes | Admin only |
+| Newsletter subscribers | Yes | Admin only |
+| Webmentions | Yes | Static after approval |
+| Analytics | Yes | Admin only |
+| Draft previews | Yes | Dynamic/private |
+| Scheduled publishing | Yes | Worker + rebuild |
+| Admin dashboard | Yes | Dynamic |
+
+Core principle:
+
+> Dynamic backend, static-first public website.
+
+---
+
+## 22. MVP Scope for Database Architecture
+
+The MVP should prove the architecture without trying to build every future feature.
+
+### MVP Backend
+
+```text
+Payload CMS
+PostgreSQL
+S3 media
+Users/auth
+Posts
+Pages
+Projects
+Links
+Now page
+Media library
+Redirects
+Site settings
+WordPress import proof of concept
+```
+
+### MVP Public Site
+
+```text
+Home
+About
+Writing index
+Writing detail page
+Projects
+Links
+Now page
+Contact
+RSS
+Sitemap
+Basic structured data
+Accessibility baseline
+```
+
+### MVP Admin
+
+```text
+Login
+Dashboard
+Create/edit posts
+Create/edit pages
+Update Now page
+Manage projects
+Manage links
+Upload media
+Preview content
+Publish content
+View WordPress import proof of concept
+```
+
+---
+
+## 23. Phase 2 Scope
+
+```text
+Full WordPress import
+Import review queue
+Media relinking
+Redirect map
+Draft previews
+Scheduled publishing
+SEO/social preview tools
+Broken link checker
+Admin search
+Content quality checks
+Dashboard polish
+```
+
+---
+
+## 24. Phase 3 Scope
+
+```text
+Visual timeline
+Bookshelf
+Reading-now widgets
+Content calendar
+Writing stats
+Advanced homepage controls
+Colophon
+Beautiful 404
+Accessibility audit
+Performance polish
+Advanced structured data
+```
+
+---
+
+## 25. Phase 4 Scope
+
+```text
+Newsletter
+Contact inbox
+GitHub sync
+ISBN lookup
+Webmentions
+Multiple RSS feeds
+Public changelog
+Privacy-friendly analytics dashboard
+Personal notes/resources
+Admin writing insights
+```
+
+---
+
+## 26. Key Architectural Decisions
+
+### Decision 1: Use a database-backed CMS
+
+Decision:
+
+```text
+Use Payload CMS with PostgreSQL.
+```
+
+Reason:
+
+```text
+The admin experience is a core product requirement, and future backend features are naturally database-backed.
+```
+
+---
+
+### Decision 2: Keep the public site static-first
+
+Decision:
+
+```text
+Use Astro to generate the public website as static pages wherever possible.
+```
+
+Reason:
+
+```text
+The public site should remain fast, accessible, SEO-friendly, reliable, and inexpensive to serve.
+```
+
+---
+
+### Decision 3: Use S3 for media
+
+Decision:
+
+```text
+Store media in S3 and serve approved public media through CloudFront.
+```
+
+Reason:
+
+```text
+Media should not live inside the application container or database.
+```
+
+---
+
+### Decision 4: Use background jobs for non-immediate work
+
+Decision:
+
+```text
+Use EventBridge, Lambda, and/or SQS for scheduled and background tasks.
+```
+
+Reason:
+
+```text
+Imports, syncs, scheduled publishing, link checks, and lookups should not block the admin or public site.
+```
+
+---
+
+### Decision 5: Treat WordPress import as a workflow
+
+Decision:
+
+```text
+Build a repeatable WordPress import pipeline with a review queue.
+```
+
+Reason:
+
+```text
+Imported content will need cleanup, media relinking, metadata review, and redirect handling.
+```
+
+---
+
+## 27. Open Decisions
+
+The following decisions still need to be finalized:
+
+```text
+Payload CMS vs Directus as final CMS choice
+Astro vs Next.js for public frontend
+Amplify Hosting vs S3/CloudFront for frontend hosting
+Aurora Serverless vs RDS vs managed external Postgres
+Whether newsletter is native or external initially
+Whether comments/Webmentions are included
+Whether GitHub sync is manual, scheduled, or webhook-based
+Whether bookshelf ISBN lookup is included in Phase 3 or Phase 4
+Final URL structure for imported WordPress posts
+Redirect strategy for old WordPress URLs
+Analytics provider vs native analytics
+```
+
+---
+
+## 28. Recommended Final Architecture
+
+The recommended target architecture is:
+
+```text
+Astro public site
+Payload CMS backend
+PostgreSQL database
+S3 media storage
+ECS Fargate backend hosting
+Amplify Hosting or S3/CloudFront frontend hosting
+EventBridge/Lambda/SQS background jobs
+Amazon SES for email
+AWS Secrets Manager for credentials
+CloudFront for CDN
+GitHub Actions for CI/CD
+```
+
+This architecture supports the immediate website requirements while creating a strong foundation for a polished personal publishing backend.
+
+It should be understood as:
+
+> A public personal website powered by a private personal CMS.
+>
+> The website is what visitors see.  
+> The CMS is what makes the site enjoyable to maintain.

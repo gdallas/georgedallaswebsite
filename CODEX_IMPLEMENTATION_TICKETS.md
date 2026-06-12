@@ -684,8 +684,8 @@ Host the static-first public Astro site with HTTPS, CDN delivery, custom domains
 - [ ] Dev public site has its own hosting target.
 - [ ] Prod public site has its own hosting target.
 - [ ] HTTPS is enabled for public site URLs.
-- [ ] `georgedallas.ca` and `www.georgedallas.ca` are supported for production when DNS is ready.
-- [ ] `dev.georgedallas.ca` or an accepted temporary dev URL is supported.
+- [ ] `georgedallas.com` and `www.georgedallas.com` are supported for production when DNS is ready.
+- [ ] `dev.georgedallas.com` or an accepted temporary dev URL is supported.
 - [ ] CDN caching is configured appropriately for static assets.
 - [ ] Cache invalidation or equivalent is documented for production deploys.
 - [ ] Rollback support is documented.
@@ -2119,4 +2119,3 @@ Whenever Codex makes a choice that affects architecture, deployment, backup, aut
 ## 6.5 Preserve the central product principle
 
 The public website is important, but the admin experience is a core product requirement. If the CMS is unpleasant to use, too technical, or requires normal content edits in Git, the implementation has missed the point.
-

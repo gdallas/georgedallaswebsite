@@ -150,8 +150,8 @@ Use separate AWS resources for dev, including:
 Recommended names:
 
 ```text
-dev.georgedallas.ca
-cms-dev.georgedallas.ca
+dev.georgedallas.com
+cms-dev.georgedallas.com
 ```
 
 If final domains are not yet available, use AWS-generated temporary URLs until DNS is configured.
@@ -173,9 +173,9 @@ Use separate AWS resources for prod, including:
 Recommended names:
 
 ```text
-georgedallas.ca
-www.georgedallas.ca
-cms.georgedallas.ca
+georgedallas.com
+www.georgedallas.com
+cms.georgedallas.com
 ```
 
 Production must be protected by stricter IAM, branch protections, deployment approvals, database backups, and deletion protection.
