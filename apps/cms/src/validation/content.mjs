@@ -1,6 +1,7 @@
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const blockedRedirectHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+const blockedLocalHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 export const publishingStatuses = ["draft", "in_review", "scheduled", "published", "archived"];
+export const listingStatuses = ["draft", "published", "archived"];
 export const visibilityStates = ["public", "unlisted", "private"];
 
 export function validateSlug(value) {
@@ -55,8 +56,51 @@ export function validateRedirectDestination(value) {
     return "Redirect destination must use http or https.";
   }
 
-  if (blockedRedirectHosts.has(url.hostname.toLowerCase())) {
+  if (blockedLocalHosts.has(url.hostname.toLowerCase())) {
     return "Redirect destination cannot point to a local or private host.";
+  }
+
+  return true;
+}
+
+export function validateOptionalExternalUrl(value) {
+  if (value == null || (typeof value === "string" && value.trim().length === 0)) {
+    return true;
+  }
+
+  return validateHttpUrl(value);
+}
+
+export function validateLinkUrl(value) {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return "Link URL is required.";
+  }
+
+  if (value.startsWith("/")) {
+    if (value.startsWith("//")) {
+      return "Protocol-relative link URLs are not allowed.";
+    }
+
+    return true;
+  }
+
+  return validateHttpUrl(value);
+}
+
+function validateHttpUrl(value) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    return "URL must be a valid http(s) URL.";
+  }
+
+  if (!["http:", "https:"].includes(url.protocol)) {
+    return "URL must use http or https.";
+  }
+
+  if (blockedLocalHosts.has(url.hostname.toLowerCase())) {
+    return "URL cannot point to a local or private host.";
   }
 
   return true;
@@ -144,6 +188,31 @@ export function publicBuildWhere(now = new Date()) {
       }
     ]
   };
+}
+
+export function isPublicListingVisible(doc) {
+  return doc?.status === "published" && doc?.visibility === "public";
+}
+
+export function publicListingWhere() {
+  return {
+    and: [
+      {
+        status: {
+          equals: "published"
+        }
+      },
+      {
+        visibility: {
+          equals: "public"
+        }
+      }
+    ]
+  };
+}
+
+export function isNowPagePublic(doc) {
+  return doc?.status === "published";
 }
 
 export function estimateReadingTime(data) {

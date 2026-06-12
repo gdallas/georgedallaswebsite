@@ -5,6 +5,7 @@ import type {
   CollectionAfterLoginHook,
   CollectionAfterLogoutHook,
   CollectionAfterRefreshHook,
+  GlobalAfterChangeHook,
   PayloadRequest
 } from "payload";
 
@@ -89,6 +90,19 @@ export function auditCollectionDeletes(collectionSlug: string): CollectionAfterD
       action: "content_deleted",
       collection: collectionSlug,
       documentId: id
+    });
+  };
+}
+
+export function auditGlobalChanges(globalSlug: string): GlobalAfterChangeHook {
+  return async ({ doc, previousDoc, req }) => {
+    const wasPublished = previousDoc?.status === "published";
+    const isPublished = doc?.status === "published";
+
+    await recordAuditEvent(req, {
+      action: isPublished && !wasPublished ? "content_published" : "content_updated",
+      collection: globalSlug,
+      documentId: doc?.id
     });
   };
 }

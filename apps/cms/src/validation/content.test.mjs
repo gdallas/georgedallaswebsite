@@ -2,9 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   estimateReadingTime,
+  isNowPagePublic,
   isPublicBuildVisible,
+  isPublicListingVisible,
   publicBuildWhere,
+  publicListingWhere,
+  validateLinkUrl,
   validateMediaAltText,
+  validateOptionalExternalUrl,
   validatePublishingState,
   validateRedirectDestination,
   validateRedirectSource,
@@ -76,6 +81,50 @@ describe("content validation", () => {
         less_than_equal: "2026-06-12T00:00:00.000Z"
       }
     });
+  });
+
+  it("accepts valid project URLs and allows empty optional URLs", () => {
+    assert.equal(validateOptionalExternalUrl(undefined), true);
+    assert.equal(validateOptionalExternalUrl(""), true);
+    assert.equal(validateOptionalExternalUrl("https://github.com/gdallas/georgedallaswebsite"), true);
+  });
+
+  it("rejects invalid project URLs", () => {
+    assert.equal(validateOptionalExternalUrl("not-a-url"), "URL must be a valid http(s) URL.");
+    assert.equal(validateOptionalExternalUrl("javascript:alert(1)"), "URL must use http or https.");
+    assert.equal(validateOptionalExternalUrl("http://localhost:3000/admin"), "URL cannot point to a local or private host.");
+  });
+
+  it("accepts valid link URLs including internal paths", () => {
+    assert.equal(validateLinkUrl("https://www.linkedin.com/in/georgedallas"), true);
+    assert.equal(validateLinkUrl("/writing"), true);
+  });
+
+  it("rejects invalid link URLs", () => {
+    assert.equal(validateLinkUrl(""), "Link URL is required.");
+    assert.equal(validateLinkUrl("//example.com"), "Protocol-relative link URLs are not allowed.");
+    assert.equal(validateLinkUrl("ftp://example.com/file"), "URL must use http or https.");
+    assert.equal(validateLinkUrl("http://127.0.0.1/admin"), "URL cannot point to a local or private host.");
+  });
+
+  it("filters public listing visibility for projects and links", () => {
+    assert.equal(isPublicListingVisible({ status: "published", visibility: "public" }), true);
+    assert.equal(isPublicListingVisible({ status: "draft", visibility: "public" }), false);
+    assert.equal(isPublicListingVisible({ status: "archived", visibility: "public" }), false);
+    assert.equal(isPublicListingVisible({ status: "published", visibility: "private" }), false);
+    assert.equal(isPublicListingVisible({ status: "published", visibility: "unlisted" }), false);
+    assert.deepEqual(publicListingWhere(), {
+      and: [
+        { status: { equals: "published" } },
+        { visibility: { equals: "public" } }
+      ]
+    });
+  });
+
+  it("only exposes the Now page when it is published", () => {
+    assert.equal(isNowPagePublic({ status: "published" }), true);
+    assert.equal(isNowPagePublic({ status: "draft" }), false);
+    assert.equal(isNowPagePublic(undefined), false);
   });
 
   it("estimates reading time from rich text content", () => {
