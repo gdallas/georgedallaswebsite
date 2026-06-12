@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cedar & Circuitry Preview</title>
+  <link rel="icon" href="../../apps/site/public/brand/favicon.svg" />
+  <link rel="stylesheet" href="../../apps/site/src/styles/cedar-circuitry.css" />
+  <style>
+    body { padding: 3rem 0; }
+    .preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .preview-card { padding: 1.5rem; }
+    .preview-logo { height: 5rem; width: auto; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .75rem; margin-top: 2rem; }
+    .swatch { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--surface); }
+    .swatch div { height: 4.5rem; }
+    .swatch p { margin: 0; padding: .75rem; font-size: var(--text-xs); color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <main class="cc-container">
+    <img class="preview-logo" src="../../apps/site/public/brand/cedar-circuitry-logo.svg" alt="George Dallas Cedar & Circuitry logo" />
+    <section class="cc-hero" style="margin-top:2rem; padding:clamp(2rem, 6vw, 5rem);">
+      <p class="cc-eyebrow">AI Engineer · Therapist · Systems Thinker</p>
+      <h1 class="cc-heading cc-heading--hero" style="max-width:12ch; margin:.4rem 0 1rem;">I build systems for good, meaningful work, and care for people.</h1>
+      <p class="cc-muted" style="max-width:42rem; font-size:var(--text-md);">A grounded personal website identity where Vancouver Island natural materials meet AI engineering, therapeutic care, and systems thinking.</p>
+      <p style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:2rem;"><a class="cc-button cc-button--primary" href="#">Learn more →</a><a class="cc-button cc-button--secondary" href="#">Explore projects</a></p>
+    </section>
+    <section class="preview-grid">
+      <article class="cc-card preview-card"><p class="cc-eyebrow">AI Engineering</p><h2 class="cc-heading cc-heading--card">Useful intelligent systems</h2><p class="cc-muted">Reliable, ethical, human-centred AI work with practical outcomes.</p></article>
+      <article class="cc-card preview-card"><p class="cc-eyebrow">Therapy</p><h2 class="cc-heading cc-heading--card">Care at the centre</h2><p class="cc-muted">A visual language that can hold professional credibility and warmth.</p></article>
+      <article class="cc-card preview-card"><p class="cc-eyebrow">Systems</p><h2 class="cc-heading cc-heading--card">Context before solutions</h2><p class="cc-muted">Clear structures for writing, projects, books, timelines, and links.</p></article>
+    </section>
+    <section class="swatches" aria-label="Colour swatches">
+      <article class="swatch"><div style="background:#18120E"></div><p>Deep Cedar<br>#18120E</p></article>
+      <article class="swatch"><div style="background:#241B16"></div><p>Burnt Umber<br>#241B16</p></article>
+      <article class="swatch"><div style="background:#F1E8D8"></div><p>Warm Linen<br>#F1E8D8</p></article>
+      <article class="swatch"><div style="background:#C47A45"></div><p>Copper<br>#C47A45</p></article>
+      <article class="swatch"><div style="background:#6CA6A8"></div><p>Desaturated Cyan<br>#6CA6A8</p></article>
+      <article class="swatch"><div style="background:#78946F"></div><p>Fern<br>#78946F</p></article>
+    </section>
+  </main>
+</body>
+</html>

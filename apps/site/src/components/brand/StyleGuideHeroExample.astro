@@ -1,0 +1,80 @@
+---
+import BrandButton from './BrandButton.astro';
+import CedarCircuitryLogo from './CedarCircuitryLogo.astro';
+---
+
+<section class="cc-container cc-hero sample-hero" aria-labelledby="home-hero-title">
+  <div class="sample-hero__nav" aria-label="Brand sample navigation">
+    <CedarCircuitryLogo variant="mark" />
+    <nav>
+      <a href="/about">About</a>
+      <a href="/writing">Writing</a>
+      <a href="/projects">Projects</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+
+  <div class="sample-hero__content">
+    <p class="cc-eyebrow">AI Engineer · Therapist · Systems Thinker</p>
+    <h1 id="home-hero-title" class="cc-heading cc-heading--hero">I build systems for good, meaningful work, and care for people.</h1>
+    <p>
+      Bridging technology and human well-being from Vancouver Island: thoughtful AI systems,
+      reflective writing, and practical tools designed around people.
+    </p>
+    <div class="sample-hero__actions">
+      <BrandButton href="/about">Learn more about me →</BrandButton>
+      <BrandButton href="/projects" variant="secondary">Explore my work</BrandButton>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sample-hero {
+    min-height: min(760px, 84vh);
+    padding: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  .sample-hero__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .sample-hero__nav nav {
+    display: flex;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    flex-wrap: wrap;
+  }
+
+  .sample-hero__nav a {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    text-decoration: none;
+  }
+
+  .sample-hero__nav a:hover { color: var(--accent); }
+
+  .sample-hero__content {
+    max-width: 54rem;
+    padding: clamp(4rem, 12vw, 10rem) clamp(0.25rem, 4vw, 3rem) clamp(2rem, 7vw, 5rem);
+  }
+
+  .sample-hero__content h1 {
+    max-width: 13ch;
+    margin: 0.4rem 0 1.25rem;
+  }
+
+  .sample-hero__content p:not(.cc-eyebrow) {
+    max-width: 38rem;
+    color: var(--text-muted);
+    font-size: var(--text-md);
+  }
+
+  .sample-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 2rem;
+  }
+</style>

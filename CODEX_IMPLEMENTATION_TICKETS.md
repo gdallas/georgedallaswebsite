@@ -1036,6 +1036,10 @@ Create the static-first public website foundation with a calm, credible, distinc
 ### Execution notes for Codex
 
 - Initialize Astro in `apps/site`.
+- Use the approved Cedar & Circuitry style kit as the public-site design system.
+- Read and follow `docs/brand/cedar-circuitry-style-guide.md` and `docs/brand/cedar-circuitry-codex-implementation.md` before implementing public UI.
+- Import `apps/site/src/styles/cedar-circuitry.css` exactly once from the root Astro layout or global entrypoint.
+- Use `apps/site/public/brand/favicon.svg` for the favicon and the Cedar & Circuitry mark/logo in the header/footer where appropriate.
 - Add shared layout, typography, spacing, cards, navigation primitives, and content containers.
 - Prefer dark mode support and accessible color tokens.
 - Use Pacific Northwest design cues subtly: ocean, granite, trees, night sky, quiet natural details.
@@ -1049,8 +1053,11 @@ Create the static-first public website foundation with a calm, credible, distinc
 - [ ] Navigation component exists.
 - [ ] Footer component exists.
 - [ ] Card/list components exist for content previews.
+- [ ] Cedar & Circuitry global styles are imported once.
+- [ ] Header, favicon, and brand usage use the Cedar & Circuitry assets.
 - [ ] Typography is readable on desktop and mobile.
 - [ ] Color palette supports accessible contrast.
+- [ ] Color, border, shadow, spacing, card, button, and prose treatments use the Cedar & Circuitry token system unless documented.
 - [ ] Dark mode is supported or the initial design is dark-mode-first as documented.
 - [ ] Responsive layout works at mobile, tablet, and desktop widths.
 - [ ] Animations are minimal and respect reduced-motion where present.

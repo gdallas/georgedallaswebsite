@@ -1,0 +1,45 @@
+export const cedarCircuitryBrandTokens = {
+  name: 'Cedar & Circuitry',
+  tagline: 'Human. Technical. Grounded. Intentional.',
+  colors: {
+    deepCedar: '#18120E',
+    burntUmber: '#241B16',
+    darkBark: '#3A2D25',
+    warmLinen: '#F1E8D8',
+    softLinen: '#FFF4E4',
+    taupe: '#B8AFA3',
+    copper: '#C47A45',
+    copperDark: '#9D5730',
+    desaturatedCyan: '#6CA6A8',
+    fern: '#78946F',
+    granite: '#817C73',
+    mist: '#E7DED2',
+    ink: '#211A16',
+    error: '#D98B72',
+    warning: '#E5B466',
+  },
+  typography: {
+    display: 'Fraunces',
+    body: 'IBM Plex Sans',
+    mono: 'IBM Plex Mono',
+    fallbackDisplay: "Georgia, 'Times New Roman', serif",
+    fallbackBody: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fallbackMono: "'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
+  },
+  radii: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '0.875rem',
+    lg: '1.25rem',
+    xl: '1.75rem',
+    pill: '999px',
+  },
+  motion: {
+    durationFast: '140ms',
+    durationBase: '220ms',
+    durationSlow: '380ms',
+    easing: 'cubic-bezier(.2,.8,.2,1)',
+  },
+} as const;
+
+export type CedarCircuitryBrandTokens = typeof cedarCircuitryBrandTokens;
