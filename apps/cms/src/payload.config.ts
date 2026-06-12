@@ -5,13 +5,16 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { AuditEvents } from "./collections/AuditEvents";
 import { Categories } from "./collections/Categories";
+import { Links } from "./collections/Links";
 import { Media } from "./collections/Media";
 import { Pages } from "./collections/Pages";
 import { Posts } from "./collections/Posts";
+import { Projects } from "./collections/Projects";
 import { Redirects } from "./collections/Redirects";
 import { Tags } from "./collections/Tags";
 import { createUsersCollection } from "./collections/Users";
 import { loadCmsConfig } from "./env";
+import { NowPage } from "./globals/NowPage";
 import { SiteSettings } from "./globals/SiteSettings";
 import { createMediaStoragePlugin } from "./storage/s3";
 import { maxMediaUploadBytes } from "./validation/content.mjs";
@@ -37,7 +40,7 @@ export default buildConfig({
       fileSize: maxMediaUploadBytes
     }
   },
-  collections: [Users, Media, Tags, Categories, Redirects, Posts, Pages, AuditEvents],
+  collections: [Users, Media, Tags, Categories, Redirects, Posts, Pages, Projects, Links, AuditEvents],
   cookiePrefix: `gdw-${config.appEnv}`,
   cors: [config.cmsPublicUrl, config.publicSiteUrl],
   csrf: [config.cmsPublicUrl],
@@ -47,7 +50,7 @@ export default buildConfig({
     }
   }),
   editor: lexicalEditor(),
-  globals: [SiteSettings],
+  globals: [SiteSettings, NowPage],
   plugins: [createMediaStoragePlugin(config)],
   secret: config.payloadSecret,
   serverURL: config.cmsPublicUrl,

@@ -14,6 +14,18 @@ export const publishingStatusField: Field = {
   ]
 };
 
+export const listingStatusField: Field = {
+  name: "status",
+  type: "select",
+  required: true,
+  defaultValue: "draft",
+  options: [
+    { label: "Draft", value: "draft" },
+    { label: "Published", value: "published" },
+    { label: "Archived", value: "archived" }
+  ]
+};
+
 export const publishedAtField: Field = {
   name: "publishedAt",
   type: "date",
