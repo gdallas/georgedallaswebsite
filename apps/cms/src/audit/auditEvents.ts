@@ -68,9 +68,12 @@ export async function recordAuditEvent(req: RequestWithUser, input: AuditEventIn
 }
 
 export function auditCollectionChanges(collectionSlug: string): CollectionAfterChangeHook {
-  return async ({ doc, operation, req }) => {
+  return async ({ doc, operation, previousDoc, req }) => {
+    const wasPublished = previousDoc?.status === "published";
+    const isPublished = doc?.status === "published";
+
     await recordAuditEvent(req, {
-      action: operation === "create" ? "content_created" : "content_updated",
+      action: operation === "create" ? "content_created" : isPublished && !wasPublished ? "content_published" : "content_updated",
       collection: collectionSlug,
       documentId: doc.id,
       metadata: {
