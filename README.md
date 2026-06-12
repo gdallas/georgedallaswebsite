@@ -145,6 +145,7 @@ Required local variables:
 - `APP_ENV=local`
 - `PUBLIC_SITE_URL`
 - `CMS_PUBLIC_URL`
+- `MEDIA_PUBLIC_URL`
 - `DATABASE_URL`
 - `S3_ENDPOINT`
 - `S3_REGION`

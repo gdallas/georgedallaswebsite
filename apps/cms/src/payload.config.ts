@@ -13,6 +13,8 @@ import { Tags } from "./collections/Tags";
 import { createUsersCollection } from "./collections/Users";
 import { loadCmsConfig } from "./env";
 import { SiteSettings } from "./globals/SiteSettings";
+import { createMediaStoragePlugin } from "./storage/s3";
+import { maxMediaUploadBytes } from "./validation/content.mjs";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -30,6 +32,11 @@ export default buildConfig({
   auth: {
     jwtOrder: ["cookie", "Bearer", "JWT"]
   },
+  bodyParser: {
+    limits: {
+      fileSize: maxMediaUploadBytes
+    }
+  },
   collections: [Users, Media, Tags, Categories, Redirects, Posts, Pages, AuditEvents],
   cookiePrefix: `gdw-${config.appEnv}`,
   cors: [config.cmsPublicUrl, config.publicSiteUrl],
@@ -41,6 +48,7 @@ export default buildConfig({
   }),
   editor: lexicalEditor(),
   globals: [SiteSettings],
+  plugins: [createMediaStoragePlugin(config)],
   secret: config.payloadSecret,
   serverURL: config.cmsPublicUrl,
   typescript: {

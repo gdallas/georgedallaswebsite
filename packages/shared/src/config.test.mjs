@@ -6,6 +6,7 @@ const validEnv = {
   APP_ENV: "local",
   PUBLIC_SITE_URL: "http://localhost:4321",
   CMS_PUBLIC_URL: "http://localhost:3000",
+  MEDIA_PUBLIC_URL: "http://localhost:9000/georgedallas-local-media",
   DATABASE_URL: "postgres://george:george-local-password@localhost:5432/georgedallas_local",
   S3_ENDPOINT: "http://localhost:9000",
   S3_REGION: "us-east-1",
