@@ -3,12 +3,15 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { Users } from "./collections/Users";
+import { AuditEvents } from "./collections/AuditEvents";
+import { createUsersCollection } from "./collections/Users";
 import { loadCmsConfig } from "./env";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 const config = loadCmsConfig();
+const secureCookies = config.appEnv === "production";
+const Users = createUsersCollection({ secureCookies });
 
 export default buildConfig({
   admin: {
@@ -17,7 +20,13 @@ export default buildConfig({
       baseDir: path.resolve(dirname)
     }
   },
-  collections: [Users],
+  auth: {
+    jwtOrder: ["cookie", "Bearer", "JWT"]
+  },
+  collections: [Users, AuditEvents],
+  cookiePrefix: `gdw-${config.appEnv}`,
+  cors: [config.cmsPublicUrl, config.publicSiteUrl],
+  csrf: [config.cmsPublicUrl],
   db: postgresAdapter({
     pool: {
       connectionString: config.databaseUrl
