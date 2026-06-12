@@ -6,7 +6,7 @@ for (const config of configs) {
   JSON.parse(readFileSync(config, "utf8"));
 }
 
-const sourceFiles = ["apps/site/src/index.ts", "apps/cms/src/index.ts", "packages/shared/src/index.ts", "packages/shared/src/config.ts", "packages/shared/src/config.mjs"];
+const sourceFiles = ["apps/site/src/index.ts", "apps/cms/src/payload.config.ts", "packages/shared/src/index.ts", "packages/shared/src/config.ts", "packages/shared/src/config.mjs"];
 for (const sourceFile of sourceFiles) {
   if (!statSync(sourceFile).isFile()) {
     throw new Error(`Missing TypeScript source file: ${sourceFile}`);

@@ -3,7 +3,8 @@ import { join } from "node:path";
 
 const required = [
   "apps/site/src/index.ts",
-  "apps/cms/src/index.ts",
+  "apps/cms/src/payload.config.ts",
+  "apps/cms/src/app/api/health/route.ts",
   "packages/shared/src/config.ts"
 ];
 

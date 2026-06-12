@@ -17,6 +17,12 @@ CDK synth must not require production secrets.
 
 The CDK app defines separate `dev` and `prod` foundation stacks. Later infrastructure tickets should add reusable constructs while preserving environment isolation.
 
+## Account Isolation
+
+This project can share an AWS account with other websites, but its resources must remain logically separate. Do not reuse VPCs, databases, buckets, IAM roles, KMS keys, CloudFront distributions, or Secrets Manager paths from other sites unless a future ADR explicitly approves it.
+
+All George Dallas website resources use the `georgedallaswebsite` project prefix and environment-specific names so they are easy to identify in a shared AWS account.
+
 ## Naming and Tags
 
 Resource names should use:

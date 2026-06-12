@@ -6,7 +6,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./config": "./src/config.ts",
-    "./config-runtime": "./src/config.mjs"
+    "./config-runtime": {
+      "types": "./src/config-runtime.d.ts",
+      "import": "./src/config.mjs",
+      "default": "./src/config.mjs"
+    }
   },
   "scripts": {
     "test": "node --test \"src/**/*.test.mjs\"",
