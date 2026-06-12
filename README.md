@@ -22,9 +22,18 @@ Codex and human contributors should read these documents before making architect
 docs/personal-website-hub-requirements.pdf
 docs/personal-website-database-architecture-addendum.md
 CODEX_RULESET.md
+CODEX_IMPLEMENTATION_TICKETS.md
+docs/adr/2026-06-11-default-architecture.md
 ```
 
 If filenames differ, use the matching requirements document and database architecture addendum in `docs/`.
+
+Current document inventory:
+
+- `CODEX_RULESET.md` defines the project guardrails.
+- `CODEX_IMPLEMENTATION_TICKETS.md` is the ordered implementation backlog.
+- `docs/README.md` tracks required source documents and notes any missing inputs.
+- `docs/adr/` contains architecture decision records.
 
 ---
 
@@ -70,6 +79,137 @@ Expected structure:
 └── README.md
 ```
 
+The current foundation uses a pnpm workspace with dependency-light placeholders. Astro and Payload are intentionally deferred to their implementation tickets so the project can keep the early foundation small and reviewable.
+
+---
+
+## Local development commands
+
+Install workspace metadata:
+
+```bash
+pnpm install
+```
+
+Start local PostgreSQL and MinIO:
+
+```bash
+pnpm local:up
+```
+
+Reset local services and volumes:
+
+```bash
+pnpm local:reset
+```
+
+Seed local placeholder data:
+
+```bash
+pnpm seed
+```
+
+Run the same quality gates as CI:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+The placeholder app commands are:
+
+```bash
+pnpm --filter @georgedallas/site dev
+pnpm --filter @georgedallas/cms dev
+```
+
+These commands print scaffold status until the Astro and Payload tickets are implemented.
+
+---
+
+## Environment variables
+
+Copy `.env.example` to `.env.local` for local development. `.env.local` is ignored by Git.
+
+Required local variables:
+
+- `APP_ENV=local`
+- `PUBLIC_SITE_URL`
+- `CMS_PUBLIC_URL`
+- `DATABASE_URL`
+- `S3_ENDPOINT`
+- `S3_REGION`
+- `S3_BUCKET`
+- `S3_ACCESS_KEY_ID`
+- `S3_SECRET_ACCESS_KEY`
+- `PAYLOAD_SECRET`
+- `SESSION_SECRET`
+
+Environment validation lives in `packages/shared/src/config.ts`. Local and development configuration must not use production database URLs.
+
+---
+
+## Local service defaults
+
+PostgreSQL:
+
+```text
+host: localhost
+port: 5432
+database: georgedallas_local
+user: george
+password: george-local-password
+```
+
+MinIO:
+
+```text
+S3 endpoint: http://localhost:9000
+console: http://localhost:9001
+bucket: georgedallas-local-media
+access key: local-minio
+secret key: local-minio-password
+```
+
+These are local-only placeholder values and must not be reused for development or production AWS resources.
+
+---
+
+## CI and repository governance
+
+Pull requests into `develop` and `main` run `.github/workflows/ci.yml`.
+
+CI runs:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+Branch protection settings are documented in `docs/runbooks/github-branch-protection.md`. Both `develop` and `main` should require George's manual approval, passing CI, resolved conversations, disabled force pushes, and disabled protected-branch deletion.
+
+Repository security guidance is in `SECURITY.md`. Dependabot and dependency review are configured in `.github/`.
+
+Infrastructure runbooks:
+
+- `docs/runbooks/infrastructure.md`
+- `docs/runbooks/infra-security.md`
+- `docs/runbooks/database-infrastructure.md`
+- `docs/runbooks/database-backup-restore.md`
+
+Database backup policy:
+
+- production RDS backups retain 30 days
+- development RDS backups retain 7 days
+- production deletion protection is enabled
+- production database deletion or replacement uses a snapshot policy
+- destructive migrations require a recent backup/snapshot and rollback notes
+
 ---
 
 ## Environments
@@ -97,8 +237,8 @@ The development AWS environment is used to test changes before production.
 Recommended URLs:
 
 ```text
-dev.georgedallas.ca
-cms-dev.georgedallas.ca
+dev.georgedallas.com
+cms-dev.georgedallas.com
 ```
 
 The development environment has its own database, media bucket, secrets, CMS service, and frontend deployment.
@@ -110,9 +250,9 @@ The production AWS environment is the live public website and live CMS.
 Recommended URLs:
 
 ```text
-georgedallas.ca
-www.georgedallas.ca
-cms.georgedallas.ca
+georgedallas.com
+www.georgedallas.com
+cms.georgedallas.com
 ```
 
 Production must have separate infrastructure, stricter permissions, protected deployment, and stronger backup settings.
