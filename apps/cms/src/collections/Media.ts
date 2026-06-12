@@ -1,7 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
-import { validateMediaAltText } from "../validation/content.mjs";
+import { buildMediaStorageKey, validateMediaAltText, validateMediaFileMetadata } from "../validation/content.mjs";
 
 export const Media: CollectionConfig = {
   slug: "media",
@@ -40,8 +40,14 @@ export const Media: CollectionConfig = {
       name: "storageKey",
       type: "text",
       admin: {
-        description: "Future S3 object key. GDW-021 wires this to S3-backed storage."
+        description: "S3 object key generated from the configured media prefix and filename.",
+        readOnly: true
       }
+    },
+    {
+      name: "importedFromWordPress",
+      type: "checkbox",
+      defaultValue: false
     },
     {
       name: "reviewStatus",
@@ -66,14 +72,28 @@ export const Media: CollectionConfig = {
   ],
   hooks: {
     afterChange: [auditCollectionChanges("media")],
-    afterDelete: [auditCollectionDeletes("media")]
+    afterDelete: [auditCollectionDeletes("media")],
+    beforeChange: [
+      ({ data }) => {
+        const validation = validateMediaFileMetadata(data);
+
+        if (validation !== true) {
+          throw new Error(validation);
+        }
+
+        if (data.filename) {
+          data.storageKey = buildMediaStorageKey("uploads", data.prefix, data.filename);
+        }
+
+        return data;
+      }
+    ]
   },
   upload: {
     bulkUpload: true,
     displayPreview: true,
     filesRequiredOnCreate: true,
-    mimeTypes: ["image/*", "application/pdf"],
-    pasteURL: false,
-    staticDir: "media"
+    mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml", "application/pdf"],
+    pasteURL: false
   }
 };

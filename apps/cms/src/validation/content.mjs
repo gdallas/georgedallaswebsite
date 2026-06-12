@@ -1,5 +1,8 @@
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const blockedLocalHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+
+export const allowedMediaMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml", "application/pdf"];
+export const maxMediaUploadBytes = 10 * 1024 * 1024;
 export const publishingStatuses = ["draft", "in_review", "scheduled", "published", "archived"];
 export const listingStatuses = ["draft", "published", "archived"];
 export const visibilityStates = ["public", "unlisted", "private"];
@@ -120,6 +123,37 @@ export function validateMediaAltText(value, siblingData = {}) {
   }
 
   return "Public media requires alt text unless it is marked decorative.";
+}
+
+export function validateMediaFileMetadata(data = {}) {
+  if (data.mimeType && !allowedMediaMimeTypes.includes(data.mimeType)) {
+    return "Media file type is not allowed.";
+  }
+
+  if (typeof data.filesize === "number" && data.filesize > maxMediaUploadBytes) {
+    return "Media file exceeds the 10 MB upload limit.";
+  }
+
+  return true;
+}
+
+export function buildMediaStorageKey(collectionPrefix, docPrefix, filename) {
+  if (!filename) {
+    return undefined;
+  }
+
+  const parts = [collectionPrefix, docPrefix, filename].filter(Boolean);
+  return parts.map((part) => String(part).replace(/^\/+|\/+$/g, "")).filter(Boolean).join("/");
+}
+
+export function buildMediaPublicUrl(publicBaseUrl, collectionPrefix, docPrefix, filename) {
+  const key = buildMediaStorageKey(collectionPrefix, docPrefix, filename);
+
+  if (!key) {
+    return publicBaseUrl;
+  }
+
+  return `${publicBaseUrl.replace(/\/+$/g, "")}/${key.split("/").map(encodeURIComponent).join("/")}`;
 }
 
 export function validatePublishingState(data, options = {}) {

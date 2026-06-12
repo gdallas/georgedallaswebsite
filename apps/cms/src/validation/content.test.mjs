@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildMediaPublicUrl,
+  buildMediaStorageKey,
   estimateReadingTime,
   isNowPagePublic,
   isPublicBuildVisible,
@@ -9,6 +11,7 @@ import {
   publicListingWhere,
   validateLinkUrl,
   validateMediaAltText,
+  validateMediaFileMetadata,
   validateOptionalExternalUrl,
   validatePublishingState,
   validateRedirectDestination,
@@ -44,6 +47,17 @@ describe("content validation", () => {
     assert.equal(validateMediaAltText("Portrait of George", { reviewStatus: "public" }), true);
     assert.equal(validateMediaAltText("", { decorative: true, reviewStatus: "public" }), true);
     assert.equal(validateMediaAltText("", { reviewStatus: "public" }), "Public media requires alt text unless it is marked decorative.");
+  });
+
+  it("validates media file metadata and public URLs", () => {
+    assert.equal(validateMediaFileMetadata({ filesize: 1024, mimeType: "image/webp" }), true);
+    assert.equal(validateMediaFileMetadata({ filesize: 1024, mimeType: "text/html" }), "Media file type is not allowed.");
+    assert.equal(validateMediaFileMetadata({ filesize: 11 * 1024 * 1024, mimeType: "image/png" }), "Media file exceeds the 10 MB upload limit.");
+    assert.equal(buildMediaStorageKey("uploads", undefined, "hello world.png"), "uploads/hello world.png");
+    assert.equal(
+      buildMediaPublicUrl("https://media.example.com/", "uploads", undefined, "hello world.png"),
+      "https://media.example.com/uploads/hello%20world.png"
+    );
   });
 
   it("rejects invalid publish states", () => {

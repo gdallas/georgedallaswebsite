@@ -11,6 +11,8 @@ Each environment has:
 
 The S3 buckets block all public access and use S3-managed encryption at rest. Direct public listing is disabled. Public media should be referenced through the CloudFront distribution domain or a future reviewed custom media domain.
 
+The CMS uses `MEDIA_PUBLIC_URL` as the public delivery base URL for media records. In deployed environments this value should be the environment's CloudFront media distribution URL or reviewed media custom domain. Local development can use the MinIO bucket URL, for example `http://localhost:9000/georgedallas-local-media`.
+
 ## Prefixes
 
 Approved top-level prefixes:

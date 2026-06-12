@@ -25,6 +25,7 @@ export function loadAppConfig(env = process.env) {
     databaseUrl: required("DATABASE_URL"),
     s3: {
       endpoint: env.S3_ENDPOINT?.trim() || undefined,
+      publicUrl: required("MEDIA_PUBLIC_URL"),
       region: required("S3_REGION"),
       bucket: required("S3_BUCKET"),
       accessKeyId: env.S3_ACCESS_KEY_ID?.trim() || undefined,
@@ -46,6 +47,7 @@ export function loadAppConfig(env = process.env) {
 export function validateAppConfig(config, errors = []) {
   validateUrl("PUBLIC_SITE_URL", config.publicSiteUrl, errors);
   validateUrl("CMS_PUBLIC_URL", config.cmsPublicUrl, errors);
+  validateUrl("MEDIA_PUBLIC_URL", config.s3.publicUrl, errors);
 
   if (!config.databaseUrl.startsWith("postgres://") && !config.databaseUrl.startsWith("postgresql://")) {
     errors.push("DATABASE_URL must be a PostgreSQL connection URL");
