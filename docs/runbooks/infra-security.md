@@ -6,11 +6,16 @@ Deployments should use GitHub OIDC instead of long-lived AWS access keys.
 
 The CDK foundation defines environment-scoped deploy roles:
 
-- `georgedallaswebsite-shared-github-oidc`
 - `georgedallaswebsite-dev-github-deploy`
 - `georgedallaswebsite-prod-github-deploy`
 
-The shared OIDC stack defines the AWS IAM OIDC provider for `https://token.actions.githubusercontent.com`.
+The AWS IAM OIDC provider for `https://token.actions.githubusercontent.com` is an account-level singleton that already exists in this shared AWS account (created by another project). The foundation stacks reference it by ARN rather than creating a duplicate, which IAM would reject. If this project ever moves to a fresh account, create the provider once with:
+
+```bash
+aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --client-id-list sts.amazonaws.com
+```
 
 The dev role is intended for the GitHub Environment named `development`. The prod role is intended for the GitHub Environment named `production`.
 
