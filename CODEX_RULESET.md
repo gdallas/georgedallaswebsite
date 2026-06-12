@@ -536,6 +536,17 @@ The public site should be:
 - compatible with dark mode
 - visually aligned with a Pacific Northwest feel
 
+The approved public-site visual system is Cedar & Circuitry. Frontend tickets must use the files and guidance in:
+
+- `docs/brand/cedar-circuitry-style-guide.md`
+- `docs/brand/cedar-circuitry-codex-implementation.md`
+- `apps/site/src/styles/cedar-circuitry.css`
+- `apps/site/src/styles/tokens.css`
+- `apps/site/public/brand/`
+- `packages/shared/src/design/brandTokens.ts`
+
+When implementing public UI, import the Cedar & Circuitry global CSS once from the root Astro layout, use the provided logo/mark/favicon assets, and keep colors, spacing, borders, shadows, and component treatments mapped to the provided tokens unless the PR documents a deliberate exception. Do not introduce a competing frontend color system or generic theme.
+
 Public routes should include at minimum:
 
 ```text
