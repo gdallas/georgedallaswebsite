@@ -1,0 +1,90 @@
+.dashboard {
+  padding-block: calc(var(--base) * 2);
+}
+
+.section {
+  margin-block-end: calc(var(--base) * 2);
+}
+
+.sectionTitle {
+  margin-block-end: var(--base);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--base);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.actionCard {
+  display: block;
+  height: 100%;
+  padding: var(--base);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-m);
+  background: var(--theme-elevation-50);
+  color: var(--theme-elevation-800);
+  text-decoration: none;
+}
+
+.actionCard:hover,
+.actionCard:focus-visible {
+  border-color: var(--theme-elevation-400);
+  background: var(--theme-elevation-100);
+}
+
+.actionLabel {
+  display: block;
+  font-weight: 600;
+  margin-block-end: calc(var(--base) * 0.25);
+}
+
+.actionDescription {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-500);
+}
+
+.docList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.docList li {
+  border-block-end: 1px solid var(--theme-elevation-100);
+}
+
+.docList a {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--base);
+  padding-block: calc(var(--base) * 0.5);
+  text-decoration: none;
+  color: var(--theme-elevation-800);
+}
+
+.docList a:hover,
+.docList a:focus-visible {
+  color: var(--theme-elevation-1000);
+}
+
+.docMeta {
+  color: var(--theme-elevation-500);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.empty {
+  color: var(--theme-elevation-500);
+  margin: 0;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: calc(var(--base) * 2);
+}
