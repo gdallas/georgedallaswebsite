@@ -6,6 +6,8 @@ import path from "node:path";
 import { AuditEvents } from "./collections/AuditEvents";
 import { Categories } from "./collections/Categories";
 import { Media } from "./collections/Media";
+import { Pages } from "./collections/Pages";
+import { Posts } from "./collections/Posts";
 import { Redirects } from "./collections/Redirects";
 import { Tags } from "./collections/Tags";
 import { createUsersCollection } from "./collections/Users";
@@ -28,7 +30,7 @@ export default buildConfig({
   auth: {
     jwtOrder: ["cookie", "Bearer", "JWT"]
   },
-  collections: [Users, Media, Tags, Categories, Redirects, AuditEvents],
+  collections: [Users, Media, Tags, Categories, Redirects, Posts, Pages, AuditEvents],
   cookiePrefix: `gdw-${config.appEnv}`,
   cors: [config.cmsPublicUrl, config.publicSiteUrl],
   csrf: [config.cmsPublicUrl],
