@@ -28,6 +28,13 @@ const Users = createUsersCollection({ secureCookies });
 export default buildConfig({
   admin: {
     user: Users.slug,
+    components: {
+      views: {
+        dashboard: {
+          Component: "/components/Dashboard#Dashboard"
+        }
+      }
+    },
     importMap: {
       baseDir: path.resolve(dirname)
     }
