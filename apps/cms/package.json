@@ -4,8 +4,27 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node src/index.mjs",
-    "build": "node src/index.mjs",
-    "typecheck": "node ../../scripts/typecheck-package.mjs apps/cms"
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "payload": "payload",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@georgedallas/shared": "workspace:*",
+    "@payloadcms/db-postgres": "^3.85.1",
+    "@payloadcms/next": "^3.85.1",
+    "@payloadcms/richtext-lexical": "^3.85.1",
+    "next": "16",
+    "payload": "^3.85.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "sharp": "^0.35.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
   }
 }

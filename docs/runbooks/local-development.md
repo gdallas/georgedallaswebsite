@@ -25,3 +25,19 @@ pnpm seed
 ```
 
 The current seed command writes a safe placeholder marker. Real CMS seed content belongs in later CMS tickets.
+
+## CMS
+
+Copy `.env.example` to `.env.local`, start local services, then run:
+
+```bash
+pnpm --filter @georgedallas/cms dev
+```
+
+The CMS runs at `http://localhost:3000/admin`.
+
+Health check:
+
+```text
+http://localhost:3000/api/health
+```

@@ -118,14 +118,21 @@ pnpm test
 pnpm build
 ```
 
-The placeholder app commands are:
+Run the CMS locally:
 
 ```bash
-pnpm --filter @georgedallas/site dev
 pnpm --filter @georgedallas/cms dev
 ```
 
-These commands print scaffold status until the Astro and Payload tickets are implemented.
+The CMS runs on `http://localhost:3000` with the admin at `http://localhost:3000/admin` and a health check at `http://localhost:3000/api/health`.
+
+Run the public site placeholder:
+
+```bash
+pnpm --filter @georgedallas/site dev
+```
+
+The public site command prints scaffold status until the Astro ticket is implemented.
 
 ---
 
