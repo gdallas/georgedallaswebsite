@@ -16,10 +16,10 @@ importers:
     dependencies:
       aws-cdk-lib:
         specifier: 2.199.0
-        version: 2.199.0(constructs@10.4.2)
+        version: 2.199.0(constructs@10.6.0)
       constructs:
-        specifier: 10.4.2
-        version: 10.4.2
+        specifier: 10.6.0
+        version: 10.6.0
     devDependencies:
       aws-cdk:
         specifier: 2.1007.0
@@ -65,8 +65,8 @@ packages:
     engines: {node: '>= 14.15.0'}
     hasBin: true
 
-  constructs@10.4.2:
-    resolution: {integrity: sha512-wsNxBlAott2qg8Zv87q3eYZYgheb9lchtBfjHzzLHtXbttwSrHPs1NNQbBrmbb1YZvYg2+Vh0Dor76w4mFxJkA==}
+  constructs@10.6.0:
+    resolution: {integrity: sha512-TxHOnBO5zMo/G76ykzGF/wMpEHu257TbWiIxP9K0Yv/+t70UzgBQiTqjkAsWOPC6jW91DzJI0+ehQV6xDRNBuQ==}
 
   fsevents@2.3.2:
     resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
@@ -81,18 +81,18 @@ snapshots:
 
   '@aws-cdk/cloud-assembly-schema@41.2.0': {}
 
-  aws-cdk-lib@2.199.0(constructs@10.4.2):
+  aws-cdk-lib@2.199.0(constructs@10.6.0):
     dependencies:
       '@aws-cdk/asset-awscli-v1': 2.2.237
       '@aws-cdk/asset-node-proxy-agent-v6': 2.1.2
       '@aws-cdk/cloud-assembly-schema': 41.2.0
-      constructs: 10.4.2
+      constructs: 10.6.0
 
   aws-cdk@2.1007.0:
     optionalDependencies:
       fsevents: 2.3.2
 
-  constructs@10.4.2: {}
+  constructs@10.6.0: {}
 
   fsevents@2.3.2:
     optional: true
