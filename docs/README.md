@@ -32,7 +32,14 @@ George has registered `georgedallas.com`. Planning documents should use:
 - Codex ruleset: [`../CODEX_RULESET.md`](../CODEX_RULESET.md)
 - Implementation backlog: [`../CODEX_IMPLEMENTATION_TICKETS.md`](../CODEX_IMPLEMENTATION_TICKETS.md)
 - Architecture decisions: [`adr/`](adr/)
+- Brand and frontend style guidance: [`brand/`](brand/)
 - Runbooks: [`runbooks/`](runbooks/)
+
+## Current Brand Documents
+
+- [`brand/cedar-circuitry-style-guide.md`](brand/cedar-circuitry-style-guide.md)
+- [`brand/cedar-circuitry-codex-implementation.md`](brand/cedar-circuitry-codex-implementation.md)
+- [`brand/cedar-circuitry-reference.png`](brand/cedar-circuitry-reference.png)
 
 ## Current Runbooks
 

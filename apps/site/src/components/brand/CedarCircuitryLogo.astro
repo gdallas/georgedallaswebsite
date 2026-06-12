@@ -1,0 +1,34 @@
+---
+export interface Props {
+  variant?: 'full' | 'mark' | 'wordmark';
+  href?: string;
+  class?: string;
+}
+
+const { variant = 'full', href = '/', class: className = '' } = Astro.props;
+const assetByVariant = {
+  full: '/brand/cedar-circuitry-logo.svg',
+  mark: '/brand/cedar-circuitry-mark.svg',
+  wordmark: '/brand/cedar-circuitry-wordmark.svg',
+};
+const label = variant === 'mark' ? 'George Dallas home' : 'George Dallas';
+---
+
+<a class={`cc-logo ${className}`} href={href} aria-label={label}>
+  <img src={assetByVariant[variant]} alt="" decoding="async" />
+</a>
+
+<style>
+  .cc-logo {
+    display: inline-flex;
+    align-items: center;
+    color: var(--text-strong);
+    text-decoration: none;
+  }
+
+  .cc-logo img {
+    display: block;
+    height: 3rem;
+    width: auto;
+  }
+</style>

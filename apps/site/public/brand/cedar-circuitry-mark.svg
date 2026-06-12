@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" role="img" aria-labelledby="title desc">
+  <title id="title">Cedar circuit mark</title>
+  <desc id="desc">A stylized cedar tree whose roots become circuit traces.</desc>
+  <defs>
+    <linearGradient id="mark-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#78946F"/>
+      <stop offset="0.52" stop-color="#C47A45"/>
+      <stop offset="1" stop-color="#6CA6A8"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="220" fill="none"/>
+  <g transform="translate(18 16)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M72 0 L72 142" stroke="#F1E8D8" stroke-width="6"/>
+    <path d="M72 10 C55 29 46 40 28 50 M72 10 C89 29 98 40 116 50" stroke="#78946F" stroke-width="5"/>
+    <path d="M72 35 C50 55 36 68 12 80 M72 35 C94 55 108 68 132 80" stroke="#78946F" stroke-width="5"/>
+    <path d="M72 65 C48 86 31 101 4 115 M72 65 C96 86 113 101 140 115" stroke="#78946F" stroke-width="5"/>
+    <path d="M72 96 C51 113 34 124 15 135 M72 96 C93 113 110 124 129 135" stroke="#78946F" stroke-width="5"/>
+    <path d="M72 142 L72 172 M72 172 H38 V196 M72 172 H106 V196 M54 156 H18 V180 H0 M90 156 H126 V180 H144" stroke="url(#mark-gradient)" stroke-width="4"/>
+    <circle cx="0" cy="180" r="5" fill="#6CA6A8" stroke="none"/>
+    <circle cx="38" cy="196" r="5" fill="#C47A45" stroke="none"/>
+    <circle cx="106" cy="196" r="5" fill="#C47A45" stroke="none"/>
+    <circle cx="144" cy="180" r="5" fill="#6CA6A8" stroke="none"/>
+    <circle cx="72" cy="172" r="5" fill="#F1E8D8" stroke="none"/>
+  </g>
+</svg>

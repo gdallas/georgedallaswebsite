@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" role="img" aria-labelledby="title desc">
+  <title id="title">Cedar &amp; Circuitry logo</title>
+  <desc id="desc">A cedar tree mark with circuit-like roots, paired with the George Dallas wordmark.</desc>
+  <defs>
+    <linearGradient id="cedar-copper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#78946F"/>
+      <stop offset="0.52" stop-color="#C47A45"/>
+      <stop offset="1" stop-color="#6CA6A8"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="220" fill="none"/>
+  <g transform="translate(34 20)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M76 12 L76 144" stroke="#F1E8D8" stroke-width="6"/>
+    <path d="M76 20 C60 38 50 48 32 58 M76 20 C92 38 102 48 120 58" stroke="#78946F" stroke-width="5"/>
+    <path d="M76 42 C56 61 42 73 18 84 M76 42 C96 61 110 73 134 84" stroke="#78946F" stroke-width="5"/>
+    <path d="M76 68 C53 87 36 101 10 114 M76 68 C99 87 116 101 142 114" stroke="#78946F" stroke-width="5"/>
+    <path d="M76 96 C57 111 40 122 22 132 M76 96 C95 111 112 122 130 132" stroke="#78946F" stroke-width="5"/>
+    <path d="M76 144 L76 168 M76 168 H42 V188 M76 168 H110 V188 M58 154 H24 V174 H10 M94 154 H128 V174 H142" stroke="url(#cedar-copper)" stroke-width="4"/>
+    <circle cx="10" cy="174" r="4" fill="#6CA6A8" stroke="none"/>
+    <circle cx="42" cy="188" r="4" fill="#C47A45" stroke="none"/>
+    <circle cx="110" cy="188" r="4" fill="#C47A45" stroke="none"/>
+    <circle cx="142" cy="174" r="4" fill="#6CA6A8" stroke="none"/>
+    <circle cx="76" cy="168" r="4" fill="#F1E8D8" stroke="none"/>
+  </g>
+  <g transform="translate(210 62)">
+    <text x="0" y="50" fill="#F1E8D8" font-size="54" font-family="Fraunces, Georgia, serif" letter-spacing="-1.5">George Dallas</text>
+    <text x="2" y="92" fill="#C47A45" font-size="16" font-family="IBM Plex Sans, Inter, system-ui, sans-serif" letter-spacing="4">AI ENGINEER · THERAPIST · SYSTEMS THINKER</text>
+  </g>
+</svg>

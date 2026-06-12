@@ -1,0 +1,30 @@
+---
+export interface Props {
+  eyebrow?: string;
+  title?: string;
+  href?: string;
+  class?: string;
+}
+
+const { eyebrow, title, href, class: className = '' } = Astro.props;
+---
+
+<article class={`cc-card brand-card ${className}`}>
+  {eyebrow && <p class="cc-eyebrow">{eyebrow}</p>}
+  {title && <h3 class="cc-heading cc-heading--card">{href ? <a href={href}>{title}</a> : title}</h3>}
+  <div class="brand-card__body"><slot /></div>
+</article>
+
+<style>
+  .brand-card {
+    padding: clamp(1.25rem, 2vw, 1.75rem);
+  }
+
+  .brand-card .cc-eyebrow { margin: 0 0 0.75rem; }
+  .brand-card h3 { margin: 0 0 0.75rem; }
+  .brand-card h3 a { color: inherit; text-decoration: none; }
+  .brand-card h3 a:hover { color: var(--accent); }
+  .brand-card__body { color: var(--text-muted); }
+  .brand-card__body :global(p:first-child) { margin-top: 0; }
+  .brand-card__body :global(p:last-child) { margin-bottom: 0; }
+</style>
