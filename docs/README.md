@@ -42,3 +42,4 @@ George has registered `georgedallas.com`. Planning documents should use:
 - [`runbooks/infra-security.md`](runbooks/infra-security.md)
 - [`runbooks/database-infrastructure.md`](runbooks/database-infrastructure.md)
 - [`runbooks/database-backup-restore.md`](runbooks/database-backup-restore.md)
+- [`runbooks/media-storage.md`](runbooks/media-storage.md)
