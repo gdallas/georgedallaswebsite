@@ -210,11 +210,12 @@ Infrastructure runbooks:
 - `docs/runbooks/database-infrastructure.md`
 - `docs/runbooks/database-backup-restore.md`
 - `docs/runbooks/media-storage.md`
+- `docs/runbooks/cost-controls.md`
 
 Database backup policy:
 
-- production RDS backups retain 30 days
-- development RDS backups retain 7 days
+- production database backups retain 30 days
+- development database backups retain 7 days
 - production deletion protection is enabled
 - production database deletion or replacement uses a snapshot policy
 - destructive migrations require a recent backup/snapshot and rollback notes

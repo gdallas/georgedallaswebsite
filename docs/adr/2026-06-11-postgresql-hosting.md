@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by `2026-06-12-aurora-serverless-v2-scale-to-zero.md`
 
 ## Context
 
