@@ -338,6 +338,15 @@ pnpm test
 pnpm build
 ```
 
+End-to-end Playwright smoke tests run as a separate `E2E Smoke` CI job and locally:
+
+```bash
+pnpm --filter @georgedallas/site e2e:install   # one-time: download Chromium
+pnpm e2e                                        # build against a mock CMS + run smoke tests
+```
+
+They cover every public route, navigation, the discoverability endpoints, and end-to-end draft/private/future content exclusion, with opt-in CMS health/admin-login specs. See `docs/runbooks/e2e-testing.md`.
+
 As the project matures, CI should also include:
 
 - unit tests

@@ -10,6 +10,10 @@ dist/
 cdk.out/
 cdk-outputs.json
 coverage/
+playwright-report/
+test-results/
+blob-report/
+.last-run.json
 *.tsbuildinfo
 *.log
 *.sqlite
