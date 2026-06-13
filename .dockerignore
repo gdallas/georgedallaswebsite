@@ -1,0 +1,11 @@
+.git
+node_modules
+**/node_modules
+**/.next
+.pnpm-store
+infra/cdk.out
+docs
+*.log
+.env
+.env.*
+!.env.example

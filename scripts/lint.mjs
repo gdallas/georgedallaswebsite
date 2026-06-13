@@ -22,13 +22,16 @@ function walk(directory) {
 function lintFile(path) {
   const content = readFileSync(path, "utf8");
   const normalizedPath = path.replaceAll("\\", "/");
-  if (content.includes("\t")) {
+  // Payload-generated database migrations are committed as-is; their
+  // formatting (tabs, whitespace) comes from the generator, not authors.
+  const isGeneratedMigration = normalizedPath.startsWith("apps/cms/src/migrations/");
+  if (!isGeneratedMigration && content.includes("\t")) {
     errors.push(`${path}: tabs are not allowed`);
   }
-  if (!normalizedPath.startsWith("CODEX_") && !normalizedPath.startsWith("docs/personal-website-") && /[ \t]+\r?\n/.test(content)) {
+  if (!isGeneratedMigration && !normalizedPath.startsWith("CODEX_") && !normalizedPath.startsWith("docs/personal-website-") && /[ \t]+\r?\n/.test(content)) {
     errors.push(`${path}: trailing whitespace found`);
   }
-  if (!content.endsWith("\n")) {
+  if (!isGeneratedMigration && !content.endsWith("\n")) {
     errors.push(`${path}: file must end with a newline`);
   }
   if (path.endsWith(".ts") && normalizedPath !== "packages/shared/src/config.ts" && content.includes("process.env")) {

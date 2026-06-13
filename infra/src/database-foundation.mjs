@@ -31,7 +31,14 @@ export class DatabaseFoundation {
           name: "database",
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED
         }
-      ]
+      ],
+      gatewayEndpoints: {
+        // Free S3 access from the isolated subnets so the CMS Lambda can
+        // reach the media bucket without a NAT gateway.
+        S3: {
+          service: ec2.GatewayVpcEndpointAwsService.S3
+        }
+      }
     });
   }
 
