@@ -98,6 +98,16 @@ export class SecurityFoundation {
       })
     );
 
+    // The CDK CLI verifies the bootstrap stack version through this SSM
+    // parameter with the caller's own credentials before assuming roles.
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowReadCdkBootstrapVersion",
+        actions: ["ssm:GetParameter"],
+        resources: [`arn:aws:ssm:*:${this.environment.awsEnv.account}:parameter/cdk-bootstrap/*`]
+      })
+    );
+
     return role;
   }
 
