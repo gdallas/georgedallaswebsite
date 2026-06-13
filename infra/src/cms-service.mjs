@@ -2,6 +2,7 @@ import { CfnOutput, Duration, RemovalPolicy } from "aws-cdk-lib";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as route53 from "aws-cdk-lib/aws-route53";
@@ -23,6 +24,17 @@ export class CmsService {
       authType: lambda.FunctionUrlAuthType.AWS_IAM
     });
     this.distribution = this.createDistribution(scope);
+
+    // Lambda Function URLs require dual auth (lambda:InvokeFunctionUrl AND
+    // lambda:InvokeFunction) since October 2025. CDK's OAC origin only grants
+    // the former (aws/aws-cdk#35872), which makes CloudFront-signed requests
+    // fail with 403 AccessDeniedException.
+    this.function.addPermission("CloudFrontInvokeFunction", {
+      principal: new iam.ServicePrincipal("cloudfront.amazonaws.com"),
+      action: "lambda:InvokeFunction",
+      sourceArn: `arn:aws:cloudfront::${this.environment.awsEnv.account}:distribution/${this.distribution.distributionId}`
+    });
+
     this.createDnsRecords(scope);
     this.addOutputs(scope);
   }
