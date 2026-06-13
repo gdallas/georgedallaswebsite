@@ -70,8 +70,8 @@ jobs:
       - name: Publish public site
         working-directory: infra
         run: |
-          BUCKET=$(jq -r '."dev-site".SiteBucketName' cdk-outputs.json)
-          DIST_ID=$(jq -r '."dev-site".SiteDistributionId' cdk-outputs.json)
+          BUCKET=$(jq -r '."georgedallaswebsite-dev-site".SiteBucketName' cdk-outputs.json)
+          DIST_ID=$(jq -r '."georgedallaswebsite-dev-site".SiteDistributionId' cdk-outputs.json)
           if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ] || [ -z "$DIST_ID" ] || [ "$DIST_ID" = "null" ]; then
             echo "Could not read site bucket/distribution from cdk outputs."
             cat cdk-outputs.json
