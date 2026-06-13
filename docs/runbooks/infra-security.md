@@ -19,6 +19,8 @@ aws iam create-open-id-connect-provider \
 
 The dev role is intended for the GitHub Environment named `development`. The prod role is intended for the GitHub Environment named `production`.
 
+Deploy roles can assume the CDK bootstrap roles (`cdk-*`) in this account; deployments run `cdk deploy` and the actual resource permissions live on those scoped bootstrap roles, not on the deploy role itself.
+
 Trust policies require:
 
 - audience: `sts.amazonaws.com`

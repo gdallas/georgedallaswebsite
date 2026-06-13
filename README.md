@@ -358,21 +358,20 @@ Deployments are triggered by accepted PRs and branch merges, not by local manual
 
 ### Dev deploy
 
-A merge into `develop` triggers deployment to the development AWS environment.
+A merge into `develop` triggers deployment to the development AWS environment via `.github/workflows/deploy-dev.yml`.
 
-Dev deployment should:
+Dev deployment currently:
 
-1. build the CMS container
-2. push it to ECR
-3. run safe migrations against the dev database
-4. deploy the CMS/API to dev ECS Fargate
-5. build the Astro site using dev CMS content
-6. deploy the site to dev frontend hosting
-7. run smoke tests against the dev URLs
+1. assumes the dev deploy role through GitHub OIDC (no long-lived keys)
+2. runs `cdk deploy dev-foundation dev-cms-cert dev-cms`, which builds the CMS container image, pushes it to the CDK assets ECR repository, and updates the Lambda-based CMS (see `docs/runbooks/cms-hosting.md`)
+3. runs committed database migrations automatically on CMS startup
+4. smoke-tests `https://cms-dev.georgedallas.com/api/health`
+
+Astro site build and dev frontend deployment are added with GDW-014/GDW-026.
 
 ### Production deploy
 
-A merge into `main` triggers deployment to production.
+A merge into `main` triggers deployment to production (workflow lands with GDW-015).
 
 Production deployment should:
 
@@ -380,7 +379,7 @@ Production deployment should:
 2. require George approval where configured
 3. verify or create a recent database backup before risky migrations
 4. run production migrations safely
-5. deploy the CMS/API to production ECS Fargate
+5. deploy the CMS/API to the production CMS stack
 6. build the Astro site using production CMS content
 7. deploy the site to production frontend hosting
 8. invalidate CloudFront cache if applicable

@@ -28,7 +28,7 @@ Note: the account is shared with other projects, so the budget tracks whole-acco
 
 ## Rules for future tickets
 
-- CMS hosting (GDW-013) must not assume an always-on Fargate task (~$9–10/month for the smallest task). Prefer scale-to-zero or on-demand approaches and document the chosen trade-off in an ADR.
+- CMS hosting (GDW-013) runs as a Lambda container behind CloudFront — ~$0 idle, cents during editing (see `docs/adr/2026-06-12-cms-lambda-hosting.md`). Do not replace it with an always-on Fargate task or an Application Load Balancer (~$16/month) without a superseding ADR.
 - Frontend hosting (GDW-014) should stay within the static-hosting pricing tier (S3 + CloudFront or Amplify Hosting are effectively free at this traffic level).
 - Tolerate the ~15-second Aurora resume on first connection rather than adding keep-warm pings that defeat auto-pause.
 - Any resource with a fixed monthly cost above $1 needs to be called out in the PR description.
