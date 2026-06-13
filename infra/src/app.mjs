@@ -8,6 +8,7 @@ import { CmsService } from "./cms-service.mjs";
 import { DatabaseFoundation } from "./database-foundation.mjs";
 import { MediaFoundation } from "./media-foundation.mjs";
 import { SecurityFoundation } from "./security-foundation.mjs";
+import { SiteHosting } from "./site-hosting.mjs";
 
 function applyStandardTags(stack, environmentName) {
   for (const [key, value] of Object.entries(standardTags(environmentName))) {
@@ -79,6 +80,50 @@ class CmsStack extends Stack {
   }
 }
 
+class SiteCertificateStack extends Stack {
+  constructor(scope, id, props) {
+    super(scope, id, {
+      stackName: buildStackName(props.environmentName, "site-cert"),
+      description: `ACM certificate (us-east-1, for CloudFront) for the ${props.environmentName} public site domains.`,
+      env: {
+        account: props.environment.awsEnv.account,
+        region: certificateRegion
+      },
+      crossRegionReferences: true
+    });
+
+    applyStandardTags(this, props.environmentName);
+
+    const zone = route53.HostedZone.fromHostedZoneAttributes(this, "Zone", {
+      hostedZoneId: hostedZone.id,
+      zoneName: hostedZone.name
+    });
+
+    const [primaryDomain, ...alternateDomains] = props.environment.siteDomains;
+
+    this.certificate = new acm.Certificate(this, "SiteCertificate", {
+      domainName: primaryDomain,
+      subjectAlternativeNames: alternateDomains.length > 0 ? alternateDomains : undefined,
+      validation: acm.CertificateValidation.fromDns(zone)
+    });
+  }
+}
+
+class SiteStack extends Stack {
+  constructor(scope, id, props) {
+    super(scope, id, {
+      stackName: buildStackName(props.environmentName, "site"),
+      description: `George Dallas website ${props.environmentName} public static site stack.`,
+      env: props.awsEnv,
+      crossRegionReferences: true
+    });
+
+    applyStandardTags(this, props.environmentName);
+
+    new SiteHosting(this, props.environment, props.certificate);
+  }
+}
+
 const app = new App();
 
 for (const environment of projectEnvironments) {
@@ -103,4 +148,18 @@ for (const environment of projectEnvironments) {
 
   cmsStack.addDependency(foundation);
   cmsStack.addDependency(certificateStack);
+
+  const siteCertificateStack = new SiteCertificateStack(app, `${environment.id}-site-cert`, {
+    environment,
+    environmentName: environment.id
+  });
+
+  const siteStack = new SiteStack(app, `${environment.id}-site`, {
+    environment,
+    environmentName: environment.id,
+    awsEnv: environment.awsEnv,
+    certificate: siteCertificateStack.certificate
+  });
+
+  siteStack.addDependency(siteCertificateStack);
 }

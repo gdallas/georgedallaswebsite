@@ -22,6 +22,7 @@ export const projectEnvironments = [
     deployBranch: "develop",
     cmsDomain: "cms-dev.georgedallas.com",
     publicSiteUrl: "https://dev.georgedallas.com",
+    siteDomains: ["dev.georgedallas.com"],
     awsEnv: {
       account: projectAccount,
       region: projectRegion
@@ -33,6 +34,7 @@ export const projectEnvironments = [
     deployBranch: "main",
     cmsDomain: "cms.georgedallas.com",
     publicSiteUrl: "https://georgedallas.com",
+    siteDomains: ["georgedallas.com", "www.georgedallas.com"],
     awsEnv: {
       account: projectAccount,
       region: projectRegion
