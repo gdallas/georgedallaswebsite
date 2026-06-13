@@ -144,12 +144,12 @@ img, svg { max-width: 100%; height: auto; }
 .cc-button:active { transform: translateY(0); }
 
 .cc-button--primary {
-  background: var(--accent);
+  background: var(--accent-strong);
   color: var(--color-soft-linen);
-  border-color: color-mix(in srgb, var(--accent) 80%, var(--color-soft-linen));
+  border-color: color-mix(in srgb, var(--accent-strong) 80%, var(--color-soft-linen));
 }
 .cc-button--primary:hover {
-  background: var(--accent-hover);
+  background: color-mix(in srgb, var(--accent-strong) 86%, #000);
   color: var(--color-soft-linen);
 }
 .cc-button--secondary {

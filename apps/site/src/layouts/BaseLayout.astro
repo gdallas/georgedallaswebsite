@@ -2,14 +2,28 @@
 import "../styles/cedar-circuitry.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_OG_IMAGE,
+  SITE_NAME,
+  absoluteUrl,
+  canonicalUrl,
+  jsonLdToString
+} from "../lib/seo.mjs";
 
 export interface Props {
   title: string;
   description?: string;
+  image?: string;
+  ogType?: string;
+  jsonLd?: unknown[];
 }
 
-const { title, description = "George Dallas — AI engineer, therapist, systems thinker on Vancouver Island." } =
-  Astro.props;
+const { title, description = DEFAULT_DESCRIPTION, image, ogType = "website", jsonLd = [] } = Astro.props;
+
+const canonical = canonicalUrl(Astro.url.pathname, Astro.site);
+const ogImage = absoluteUrl(image ?? DEFAULT_OG_IMAGE, Astro.site);
+const rssHref = absoluteUrl("/rss.xml", Astro.site);
 ---
 
 <!doctype html>
@@ -17,9 +31,25 @@ const { title, description = "George Dallas — AI engineer, therapist, systems 
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} — Writing`} href={rssHref} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {jsonLd.map((data) => <script type="application/ld+json" is:inline set:html={jsonLdToString(data)} />)}
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
