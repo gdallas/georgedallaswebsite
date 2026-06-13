@@ -31,7 +31,23 @@ The origin-verify header (see `cms-hosting.md`) is the network layer on top of t
 
 If the CMS is unreachable or returns a non-2xx response, the helpers throw `CmsUnavailableError`. The public build is expected to fail loudly rather than publish a site with content silently missing. Author relationships are intentionally not exposed publicly (the `users` collection stays private); the public site uses `siteSettings.ownerName` instead.
 
+## Public routes (GDW-026)
+
+The MVP public pages in `apps/site/src/pages` consume the data layer through `apps/site/src/lib/content.mjs`:
+
+- `/`, `/about` (CMS page, slug `about`), `/now` (Now global), `/writing` + `/writing/[slug]`, `/projects`, `/links`, `/contact`.
+- Post and page bodies are rendered from Lexical rich text by `apps/site/src/lib/richText.mjs`, a dependency-free serializer that escapes text and validates link URLs (blocks `javascript:` etc.).
+- Every page has a meaningful title and meta description and a graceful empty state.
+
+### Build modes
+
+`content.mjs` checks `CMS_API_URL`:
+
+- **unset** (e.g. the CI `pnpm build` that only validates the Astro build): pages render empty states and the build succeeds.
+- **set**: pages fetch real content; if the CMS is unreachable the build fails loudly (via `CmsUnavailableError`) rather than publishing a half-empty site. The live build wiring (passing `CMS_API_URL` and reaching the CMS through CloudFront) arrives with the frontend hosting ticket (GDW-014).
+
 ## Tests
 
 - `packages/shared/src/visibility.test.mjs` — the shared predicates and where-builders.
 - `apps/site/src/lib/cms.test.mjs` — query construction, response filtering for representative draft/private/future cases, and safe failure, all with a mocked fetch.
+- `apps/site/src/lib/richText.test.mjs` — rich-text rendering and URL safety.

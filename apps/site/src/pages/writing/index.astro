@@ -1,0 +1,67 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadPublishedPosts } from "../../lib/content.mjs";
+
+const posts = await loadPublishedPosts();
+
+function formatDate(value: string | null | undefined) {
+  return value ? new Date(value).toLocaleDateString("en-CA", { dateStyle: "long" }) : "";
+}
+---
+
+<BaseLayout title="Writing — George Dallas" description="Essays and notes on AI systems, therapy, and the places they meet.">
+  <header class="page-head">
+    <h1 class="cc-heading cc-heading--hero">Writing</h1>
+    <p class="cc-muted">Long-form notes on AI systems, therapy, and the places they meet.</p>
+  </header>
+
+  {
+    posts.length === 0 ? (
+      <p class="cc-muted">No published writing yet — check back soon.</p>
+    ) : (
+      <ul class="post-list">
+        {posts.map((post) => (
+          <li>
+            <article class="cc-card">
+              <h2 class="cc-heading cc-heading--card">
+                <a href={`/writing/${post.slug}`}>{post.title}</a>
+              </h2>
+              <p class="cc-muted post-meta">
+                {formatDate(post.publishedAt)}
+                {post.readingTime ? ` · ${post.readingTime} min read` : ""}
+              </p>
+              {post.excerpt && <p>{post.excerpt}</p>}
+            </article>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-block-end: 2rem;
+  }
+  .page-head p {
+    margin-block-start: 0.5rem;
+  }
+  .post-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .post-meta {
+    font-size: 0.9rem;
+    margin-block: 0.35rem 0.75rem;
+  }
+  .post-list h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .post-list h2 a:hover {
+    color: var(--accent);
+  }
+</style>

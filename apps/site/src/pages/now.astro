@@ -1,0 +1,71 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadNowPage } from "../lib/content.mjs";
+
+const now = await loadNowPage();
+const sections = now
+  ? [
+      ["Current focus", now.currentFocus],
+      ["Work", now.work],
+      ["Reading", now.reading],
+      ["Listening", now.listening],
+      ["Watching", now.watching],
+      ["Personal", now.personal]
+    ].filter(([, value]) => value)
+  : [];
+
+const updated = now?.updatedAt ? new Date(now.updatedAt).toLocaleDateString("en-CA", { dateStyle: "long" }) : "";
+---
+
+<BaseLayout title="Now — George Dallas" description="What George Dallas is focused on right now.">
+  <header class="page-head">
+    <h1 class="cc-heading cc-heading--hero">Now</h1>
+    <p class="cc-muted">
+      A snapshot of what I'm focused on at the moment{updated ? `, last updated ${updated}` : ""}.
+    </p>
+  </header>
+
+  {
+    sections.length === 0 ? (
+      <p class="cc-muted">The Now page hasn't been published yet.</p>
+    ) : (
+      <dl class="now-list">
+        {sections.map(([label, value]) => (
+          <div class="now-row">
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-block-end: 2rem;
+  }
+  .page-head p {
+    margin-block-start: 0.5rem;
+  }
+  .now-list {
+    margin: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .now-row {
+    border-block-start: 1px solid var(--border);
+    padding-block-start: 1.25rem;
+  }
+  .now-row dt {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-block-end: 0.35rem;
+  }
+  .now-row dd {
+    margin: 0;
+    white-space: pre-line;
+  }
+</style>
