@@ -1,0 +1,80 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadProjects } from "../../lib/content.mjs";
+
+const projects = await loadProjects();
+---
+
+<BaseLayout title="Projects — George Dallas" description="Selected software and systems work, with the reasoning behind it.">
+  <header class="page-head">
+    <h1 class="cc-heading cc-heading--hero">Projects</h1>
+    <p class="cc-muted">Selected software and systems work, with the reasoning behind it.</p>
+  </header>
+
+  {
+    projects.length === 0 ? (
+      <p class="cc-muted">No public projects yet — check back soon.</p>
+    ) : (
+      <ul class="project-list">
+        {projects.map((project) => (
+          <li>
+            <article class="cc-card">
+              {project.featured && <p class="cc-eyebrow">Featured</p>}
+              <h2 class="cc-heading cc-heading--card">{project.title}</h2>
+              {project.summary && <p>{project.summary}</p>}
+              {project.technologies && project.technologies.length > 0 && (
+                <ul class="tech">
+                  {project.technologies.map((tech) => (
+                    <li class="cc-chip" data-tone="systems">{tech}</li>
+                  ))}
+                </ul>
+              )}
+              <p class="links">
+                {project.githubUrl && (
+                  <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">GitHub</a>
+                )}
+                {project.liveUrl && (
+                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Live</a>
+                )}
+                {project.caseStudyUrl && (
+                  <a href={project.caseStudyUrl} target="_blank" rel="noopener noreferrer">Case study</a>
+                )}
+              </p>
+            </article>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-block-end: 2rem;
+  }
+  .page-head p {
+    margin-block-start: 0.5rem;
+  }
+  .project-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 1.25rem;
+  }
+  .tech {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-block-start: 0.9rem;
+  }
+</style>

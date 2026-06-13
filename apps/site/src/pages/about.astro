@@ -1,0 +1,24 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadPublishedPage } from "../lib/content.mjs";
+import { renderRichText } from "../lib/richText.mjs";
+
+const page = await loadPublishedPage("about");
+const bodyHtml = page ? renderRichText(page.body) : "";
+---
+
+<BaseLayout
+  title={page?.seoTitle ? `${page.seoTitle} — George Dallas` : "About — George Dallas"}
+  description={page?.seoDescription ?? undefined}
+>
+  <article class="cc-content">
+    <h1 class="cc-heading cc-heading--hero">{page?.title ?? "About"}</h1>
+    {
+      page && bodyHtml ? (
+        <div class="cc-prose" set:html={bodyHtml} />
+      ) : (
+        <p class="cc-muted">This page hasn't been published yet.</p>
+      )
+    }
+  </article>
+</BaseLayout>
