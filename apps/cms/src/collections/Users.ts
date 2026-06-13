@@ -8,6 +8,7 @@ import {
   auditUserDeletes
 } from "../audit/auditEvents";
 import { readUsers, requireAdminAccess, requireOwner } from "../access/payloadAccess";
+import { ensureFirstUserIsOwner } from "../hooks/users";
 
 type UsersOptions = {
   secureCookies: boolean;
@@ -59,7 +60,8 @@ export function createUsersCollection({ secureCookies }: UsersOptions): Collecti
       afterError: [auditAuthErrors],
       afterLogin: [auditSuccessfulLogin],
       afterLogout: [auditLogout],
-      afterRefresh: [auditAuthRefresh]
+      afterRefresh: [auditAuthRefresh],
+      beforeChange: [ensureFirstUserIsOwner]
     }
   };
 };
