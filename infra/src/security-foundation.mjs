@@ -41,6 +41,7 @@ export class SecurityFoundation {
     const secretDefinitions = [
       ["payload-secret", "Payload CMS application secret."],
       ["session-secret", "CMS session signing secret."],
+      ["origin-verify", "Header value CloudFront injects so the CMS only serves CDN traffic."],
       ["webhook-secret", "Build and publish webhook signing secret."],
       ["email-config", "Amazon SES sender and notification configuration."],
       ["external-api-keys", "Optional third-party API keys for import, ISBN, analytics, or integrations."]

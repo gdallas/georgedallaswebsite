@@ -64,7 +64,11 @@ export async function recordAuditEvent(req: RequestWithUser, input: AuditEventIn
       metadata: input.metadata,
       severity: input.severity ?? "info"
     },
-    overrideAccess: true
+    overrideAccess: true,
+    // Run inside the triggering operation's transaction so the audit row can
+    // reference a not-yet-committed actor — notably the first user, whose own
+    // creation triggers this hook (FK audit_events_actor_id_users_id_fk).
+    req
   });
 }
 
