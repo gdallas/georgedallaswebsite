@@ -8,12 +8,17 @@ type LayoutProps = {
   children: React.ReactNode;
 };
 
-const serverFunction: ServerFunctionClient = (args) =>
-  handleServerFunctions({
+// The "use server" directive makes this a serializable server-action
+// reference; without it, production rendering fails with React's
+// "Functions cannot be passed directly to Client Components" error.
+const serverFunction: ServerFunctionClient = async function (args) {
+  "use server";
+  return handleServerFunctions({
     ...args,
     config,
     importMap
   });
+};
 
 export default async function PayloadLayout({ children }: LayoutProps) {
   return (
