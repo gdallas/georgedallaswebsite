@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
-import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
+import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
 import { slugField } from "../fields/slug";
 
 export const Tags: CollectionConfig = {
@@ -12,7 +12,7 @@ export const Tags: CollectionConfig = {
   access: {
     create: requireContentMutation,
     delete: requireContentMutation,
-    read: requireContentRead,
+    read: allowPublicRead,
     update: requireContentMutation
   },
   fields: [

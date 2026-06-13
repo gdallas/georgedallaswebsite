@@ -1,0 +1,69 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadLinks } from "../../lib/content.mjs";
+
+const links = await loadLinks();
+
+const categoryLabels: Record<string, string> = {
+  social: "Social profiles",
+  professional: "Professional",
+  website: "Websites",
+  project: "Projects",
+  resource: "Resources",
+  other: "Elsewhere"
+};
+
+const order = ["professional", "social", "website", "project", "resource", "other"];
+const grouped = order
+  .map((category) => ({ category, label: categoryLabels[category], items: links.filter((link) => link.category === category) }))
+  .filter((group) => group.items.length > 0);
+---
+
+<BaseLayout title="Links — George Dallas" description="Where to find George Dallas across the web.">
+  <header class="page-head">
+    <h1 class="cc-heading cc-heading--hero">Links</h1>
+    <p class="cc-muted">Where to find me across the web.</p>
+  </header>
+
+  {
+    links.length === 0 ? (
+      <p class="cc-muted">No links published yet — check back soon.</p>
+    ) : (
+      grouped.map((group) => (
+        <section class="link-group" aria-labelledby={`group-${group.category}`}>
+          <h2 id={`group-${group.category}`} class="cc-heading cc-heading--section">{group.label}</h2>
+          <ul class="link-list">
+            {group.items.map((link) => (
+              <li>
+                <a href={link.url} target="_blank" rel="noopener noreferrer">{link.title}</a>
+                {link.description && <span class="cc-muted"> — {link.description}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-block-end: 2rem;
+  }
+  .page-head p {
+    margin-block-start: 0.5rem;
+  }
+  .link-group {
+    margin-block-end: 2rem;
+  }
+  .link-group h2 {
+    margin-block-end: 0.75rem;
+  }
+  .link-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+</style>

@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadSiteSettings } from "../lib/content.mjs";
+
+const settings = await loadSiteSettings();
+const links = settings?.primaryLinks ?? [];
+---
+
+<BaseLayout title="Contact — George Dallas" description="How to get in touch with George Dallas.">
+  <article class="cc-content">
+    <h1 class="cc-heading cc-heading--hero">Contact</h1>
+    <p>
+      The best way to reach me is through the channels below. I read everything, and reply when I can.
+    </p>
+
+    {
+      links.length > 0 ? (
+        <ul class="contact-list">
+          {links.map((link) => (
+            <li>
+              <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="cc-muted">Contact channels are being set up — please check back soon.</p>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .contact-list {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+</style>

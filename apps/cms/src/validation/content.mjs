@@ -194,60 +194,15 @@ export function validatePublishingState(data, options = {}) {
   return true;
 }
 
-export function isPublicBuildVisible(doc, now = new Date()) {
-  if (doc?.status !== "published" || doc?.visibility !== "public" || !doc?.publishedAt) {
-    return false;
-  }
-
-  return new Date(doc.publishedAt) <= new Date(now);
-}
-
-export function publicBuildWhere(now = new Date()) {
-  return {
-    and: [
-      {
-        status: {
-          equals: "published"
-        }
-      },
-      {
-        visibility: {
-          equals: "public"
-        }
-      },
-      {
-        publishedAt: {
-          less_than_equal: new Date(now).toISOString()
-        }
-      }
-    ]
-  };
-}
-
-export function isPublicListingVisible(doc) {
-  return doc?.status === "published" && doc?.visibility === "public";
-}
-
-export function publicListingWhere() {
-  return {
-    and: [
-      {
-        status: {
-          equals: "published"
-        }
-      },
-      {
-        visibility: {
-          equals: "public"
-        }
-      }
-    ]
-  };
-}
-
-export function isNowPagePublic(doc) {
-  return doc?.status === "published";
-}
+// Public visibility predicates and query filters now live in the shared
+// package so the CMS and the public site enforce identical rules.
+export {
+  isNowPagePublic,
+  isPublicBuildVisible,
+  isPublicListingVisible,
+  publicBuildWhere,
+  publicListingWhere
+} from "@georgedallas/shared/visibility";
 
 export function estimateReadingTime(data) {
   const text = collectText(data?.body).join(" ").trim();

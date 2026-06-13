@@ -10,6 +10,11 @@
       "types": "./src/config-runtime.d.ts",
       "import": "./src/config.mjs",
       "default": "./src/config.mjs"
+    },
+    "./visibility": {
+      "types": "./src/visibility.d.ts",
+      "import": "./src/visibility.mjs",
+      "default": "./src/visibility.mjs"
     }
   },
   "scripts": {
