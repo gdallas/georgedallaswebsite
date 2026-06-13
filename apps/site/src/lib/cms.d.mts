@@ -18,10 +18,13 @@ export type PublicPost = {
   excerpt?: string | null;
   body?: unknown;
   publishedAt?: string | null;
+  updatedAt?: string | null;
   readingTime?: number | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  canonicalUrl?: string | null;
   featuredImage?: MediaRef | null;
+  socialImage?: MediaRef | null;
 };
 
 export type PublicPage = {

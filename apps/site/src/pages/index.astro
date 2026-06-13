@@ -2,9 +2,14 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BrandButton from "../components/brand/BrandButton.astro";
 import BrandCard from "../components/brand/BrandCard.astro";
+import { personJsonLd, websiteJsonLd } from "../lib/seo.mjs";
+
+const description =
+  "George Dallas — AI engineer, therapist, and systems thinker on Vancouver Island. Writing, projects, and an honest record of what I'm working on now.";
+const jsonLd = [websiteJsonLd({ site: Astro.site }), personJsonLd({ site: Astro.site })];
 ---
 
-<BaseLayout title="George Dallas — AI engineer, therapist, systems thinker">
+<BaseLayout title="George Dallas — AI engineer, therapist, systems thinker" description={description} jsonLd={jsonLd}>
   <section class="cc-hero">
     <p class="cc-eyebrow">George Dallas</p>
     <h1 class="cc-heading cc-heading--hero">
