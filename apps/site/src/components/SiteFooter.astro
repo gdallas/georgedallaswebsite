@@ -1,0 +1,32 @@
+---
+import CedarCircuitryLogo from "./brand/CedarCircuitryLogo.astro";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="cc-container site-footer__inner">
+    <CedarCircuitryLogo variant="full" />
+    <p class="cc-muted">© {year} George Dallas. Built slowly, on purpose, on Vancouver Island.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-block-start: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .site-footer__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-block: 1.5rem;
+  }
+
+  .site-footer__inner p {
+    margin: 0;
+  }
+</style>

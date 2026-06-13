@@ -1,0 +1,54 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BrandButton from "../components/brand/BrandButton.astro";
+import BrandCard from "../components/brand/BrandCard.astro";
+---
+
+<BaseLayout title="George Dallas — AI engineer, therapist, systems thinker">
+  <section class="cc-hero">
+    <p class="cc-eyebrow">George Dallas</p>
+    <h1 class="cc-heading cc-heading--hero">
+      AI engineer. Therapist. Systems thinker. Based on Vancouver Island.
+    </h1>
+    <p class="cc-muted">
+      Writing, projects, and an honest record of what I'm working on — updated weekly, hosted quietly.
+    </p>
+    <div class="hero-actions">
+      <BrandButton href="/about" variant="primary">About me</BrandButton>
+      <BrandButton href="/writing" variant="secondary">Read the writing</BrandButton>
+    </div>
+  </section>
+
+  <hr class="cc-divider" />
+
+  <section aria-labelledby="explore-heading">
+    <h2 id="explore-heading" class="cc-heading cc-heading--section">Explore</h2>
+    <div class="card-grid">
+      <BrandCard eyebrow="Writing" title="Essays and notes" href="/writing">
+        <p>Long-form writing on AI systems, therapy, and the places they meet.</p>
+      </BrandCard>
+      <BrandCard eyebrow="Projects" title="Things I've built" href="/projects">
+        <p>Selected software and systems work, with the reasoning behind it.</p>
+      </BrandCard>
+      <BrandCard eyebrow="Now" title="What I'm doing now" href="/now">
+        <p>Current focus, reading, listening — refreshed as life changes.</p>
+      </BrandCard>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 1.5rem;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1.25rem;
+    margin-block-start: 1.25rem;
+  }
+</style>

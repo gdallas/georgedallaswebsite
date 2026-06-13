@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const ignoredDirectories = new Set([".git", "node_modules", ".pnpm-store", "dist", ".next", "cdk.out", "local-data"]);
+const ignoredDirectories = new Set([".git", "node_modules", ".pnpm-store", "dist", ".next", ".astro", "cdk.out", "local-data"]);
 const checkedExtensions = new Set([".js", ".mjs", ".ts", ".json", ".md", ".yml", ".yaml"]);
 const errors = [];
 

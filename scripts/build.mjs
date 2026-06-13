@@ -2,7 +2,8 @@ import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const required = [
-  "apps/site/src/index.ts",
+  "apps/site/astro.config.mjs",
+  "apps/site/src/layouts/BaseLayout.astro",
   "apps/cms/src/payload.config.ts",
   "apps/cms/src/app/api/health/route.ts",
   "packages/shared/src/config.ts"
