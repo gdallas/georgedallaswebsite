@@ -1,0 +1,62 @@
+---
+import "../styles/cedar-circuitry.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "George Dallas — AI engineer, therapist, systems thinker on Vancouver Island." } =
+  Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <SiteHeader />
+    <main id="main" class="cc-container">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>
+
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  main {
+    flex: 1;
+    width: 100%;
+    padding-block: clamp(2rem, 5vw, 4rem);
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -100%;
+    z-index: 10;
+    padding: 0.5rem 1rem;
+    background: var(--surface-raised);
+    color: var(--text-strong);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+  }
+
+  .skip-link:focus-visible {
+    top: 1rem;
+  }
+</style>

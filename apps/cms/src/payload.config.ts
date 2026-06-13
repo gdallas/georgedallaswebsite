@@ -15,6 +15,7 @@ import { Tags } from "./collections/Tags";
 import { createUsersCollection } from "./collections/Users";
 import { loadCmsConfig } from "./env";
 import { NowPage } from "./globals/NowPage";
+import { migrations } from "./migrations";
 import { SiteSettings } from "./globals/SiteSettings";
 import { createMediaStoragePlugin } from "./storage/s3";
 import { maxMediaUploadBytes } from "./validation/content.mjs";
@@ -28,6 +29,13 @@ const Users = createUsersCollection({ secureCookies });
 export default buildConfig({
   admin: {
     user: Users.slug,
+    components: {
+      views: {
+        dashboard: {
+          Component: "/components/Dashboard#Dashboard"
+        }
+      }
+    },
     importMap: {
       baseDir: path.resolve(dirname)
     }
@@ -47,13 +55,17 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: config.databaseUrl
-    }
+    },
+    // Committed migrations run automatically on startup in deployed
+    // environments (Lambda cold start); a no-op check when none are pending.
+    prodMigrations: migrations
   }),
   editor: lexicalEditor(),
   globals: [SiteSettings, NowPage],
   plugins: [createMediaStoragePlugin(config)],
   secret: config.payloadSecret,
   serverURL: config.cmsPublicUrl,
+  telemetry: false,
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts")
   }

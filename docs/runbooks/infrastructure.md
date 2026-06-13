@@ -1,6 +1,6 @@
 # Infrastructure Runbook
 
-Infrastructure is managed with AWS CDK from `infra/`.
+Infrastructure is managed with AWS CDK from `infra/`. All project resources deploy to `ca-central-1`, and infrastructure must respect the cost targets in `cost-controls.md`.
 
 ## Local Validation
 

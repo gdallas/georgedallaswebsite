@@ -4,8 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node src/index.mjs",
-    "build": "node src/index.mjs",
-    "typecheck": "node ../../scripts/typecheck-package.mjs apps/site"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^6.0.3"
   }
 }

@@ -1,0 +1,60 @@
+name: Deploy Dev
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to development
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Deploy dev stacks
+        working-directory: infra
+        run: npx cdk deploy dev-foundation dev-cms-cert dev-cms --require-approval never
+
+      - name: Smoke test CMS health
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --max-time 70 https://cms-dev.georgedallas.com/api/health; then
+              echo "CMS health check passed."
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed (cold start can take up to ~30s); retrying..."
+            sleep 20
+          done
+          echo "CMS health check failed after 5 attempts."
+          exit 1

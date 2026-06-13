@@ -16,6 +16,12 @@ export class SecurityFoundation {
     this.cmsRuntimeRole = this.createRuntimeRole(scope, "cms-runtime", "CMS runtime role");
     this.jobsRuntimeRole = this.createRuntimeRole(scope, "jobs-runtime", "Background jobs runtime role");
 
+    // The CMS runs as a Lambda container (see the CMS Lambda hosting ADR), so
+    // its runtime role needs the Lambda VPC execution basics for logs and ENIs.
+    this.cmsRuntimeRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaVPCAccessExecutionRole")
+    );
+
     this.grantRuntimeSecretAccess();
   }
 
@@ -81,6 +87,27 @@ export class SecurityFoundation {
       })
     );
 
+    // Deployments run `cdk deploy` from GitHub Actions, which works by
+    // assuming the scoped CDK bootstrap roles (deploy, file/image publishing,
+    // lookup). Actual resource permissions live on those bootstrap roles.
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowAssumeCdkBootstrapRoles",
+        actions: ["sts:AssumeRole"],
+        resources: [`arn:aws:iam::${this.environment.awsEnv.account}:role/cdk-*`]
+      })
+    );
+
+    // The CDK CLI verifies the bootstrap stack version through this SSM
+    // parameter with the caller's own credentials before assuming roles.
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowReadCdkBootstrapVersion",
+        actions: ["ssm:GetParameter"],
+        resources: [`arn:aws:ssm:*:${this.environment.awsEnv.account}:parameter/cdk-bootstrap/*`]
+      })
+    );
+
     return role;
   }
 
@@ -88,7 +115,10 @@ export class SecurityFoundation {
     return new iam.Role(scope, pascalCase(componentName), {
       roleName: buildResourceName(this.environment.id, componentName),
       description: `${description} for ${projectId} ${this.environment.id}.`,
-      assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com")
+      assumedBy: new iam.CompositePrincipal(
+        new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+        new iam.ServicePrincipal("lambda.amazonaws.com")
+      )
     });
   }
 
