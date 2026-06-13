@@ -541,7 +541,10 @@ Preserve or improve:
 - form labels and validation messages
 - reduced-motion support where animations exist
 
-Accessibility should be considered part of the definition of done.
+Accessibility is part of the definition of done — every UI change preserves or improves it.
+
+- Automated baseline checks run in CI via `pnpm test` (`apps/site/src/accessibility.test.mjs`): document language, skip link, `main` landmark, visible focus states, reduced-motion support, image `alt`, no positive `tabindex`, native interactivity, and `rel="noopener"` on new-tab links.
+- The manual review checklist and the colour-contrast audit live in `docs/runbooks/accessibility.md`. Automation does not replace the manual pass.
 
 ---
 
