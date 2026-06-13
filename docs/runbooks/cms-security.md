@@ -11,6 +11,8 @@ Payload is the private admin and API surface for the website. The admin route is
 
 Only owners can create, update, or delete CMS users. Non-owner users may read only their own user document.
 
+The `role` field defaults to `read-only`, but a `beforeChange` hook forces the very first account (when the users collection is empty) to `owner`. The Payload create-first-user screen only collects email and password, so without this the initial owner would be created read-only and locked out of administration.
+
 ## Sessions and login safety
 
 Production CMS cookies are marked secure. Payload CSRF protection is limited to `CMS_PUBLIC_URL`, and CORS allows only the configured CMS and public site origins.
@@ -28,6 +30,8 @@ Payload login protection is configured with:
 ## Audit logging
 
 The `audit-events` collection records security-relevant CMS events. Owners can read audit events; users cannot create, update, or delete them through normal access.
+
+Audit writes run inside the triggering operation's transaction (the `recordAuditEvent` helper passes `req` to `payload.create`). This keeps the audit row atomic with the change it records and lets it reference a not-yet-committed actor — notably the first user, whose own creation triggers the hook. Without the shared transaction the audit insert hit a foreign-key violation against `users` and rolled back the entire signup.
 
 Logged events currently include:
 
