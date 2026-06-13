@@ -109,6 +109,30 @@ export class SecurityFoundation {
       })
     );
 
+    // After `cdk deploy`, the workflow syncs the Astro build to the site bucket
+    // and invalidates the CloudFront cache directly as this role (not through
+    // the CDK bootstrap roles). The bucket name is deterministic, so it is
+    // referenced by ARN string here to avoid a cross-stack dependency on the
+    // site stack (which already depends on the foundation outputs).
+    const siteBucketArn = `arn:aws:s3:::${buildResourceName(this.environment.id, "site")}`;
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowPublishStaticSite",
+        actions: ["s3:ListBucket", "s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+        resources: [siteBucketArn, `${siteBucketArn}/*`]
+      })
+    );
+
+    // The distribution id is generated at deploy time, so invalidation is
+    // scoped to any distribution in this account rather than a specific ARN.
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowInvalidateSiteCdn",
+        actions: ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"],
+        resources: [`arn:aws:cloudfront::${this.environment.awsEnv.account}:distribution/*`]
+      })
+    );
+
     return role;
   }
 
