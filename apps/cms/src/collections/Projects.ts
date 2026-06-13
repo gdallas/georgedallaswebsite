@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
-import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
+import { requireContentMutation, requirePublicOrContentReadListing } from "../access/payloadAccess";
 import { listingStatusField, visibilityField } from "../fields/publishing";
 import { slugField } from "../fields/slug";
 import { validateOptionalExternalUrl } from "../validation/content.mjs";
@@ -15,7 +15,7 @@ export const Projects: CollectionConfig = {
   access: {
     create: requireContentMutation,
     delete: requireContentMutation,
-    read: requireContentRead,
+    read: requirePublicOrContentReadListing,
     update: requireContentMutation
   },
   fields: [

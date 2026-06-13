@@ -1,11 +1,13 @@
 import type { GlobalConfig } from "payload";
-import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
+import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
 
 export const SiteSettings: GlobalConfig = {
   slug: "site-settings",
   label: "Site settings",
+  // All fields are public site configuration (title, nav, footer, default SEO),
+  // so the global is readable by the public site build.
   access: {
-    read: requireContentRead,
+    read: allowPublicRead,
     update: requireContentMutation
   },
   admin: {
