@@ -10,6 +10,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
+    "@georgedallas/shared": "workspace:*",
     "astro": "^5.0.0"
   },
   "devDependencies": {

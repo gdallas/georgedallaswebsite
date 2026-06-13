@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
-import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
+import { requireContentMutation, requirePublicOrContentReadBuild } from "../access/payloadAccess";
 import { publishedAtField, publishingStatusField, visibilityField } from "../fields/publishing";
 import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
@@ -14,7 +14,7 @@ export const Posts: CollectionConfig = {
   access: {
     create: requireContentMutation,
     delete: requireContentMutation,
-    read: requireContentRead,
+    read: requirePublicOrContentReadBuild,
     update: requireContentMutation
   },
   fields: [

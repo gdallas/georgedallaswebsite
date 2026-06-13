@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
-import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
+import { requireContentMutation, requirePublicOrContentReadMedia } from "../access/payloadAccess";
 import { buildMediaStorageKey, validateMediaAltText, validateMediaFileMetadata } from "../validation/content.mjs";
 
 export const Media: CollectionConfig = {
@@ -12,7 +12,7 @@ export const Media: CollectionConfig = {
   access: {
     create: requireContentMutation,
     delete: requireContentMutation,
-    read: requireContentRead,
+    read: requirePublicOrContentReadMedia,
     update: requireContentMutation
   },
   fields: [
