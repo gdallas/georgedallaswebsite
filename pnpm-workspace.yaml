@@ -3,3 +3,13 @@ packages:
   - "packages/*"
   - "scripts"
   - "infra"
+
+# Security overrides force vulnerable transitive deps to patched versions.
+# Mirrored in the root package.json "pnpm.overrides" field so both pnpm 9
+# (reads package.json) and pnpm 10+ (reads this file) apply them; the lockfile
+# encodes the result for --frozen-lockfile installs. See the dep-vuln PR.
+overrides:
+  esbuild@<0.28.1: ^0.28.1
+  dompurify@<3.4.0: ^3.4.0
+  postcss@<8.5.10: ^8.5.10
+  yaml@>=2.0.0 <2.8.3: ^2.8.3
