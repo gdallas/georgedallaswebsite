@@ -34,6 +34,9 @@
   --border: color-mix(in srgb, var(--color-taupe) 20%, transparent);
   --accent: var(--color-copper);
   --accent-hover: var(--color-copper-dark);
+  /* Copper dark enough to carry light button text at >=4.5:1 (WCAG 2.2 AA).
+     Plain --accent (#c47a45) only reaches ~3.1:1 with linen text. */
+  --accent-strong: var(--color-copper-dark);
   --link: var(--color-desaturated-cyan);
   --success: var(--color-fern);
 
@@ -94,5 +97,6 @@
   --border: rgb(33 26 22 / 0.16);
   --accent: #9d5730;
   --accent-hover: #7f4325;
+  --accent-strong: #7f4325;
   --link: #346f72;
 }
