@@ -26,7 +26,7 @@ describe("fetchWordpressPosts", () => {
     const page2 = Array.from({ length: 10 }, (_, i) => ({ id: i + 11 }));
     const { fetchImpl, calls } = pagedFetch([page1, page2]);
 
-    const posts = await fetchWordpressPosts({ apiBase: "https://blog.example.com/wp-json", perPage: 10, limit: 15, fetchImpl });
+    const posts = await fetchWordpressPosts({ apiBase: "https://blog.example.com/wp-json/wp/v2", perPage: 10, limit: 15, fetchImpl });
     assert.equal(posts.length, 15);
     assert.equal(calls.length, 2);
     assert.match(calls[0], /per_page=10&page=1/);
@@ -35,7 +35,7 @@ describe("fetchWordpressPosts", () => {
 
   it("stops when a short page signals the end", async () => {
     const { fetchImpl, calls } = pagedFetch([[{ id: 1 }, { id: 2 }]]);
-    const posts = await fetchWordpressPosts({ apiBase: "https://blog.example.com/wp-json", perPage: 10, limit: 50, fetchImpl });
+    const posts = await fetchWordpressPosts({ apiBase: "https://blog.example.com/wp-json/wp/v2", perPage: 10, limit: 50, fetchImpl });
     assert.equal(posts.length, 2);
     assert.equal(calls.length, 1);
   });
@@ -43,14 +43,14 @@ describe("fetchWordpressPosts", () => {
   it("treats a 400 on the next page as the end of results", async () => {
     const page1 = Array.from({ length: 10 }, (_, i) => ({ id: i + 1 }));
     const { fetchImpl } = pagedFetch([page1]);
-    const posts = await fetchWordpressPosts({ apiBase: "https://blog.example.com/wp-json", perPage: 10, limit: 50, fetchImpl });
+    const posts = await fetchWordpressPosts({ apiBase: "https://blog.example.com/wp-json/wp/v2", perPage: 10, limit: 50, fetchImpl });
     assert.equal(posts.length, 10);
   });
 
   it("throws on a non-400 error response", async () => {
     const fetchImpl = async () => jsonResponse({}, 500);
     await assert.rejects(
-      fetchWordpressPosts({ apiBase: "https://blog.example.com/wp-json", fetchImpl }),
+      fetchWordpressPosts({ apiBase: "https://blog.example.com/wp-json/wp/v2", fetchImpl }),
       /HTTP 500/
     );
   });
