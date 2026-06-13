@@ -13,13 +13,13 @@ The CMS runs as a Lambda container behind CloudFront (see `docs/adr/2026-06-12-c
 Browser / site build
   ↓ HTTPS
 CloudFront (cms-dev.georgedallas.com, caching disabled, ACM cert in us-east-1)
-  ↓ Origin Access Control (IAM-signed)
+  ↓ injects secret x-origin-verify header
 Lambda Function URL → Lambda container (Next.js + Payload, Lambda Web Adapter)
   ↓ VPC isolated subnets, CMS security group
 Aurora Serverless v2 (scale-to-zero)  +  S3 media bucket (via free gateway endpoint)
 ```
 
-- The Function URL requires IAM auth, so the Lambda is unreachable except through CloudFront.
+- The Function URL accepts unsigned requests (OAC signing is incompatible with browser POST bodies), but CMS middleware rejects any request that does not carry the CloudFront-injected `x-origin-verify` header, so the Lambda effectively only serves CloudFront traffic. The header value lives in Secrets Manager (`/georgedallaswebsite/<env>/origin-verify`); rotating it means updating the secret and redeploying the CMS stack. `/api/health` is exempt because the Lambda Web Adapter probes it from inside the container.
 - The Lambda uses the `georgedallaswebsite-<env>-cms-runtime` role (secrets read, media prefixes, VPC execution).
 - Secrets (database password, Payload secret, session secret) are injected as environment variables through CloudFormation dynamic references — resolved at deploy time, never stored in templates or the repo.
 - Logs go to CloudWatch (`/aws/lambda/georgedallaswebsite-<env>-cms`, 1-month retention).

@@ -2,7 +2,6 @@ import { CfnOutput, Duration, RemovalPolicy } from "aws-cdk-lib";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as route53 from "aws-cdk-lib/aws-route53";
@@ -20,21 +19,15 @@ export class CmsService {
     this.foundation = foundation;
     this.certificate = certificate;
     this.function = this.createFunction(scope);
+    // CloudFront OAC cannot sign browser POSTs to Lambda Function URLs (the
+    // client would have to send x-amz-content-sha256), which breaks every
+    // admin form submission. Instead the URL accepts unsigned requests and
+    // the app middleware rejects anything without the CloudFront-injected
+    // x-origin-verify header.
     this.functionUrl = this.function.addFunctionUrl({
-      authType: lambda.FunctionUrlAuthType.AWS_IAM
+      authType: lambda.FunctionUrlAuthType.NONE
     });
     this.distribution = this.createDistribution(scope);
-
-    // Lambda Function URLs require dual auth (lambda:InvokeFunctionUrl AND
-    // lambda:InvokeFunction) since October 2025. CDK's OAC origin only grants
-    // the former (aws/aws-cdk#35872), which makes CloudFront-signed requests
-    // fail with 403 AccessDeniedException.
-    this.function.addPermission("CloudFrontInvokeFunction", {
-      principal: new iam.ServicePrincipal("cloudfront.amazonaws.com"),
-      action: "lambda:InvokeFunction",
-      sourceArn: `arn:aws:cloudfront::${this.environment.awsEnv.account}:distribution/${this.distribution.distributionId}`
-    });
-
     this.createDnsRecords(scope);
     this.addOutputs(scope);
   }
@@ -83,7 +76,8 @@ export class CmsService {
         S3_BUCKET: this.foundation.media.bucket.bucketName,
         MEDIA_PUBLIC_URL: `https://${this.foundation.media.distribution.distributionDomainName}`,
         PAYLOAD_SECRET: security.secrets["payload-secret"].secretValueFromJson("placeholder").unsafeUnwrap(),
-        SESSION_SECRET: security.secrets["session-secret"].secretValueFromJson("placeholder").unsafeUnwrap()
+        SESSION_SECRET: security.secrets["session-secret"].secretValueFromJson("placeholder").unsafeUnwrap(),
+        ORIGIN_VERIFY_SECRET: security.secrets["origin-verify"].secretValueFromJson("placeholder").unsafeUnwrap()
       }
     });
   }
@@ -94,8 +88,13 @@ export class CmsService {
       certificate: this.certificate,
       domainNames: [this.environment.cmsDomain],
       defaultBehavior: {
-        origin: origins.FunctionUrlOrigin.withOriginAccessControl(this.functionUrl, {
-          readTimeout: Duration.seconds(60)
+        origin: new origins.FunctionUrlOrigin(this.functionUrl, {
+          readTimeout: Duration.seconds(60),
+          customHeaders: {
+            "x-origin-verify": this.foundation.security.secrets["origin-verify"]
+              .secretValueFromJson("placeholder")
+              .unsafeUnwrap()
+          }
         }),
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,

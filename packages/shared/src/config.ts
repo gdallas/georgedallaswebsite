@@ -15,6 +15,7 @@ export type AppConfig = {
   };
   payloadSecret: string;
   sessionSecret: string;
+  originVerifySecret?: string;
 };
 
 type EnvMap = Record<string, string | undefined>;
@@ -55,7 +56,10 @@ export function loadAppConfig(env: EnvMap = process.env): AppConfig {
       secretAccessKey: env.S3_SECRET_ACCESS_KEY?.trim() || undefined
     },
     payloadSecret: required("PAYLOAD_SECRET"),
-    sessionSecret: required("SESSION_SECRET")
+    sessionSecret: required("SESSION_SECRET"),
+    // Deployed environments only: CloudFront injects this header value so the
+    // CMS can reject traffic that bypasses the CDN. Unset for local dev.
+    originVerifySecret: env.ORIGIN_VERIFY_SECRET?.trim() || undefined
   };
 
   validateAppConfig(config, errors);

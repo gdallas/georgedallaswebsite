@@ -20,7 +20,7 @@ Package the CMS as a Lambda container image and serve it through CloudFront:
 - The Next.js/Payload app builds with `output: "standalone"` and runs in Lambda via the AWS Lambda Web Adapter extension, listening as a normal HTTP server.
 - The Lambda runs inside the foundation VPC's isolated subnets using the existing CMS security group, so the database path is unchanged (security-group-to-security-group on 5432).
 - An S3 gateway VPC endpoint (free) gives the Lambda access to the media bucket; no NAT gateway and no interface endpoints.
-- A Lambda Function URL with IAM auth is the CloudFront origin via Origin Access Control, so the function is only reachable through CloudFront.
+- A Lambda Function URL is the CloudFront origin. Revised 2026-06-13: the original design used IAM auth with Origin Access Control, but OAC cannot sign browser POST/PUT bodies (clients would need to send `x-amz-content-sha256`), which broke every admin form submission. The Function URL now uses auth type NONE, CloudFront injects a secret `x-origin-verify` header on every origin request, and CMS middleware rejects requests without it — so the function still only serves CloudFront traffic.
 - CloudFront serves `cms-dev.georgedallas.com` (dev) and `cms.georgedallas.com` (prod) with an ACM certificate in `us-east-1` and Route 53 alias records in the existing `georgedallas.com` hosted zone.
 - Database migrations are committed to the repo and run automatically on Lambda cold start via the Payload `prodMigrations` mechanism; when none are pending this is a single query.
 - Deployed secrets reach the function as environment variables resolved at deploy time through CloudFormation dynamic references into Secrets Manager — values never appear in templates or logs.

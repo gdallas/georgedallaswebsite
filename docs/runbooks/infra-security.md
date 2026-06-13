@@ -43,6 +43,7 @@ Secrets Manager placeholders are defined per environment:
 - `/georgedallaswebsite/<environment>/database-credentials`
 - `/georgedallaswebsite/<environment>/payload-secret`
 - `/georgedallaswebsite/<environment>/session-secret`
+- `/georgedallaswebsite/<environment>/origin-verify`
 - `/georgedallaswebsite/<environment>/webhook-secret`
 - `/georgedallaswebsite/<environment>/email-config`
 - `/georgedallaswebsite/<environment>/external-api-keys`
