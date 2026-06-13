@@ -511,6 +511,8 @@ The import process should:
 - support review before publishing
 - avoid automatically publishing imported content without George approving the workflow
 
+A proof of concept lives in `apps/cms/scripts/wordpress-import/` (run with `pnpm --filter @georgedallas/cms import:wordpress`). It fetches posts from the WordPress REST API, imports a small subset into a local/dev CMS as private drafts preserving the original ID and URL, flags shortcodes/embeds it cannot convert, and is idempotent. The full media/redirect/review pipeline is a later ticket. See `docs/runbooks/wordpress-import.md`.
+
 ---
 
 ## Security rules
