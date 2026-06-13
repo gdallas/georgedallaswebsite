@@ -20,10 +20,10 @@ jobs:
     environment: development
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 9.15.4
 
@@ -37,14 +37,14 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Deploy dev stacks
         working-directory: infra
-        run: npx cdk deploy dev-foundation dev-cms-cert dev-cms --require-approval never
+        run: npx cdk deploy dev-foundation dev-cms-cert dev-cms dev-site-cert dev-site --require-approval never --outputs-file cdk-outputs.json
 
       - name: Smoke test CMS health
         run: |
@@ -57,4 +57,40 @@ jobs:
             sleep 20
           done
           echo "CMS health check failed after 5 attempts."
+          exit 1
+
+      - name: Build public site
+        run: pnpm --filter @georgedallas/site build
+        env:
+          # Build against the live CMS through CloudFront, which injects the
+          # x-origin-verify header the CMS requires. Only published, public
+          # content is returned (see apps/site/src/lib/content.mjs).
+          CMS_API_URL: https://cms-dev.georgedallas.com
+
+      - name: Publish public site
+        working-directory: infra
+        run: |
+          BUCKET=$(jq -r '."dev-site".SiteBucketName' cdk-outputs.json)
+          DIST_ID=$(jq -r '."dev-site".SiteDistributionId' cdk-outputs.json)
+          if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ] || [ -z "$DIST_ID" ] || [ "$DIST_ID" = "null" ]; then
+            echo "Could not read site bucket/distribution from cdk outputs."
+            cat cdk-outputs.json
+            exit 1
+          fi
+          echo "Syncing build to s3://${BUCKET}"
+          aws s3 sync ../apps/site/dist "s3://${BUCKET}" --delete
+          echo "Invalidating CloudFront distribution ${DIST_ID}"
+          aws cloudfront create-invalidation --distribution-id "${DIST_ID}" --paths "/*"
+
+      - name: Smoke test public site
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --max-time 30 -o /dev/null https://dev.georgedallas.com/; then
+              echo "Public site responded."
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed (CloudFront/DNS can lag on first deploy); retrying..."
+            sleep 30
+          done
+          echo "Public site smoke test failed after 6 attempts."
           exit 1

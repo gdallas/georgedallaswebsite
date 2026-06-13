@@ -8,6 +8,7 @@ dist/
 .payload/
 .next/
 cdk.out/
+cdk-outputs.json
 coverage/
 *.tsbuildinfo
 *.log
