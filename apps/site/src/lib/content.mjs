@@ -1,4 +1,5 @@
 import * as cms from "./cms.mjs";
+import { toRedirectRoutes } from "./redirects.mjs";
 
 // Astro-facing content loaders. When CMS_API_URL is not configured (e.g. the
 // CI build that only validates the Astro build), pages render empty states
@@ -73,4 +74,16 @@ export async function loadNowPage() {
     return null;
   }
   return cms.getNowPage();
+}
+
+// getStaticPaths source for the catch-all redirect route: the active redirects,
+// filtered to safe/loop-free and mapped to Astro path entries. Empty when the
+// CMS is not configured (CI build) so the route simply emits nothing.
+export async function loadActiveRedirectRoutes() {
+  if (!cmsConfigured()) {
+    warnOnce();
+    return [];
+  }
+  const redirects = await cms.getActiveRedirects();
+  return toRedirectRoutes(redirects);
 }

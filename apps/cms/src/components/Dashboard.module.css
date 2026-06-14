@@ -88,3 +88,51 @@
   grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
   gap: calc(var(--base) * 2);
 }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--base);
+  list-style: none;
+  margin: 0 0 var(--base);
+  padding: 0;
+}
+
+.statCard {
+  display: block;
+  padding: var(--base);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-m);
+  background: var(--theme-elevation-50);
+  color: var(--theme-elevation-800);
+  text-decoration: none;
+}
+
+.statCard:hover,
+.statCard:focus-visible {
+  border-color: var(--theme-elevation-400);
+  background: var(--theme-elevation-100);
+}
+
+.statValue {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.statLabel {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-500);
+}
+
+.statCard[data-alert="true"] .statValue {
+  color: var(--theme-error-500, #b3261e);
+}
+
+.jobMeta {
+  margin-block: 0 var(--base);
+  color: var(--theme-elevation-500);
+  font-size: 0.9rem;
+}

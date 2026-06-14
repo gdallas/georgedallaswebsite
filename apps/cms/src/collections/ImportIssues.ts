@@ -10,7 +10,7 @@ export const ImportIssues: CollectionConfig = {
   labels: { singular: "Import issue", plural: "Import issues" },
   admin: {
     group: "WordPress import",
-    defaultColumns: ["kind", "wordpressId", "resolved", "detail", "createdAt"],
+    defaultColumns: ["kind", "severity", "wordpressId", "resolved", "detail", "createdAt"],
     useAsTitle: "detail"
   },
   access: {
@@ -18,6 +18,27 @@ export const ImportIssues: CollectionConfig = {
     read: requireContentRead,
     update: requireContentMutation,
     delete: requireContentMutation
+  },
+  hooks: {
+    // Stamp/clear the resolution time as George flips the checkbox, so the
+    // review queue can show when each issue was cleared.
+    beforeChange: [
+      ({ data, originalDoc }) => {
+        if (data.resolved === undefined) {
+          return data;
+        }
+
+        const wasResolved = Boolean(originalDoc?.resolved);
+
+        if (data.resolved && !wasResolved) {
+          data.resolvedAt = new Date().toISOString();
+        } else if (!data.resolved) {
+          data.resolvedAt = null;
+        }
+
+        return data;
+      }
+    ]
   },
   fields: [
     {
@@ -49,7 +70,22 @@ export const ImportIssues: CollectionConfig = {
     { name: "wordpressId", type: "text", index: true },
     { name: "detail", type: "textarea" },
     { name: "job", type: "relationship", relationTo: "import-jobs" },
-    { name: "importedItem", type: "relationship", relationTo: "imported-items" },
-    { name: "resolved", type: "checkbox", defaultValue: false }
+    {
+      name: "importedItem",
+      type: "relationship",
+      relationTo: "imported-items",
+      admin: { description: "The imported post this issue affects. Open it to reach the linked CMS post." }
+    },
+    { name: "resolved", type: "checkbox", defaultValue: false },
+    {
+      name: "notes",
+      type: "textarea",
+      admin: { description: "How this was triaged or resolved." }
+    },
+    {
+      name: "resolvedAt",
+      type: "date",
+      admin: { readOnly: true, description: "Set automatically when the issue is marked resolved." }
+    }
   ]
 };

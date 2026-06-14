@@ -61,7 +61,11 @@ describe("accessibility baseline", () => {
   });
 
   it("renders every page inside the BaseLayout landmarks", () => {
-    const pageFiles = collectFiles(pagesDir, ".astro");
+    const pageFiles = collectFiles(pagesDir, ".astro").filter(
+      // The catch-all redirect route emits a bare noindex meta-refresh document
+      // (no human-facing landmarks); it is not a content page (GDW-033).
+      (path) => !path.endsWith("[...redirect].astro")
+    );
     assert.ok(pageFiles.length > 0, "expected at least one .astro page");
     for (const path of pageFiles) {
       const source = readFileSync(path, "utf8");

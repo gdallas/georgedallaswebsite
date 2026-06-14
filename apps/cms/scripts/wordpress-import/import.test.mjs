@@ -77,9 +77,10 @@ describe("runWordpressImport", () => {
     // The inline link survived conversion.
     assert.ok(JSON.stringify(withImage.body).includes("https://x.com/a"));
 
-    // A redirect was proposed from the old permalink.
+    // A redirect was proposed from the old permalink — as a proposal, not yet live.
     const redirect = client.db.redirects.find((r) => r.sourcePath === "/2020/05/with-image");
     assert.equal(redirect.destination, "/writing/with-image");
+    assert.equal(redirect.status, "proposed");
 
     // Post 2: missing excerpt + shortcode -> issues + needs review.
     const item2 = client.db["imported-items"].find((i) => i.wordpressId === "2");

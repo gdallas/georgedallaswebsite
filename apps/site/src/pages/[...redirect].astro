@@ -1,0 +1,17 @@
+---
+// Catch-all that static-renders one redirect page per active redirect (GDW-033).
+// getStaticPaths only emits the configured source paths, so it never shadows a
+// real route. Each page issues an immediate client redirect to the new URL and
+// is marked noindex; the CloudFront index-rewrite serves "/a/b/index.html".
+export const prerender = true;
+
+import { loadActiveRedirectRoutes } from "../lib/content.mjs";
+import { buildRedirectDocument } from "../lib/redirects.mjs";
+
+export async function getStaticPaths() {
+  return loadActiveRedirectRoutes();
+}
+
+const html = buildRedirectDocument(Astro.props);
+---
+<Fragment set:html={html} />

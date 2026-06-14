@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { escapeHtml, renderRichText, safeUrl } from "./richText.mjs";
+import { escapeHtml, renderRichText, safeUrl } from "./rich-text.mjs";
 
 function doc(children) {
   return { root: { children } };
