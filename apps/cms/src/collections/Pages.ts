@@ -4,12 +4,14 @@ import { requireContentMutation, requirePublicOrContentReadBuild } from "../acce
 import { publishedAtField, publishingStatusField, visibilityField } from "../fields/publishing";
 import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
+import { collectionPreview } from "../preview/collectionPreview";
 
 export const Pages: CollectionConfig = {
   slug: "pages",
   admin: {
     defaultColumns: ["title", "template", "status", "visibility", "updatedAt"],
-    useAsTitle: "title"
+    useAsTitle: "title",
+    preview: collectionPreview("pages")
   },
   access: {
     create: requireContentMutation,
