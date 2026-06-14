@@ -8,6 +8,15 @@ import {
   recentlyPublishedWhere,
   scheduledWhere
 } from "../dashboard/dashboardData.mjs";
+import {
+  approvedWhere,
+  awaitingReviewWhere,
+  needsReviewHref,
+  readyToPublishHref,
+  reviewedWhere,
+  unresolvedIssuesHref,
+  unresolvedIssuesWhere
+} from "../dashboard/importReview.mjs";
 import styles from "./Dashboard.module.css";
 
 type DashboardDoc = {
@@ -18,6 +27,30 @@ type DashboardDoc = {
 };
 
 type MergedDoc = DashboardDoc & { collection: string };
+
+type ImportJobDoc = {
+  source?: string;
+  status?: string;
+  imported?: number;
+  needsReview?: number;
+  failed?: number;
+  startedAt?: string;
+};
+
+type ImportedItemDoc = {
+  id: number | string;
+  title?: string;
+  wordpressUrl?: string;
+  reviewStatus?: string;
+  post?: number | string | null;
+};
+
+type ImportStat = {
+  label: string;
+  value: number;
+  href: string;
+  alert?: boolean;
+};
 
 export async function Dashboard({ initPageResult }: AdminViewServerProps) {
   const { req } = initPageResult;
@@ -35,6 +68,14 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
       where: where as Where
     });
 
+  const count = (collection: string, where?: Record<string, unknown>) =>
+    payload.count({
+      collection: collection as CollectionSlug,
+      overrideAccess: false,
+      user,
+      ...(where ? { where: where as Where } : {})
+    });
+
   const [draftPosts, draftPages, publishedPosts, publishedPages, scheduledPosts, mediaNeedingAltText] =
     await Promise.all([
       find("posts", draftsWhere(), "-updatedAt", 5),
@@ -44,6 +85,37 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
       find("posts", scheduledWhere(), "publishedAt", 5),
       find("media", mediaNeedingAltTextWhere(), "-updatedAt", 1)
     ]);
+
+  const [
+    latestImportJob,
+    importedTotal,
+    reviewedCount,
+    readyToPublishCount,
+    unresolvedIssueCount,
+    awaitingReview
+  ] = await Promise.all([
+    find("import-jobs", {}, "-startedAt", 1),
+    count("imported-items"),
+    count("imported-items", reviewedWhere()),
+    count("imported-items", approvedWhere()),
+    count("import-issues", unresolvedIssuesWhere()),
+    find("imported-items", awaitingReviewWhere(), "-updatedAt", 6)
+  ]);
+
+  const job = latestImportJob.docs[0] as ImportJobDoc | undefined;
+  const hasImportActivity = importedTotal.totalDocs > 0 || latestImportJob.totalDocs > 0;
+  const importStats: ImportStat[] = [
+    { label: "Imported", value: importedTotal.totalDocs, href: `${adminRoute}/collections/imported-items` },
+    { label: "Reviewed", value: reviewedCount.totalDocs, href: needsReviewHref(adminRoute) },
+    { label: "Ready to publish", value: readyToPublishCount.totalDocs, href: readyToPublishHref(adminRoute) },
+    {
+      label: "Unresolved issues",
+      value: unresolvedIssueCount.totalDocs,
+      href: unresolvedIssuesHref(adminRoute),
+      alert: unresolvedIssueCount.totalDocs > 0
+    }
+  ];
+  const awaitingReviewDocs = awaitingReview.docs as ImportedItemDoc[];
 
   const latestDraftPost = draftPosts.docs[0] as DashboardDoc | undefined;
   const quickActions = buildQuickActions(adminRoute, latestDraftPost);
@@ -134,9 +206,75 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
           ) : (
             <p className={styles.empty}>No media is waiting on alt text.</p>
           )}
-          <p className={styles.empty}>WordPress import review tasks will appear here once the import pipeline lands (GDW-030+).</p>
+          {unresolvedIssueCount.totalDocs > 0 ? (
+            <ul className={styles.docList}>
+              <li>
+                <a href={unresolvedIssuesHref(adminRoute)}>
+                  <span>
+                    {unresolvedIssueCount.totalDocs} unresolved WordPress import issue
+                    {unresolvedIssueCount.totalDocs === 1 ? "" : "s"}
+                  </span>
+                </a>
+              </li>
+            </ul>
+          ) : null}
         </section>
       </div>
+
+      <section className={styles.section} aria-labelledby="dashboard-import">
+        <h2 id="dashboard-import" className={styles.sectionTitle}>
+          WordPress import
+        </h2>
+        {hasImportActivity ? (
+          <>
+            {job ? (
+              <p className={styles.jobMeta}>
+                Last run{job.source ? ` from ${job.source}` : ""}: <strong>{job.status ?? "unknown"}</strong>
+                {job.startedAt ? ` · ${formatDate(job.startedAt)}` : ""} · {job.imported ?? 0} imported,{" "}
+                {job.needsReview ?? 0} flagged for review, {job.failed ?? 0} failed.
+              </p>
+            ) : null}
+            <ul className={styles.stats}>
+              {importStats.map((stat) => (
+                <li key={stat.label}>
+                  <a className={styles.statCard} href={stat.href} data-alert={stat.alert ? "true" : "false"}>
+                    <span className={styles.statValue}>{stat.value}</span>
+                    <span className={styles.statLabel}>{stat.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <h3 className={styles.sectionTitle}>Needs review</h3>
+            {awaitingReviewDocs.length > 0 ? (
+              <ul className={styles.docList}>
+                {awaitingReviewDocs.map((doc) => (
+                  <li key={doc.id}>
+                    <a
+                      href={
+                        doc.post != null
+                          ? documentEditHref(adminRoute, "posts", doc.post)
+                          : documentEditHref(adminRoute, "imported-items", doc.id)
+                      }
+                    >
+                      <span>{doc.title || doc.wordpressUrl || "Untitled import"}</span>
+                      <span className={styles.docMeta}>
+                        {doc.reviewStatus === "in_review" ? "In review" : "Pending review"}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={styles.empty}>Every imported post has been approved. Publish them from each post.</p>
+            )}
+          </>
+        ) : (
+          <p className={styles.empty}>
+            No WordPress import has run yet. Run <code>pnpm --filter @georgedallas/cms import:wordpress</code> to bring
+            posts in for review.
+          </p>
+        )}
+      </section>
     </main>
   );
 }

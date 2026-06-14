@@ -118,6 +118,52 @@ The run prints a per-post summary and writes the full report to
 `local-data/wordpress-import-report.json` (created relative to the working
 directory). Re-running is safe: already-imported posts are skipped.
 
+## Reviewing imported posts (GDW-032)
+
+Imported posts are **never auto-published** — they land as private drafts and
+have to be reviewed before they go live. The admin tracks this in three
+collections under the **WordPress import** group, plus a dashboard panel.
+
+### The admin dashboard panel
+
+The dashboard (`/admin`) shows a **WordPress import** section with the last
+run's status and tallies, and four count tiles that link straight into the
+relevant filtered list:
+
+- **Imported** — every `imported-items` record.
+- **Reviewed** — items moved to *In review* or *Approved*.
+- **Ready to publish** — items *Approved* after cleanup.
+- **Unresolved issues** — open `import-issues` (also surfaced under *Needs
+  attention*).
+
+A **Needs review** list links each not-yet-approved item to its CMS post.
+
+### The review workflow
+
+Each imported post carries a **review status** (sidebar of the
+`imported-items` record):
+
+1. **Pending review** — the import default.
+2. **In review** — you've started checking it. An item must pass through here;
+   it cannot jump straight from *Pending* to *Approved* (enforced by a
+   `beforeChange` hook — see `dashboard/importReview.mjs`).
+3. **Approved to publish** — cleaned up and ready. Approving does **not**
+   publish; open the linked post and publish it yourself (the approval gate
+   stays manual).
+
+Reopen an approved item by sending it back to *In review*.
+
+### Working the issue queue
+
+`import-issues` is the cleanup queue. Filter the list by **kind** (unsupported
+shortcode, broken embed, missing excerpt, duplicate slug, media problems) and
+by **severity** (info / warning / error). Open the related **imported item** to
+reach the affected post. Add **notes** as you triage, then tick **resolved** —
+the `resolvedAt` timestamp is stamped automatically.
+
+All three import collections are admin-only (no anonymous read), so import data
+never reaches the public site build.
+
 ## Tests
 
 Transformation, pagination, and the import flow (including idempotency) are unit
