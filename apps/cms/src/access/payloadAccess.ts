@@ -1,5 +1,6 @@
 import type { Access, Where } from "payload";
 import { publicBuildWhere, publicListingWhere } from "@georgedallas/shared/visibility";
+import { redirectActiveWhere } from "@georgedallas/shared/redirects";
 import {
   canAccessAdmin,
   canManageUsers,
@@ -51,6 +52,19 @@ export const requirePublicOrContentReadMedia: Access = ({ req }) => {
 // Now global additionally strips its content for anonymous callers until it is
 // published via an afterRead hook (see globals/NowPage.ts).
 export const allowPublicRead: Access = () => true;
+
+// Redirects are admin-managed, but the anonymous public-site build needs to
+// read the *active* ones to emit them as static redirect pages. Authenticated
+// roles see all; anonymous callers are filtered to active + enabled redirects
+// (proposed/disabled ones stay private). Active redirects only carry a source
+// path and destination — no draft/private content is exposed.
+export const requirePublicOrContentReadActiveRedirects: Access = ({ req }) => {
+  if (canReadContent(req.user)) {
+    return true;
+  }
+
+  return redirectActiveWhere() as unknown as Where;
+};
 
 export const requireContentMutation: Access = ({ req }) => {
   return canMutateContent(req.user);

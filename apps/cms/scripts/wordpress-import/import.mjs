@@ -176,11 +176,13 @@ async function importOnePost({ wpPost, wordpressId, existingItem, job, client, d
   }
 
   // Propose a redirect from the old WordPress permalink (idempotent by source).
+  // Imported redirects are proposals — they stay out of the public build until
+  // reviewed and set to "active" in the admin (GDW-033).
   const redirect = deriveRedirect(data.wordpressOriginalUrl, data.slug);
   if (redirect) {
     const existing = await client.findOne("redirects", "sourcePath", redirect.sourcePath);
     if (!existing) {
-      await client.create("redirects", redirect);
+      await client.create("redirects", { ...redirect, status: "proposed" });
     }
   }
 
