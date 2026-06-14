@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { decodeEntities, detectUnsupported, htmlToLexical, slugify, transformPost } from "./transform.mjs";
+import { decodeEntities, deriveRedirect, detectUnsupported, htmlToLexical, slugify, transformPost } from "./transform.mjs";
 
 describe("slugify", () => {
   it("produces lowercase hyphenated slugs", () => {
@@ -64,6 +64,48 @@ describe("htmlToLexical", () => {
     const body = htmlToLexical("<p>safe</p><script>alert(1)</script>");
     const text = JSON.stringify(body);
     assert.ok(!text.includes("alert(1)"));
+  });
+
+  it("preserves inline links as link nodes", () => {
+    const body = htmlToLexical('<p>See <a href="https://example.com/x">this</a> now.</p>');
+    const para = body.root.children[0];
+    const link = para.children.find((n) => n.type === "link");
+    assert.ok(link, "a link node should be produced");
+    assert.equal(link.fields.url, "https://example.com/x");
+    assert.equal(link.children[0].text, "this");
+  });
+
+  it("drops javascript: link urls to plain text", () => {
+    const body = htmlToLexical('<p><a href="javascript:alert(1)">x</a></p>');
+    assert.ok(!JSON.stringify(body).includes("javascript:"));
+  });
+
+  it("converts figure and standalone images to wp-image markers", () => {
+    const body = htmlToLexical(
+      '<figure class="wp-block-image"><img src="https://b/a.png" alt="A diagram"/><figcaption>Fig 1</figcaption></figure>'
+    );
+    const img = body.root.children.find((n) => n.type === "wp-image");
+    assert.ok(img);
+    assert.equal(img.src, "https://b/a.png");
+    assert.equal(img.alt, "A diagram");
+    assert.equal(img.caption, "Fig 1");
+  });
+});
+
+describe("deriveRedirect", () => {
+  it("maps the old WordPress path to the new writing path", () => {
+    const r = deriveRedirect("https://blog.example.com/2013/06/06/when-life-hands-you-lemons/", "when-life-hands-you-lemons");
+    assert.deepEqual(r, {
+      sourcePath: "/2013/06/06/when-life-hands-you-lemons",
+      destination: "/writing/when-life-hands-you-lemons",
+      statusCode: "301"
+    });
+  });
+
+  it("returns null when there is nothing meaningful to redirect", () => {
+    assert.equal(deriveRedirect("https://b.com/", "slug"), null);
+    assert.equal(deriveRedirect("", "slug"), null);
+    assert.equal(deriveRedirect("https://b.com/writing/slug", "slug"), null);
   });
 });
 

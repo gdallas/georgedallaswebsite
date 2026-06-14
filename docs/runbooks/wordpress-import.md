@@ -1,8 +1,9 @@
 # WordPress import runbook
 
-This covers the **proof of concept** (GDW-030): proving existing WordPress blog
-content can be pulled through the WordPress REST API and imported into Payload as
-drafts. The full repeatable pipeline (media, redirects, review queue) is GDW-031.
+The repeatable pipeline (GDW-031, building on the GDW-030 proof of concept) pulls
+WordPress blog content through the REST API and imports it into Payload as
+drafts, with media downloaded to S3, internal images relinked, redirects
+proposed, and cleanup issues tracked for review.
 
 Source of truth is the **WordPress REST API** (the `wp/v2` namespace). Scraping
 is not used.
@@ -24,26 +25,40 @@ A self-hosted WordPress would instead use `https://example.com/wp-json/wp/v2`.
 - `fetch.mjs` — pulls posts from the REST API, paginating until the limit.
 - `transform.mjs` — maps each post onto the Payload `posts` shape: title, slug
   (sanitised to the CMS slug pattern), original publish date, excerpt, and a
-  basic Lexical body (paragraphs, headings, blockquotes, lists). It stores the
-  **original WordPress id and URL** (`wordpressOriginalId` / `wordpressOriginalUrl`)
-  and detects shortcodes and embeds it cannot convert.
-- `import.mjs` — the driver: looks each post up by `wordpressOriginalId` and
-  **skips** it if already imported (idempotent), otherwise creates it as a
-  **draft / private** record. Produces a summary report.
-- `payload-client.mjs` — the real Payload REST client (login + lookup + create).
+  Lexical body (paragraphs, headings, blockquotes, lists, **inline links**, and
+  **images** as relinkable markers). Stores the **original WordPress id and URL**,
+  detects shortcodes/embeds, and proposes a redirect from the old permalink.
+- `media.mjs` — finds image markers in a body and relinks them to Payload
+  `upload` nodes once the media exists.
+- `issues.mjs` — turns warnings into cleanup-queue records.
+- `import.mjs` — the driver: per post it downloads images to the media library
+  (under the `wordpress-imports` prefix, flagged `needs_alt_text` when alt is
+  missing), relinks the body, creates a **draft / private** post, proposes a
+  redirect, and records an `imported-items` row plus any `import-issues`. Tracks
+  an `import-jobs` row, is **idempotent and resumable** (skips done items, retries
+  failed ones), and returns a summary.
+- `payload-client.mjs` — the Payload REST client (login, lookup, create, update,
+  multipart media upload).
 - `run.mjs` — the CLI that wires it together and writes the report.
 
 Imported posts are always `status: "draft"`, `visibility: "private"` — nothing
-is auto-published, and rich formatting/links and media are intentionally left
-for the full pipeline.
+is auto-published. Tracked in three admin-only collections: **import-jobs**,
+**imported-items**, and **import-issues** (the cleanup queue reviewed in GDW-032).
 
-### Proof-of-concept limitations (flagged, not silently dropped)
+### Flagged for review (not silently dropped)
 
-- Inline formatting and links are reduced to text; media is not downloaded.
-- Shortcodes (`[gallery]`, `[caption]`, …) and embeds (`<iframe>`, `wp:embed`,
-  …) are reported per post in the summary so they can be handled later.
-- The original author **name** is captured in the report; mapping it to a
-  Payload user is deferred to GDW-031 (the `author` field is a user relationship).
+- Shortcodes (`[gallery]`, …) and embeds (`<iframe>`, `wp:embed`, …) are kept as
+  issues; the flags are conservative and can include false positives such as
+  bracketed maths notation.
+- Imported images with no alt text are set to `needs_alt_text`; images that fail
+  to download or relink raise issues.
+- Missing excerpts and duplicate slugs (disambiguated as `<slug>-wp<id>`) are
+  flagged.
+- The original author **name** is captured; mapping it to a Payload user is a
+  later refinement (the `author` field is a user relationship).
+
+Inline text formatting (bold/italic) is still reduced to plain text; links and
+images are now preserved.
 
 ## Running it safely
 

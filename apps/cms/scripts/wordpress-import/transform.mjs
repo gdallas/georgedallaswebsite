@@ -61,7 +61,7 @@ export function slugify(value, fallback = "post") {
   return slug || fallback;
 }
 
-// --- Minimal Lexical builders (default Payload lexical node shape) ---
+// --- Lexical builders (default Payload lexical node shape) ---
 
 function textNode(text) {
   return { type: "text", text, detail: 0, format: 0, mode: "normal", style: "", version: 1 };
@@ -71,51 +71,178 @@ function block(type, children, extra = {}) {
   return { type, children, direction: "ltr", format: "", indent: 0, version: 1, ...extra };
 }
 
+function linkNode(url, text) {
+  return {
+    type: "link",
+    fields: { linkType: "custom", url, newTab: false },
+    children: [textNode(text)],
+    direction: "ltr",
+    format: "",
+    indent: 0,
+    version: 3
+  };
+}
+
+// Intermediate marker for an image. The driver downloads the source, uploads it
+// to the media library, and replaces this node with a Payload `upload` node
+// (see media.mjs). Markers left unresolved are dropped and flagged.
+function imageNode(src, alt, caption) {
+  return { type: "wp-image", src, alt: alt ?? "", caption: caption ?? "", version: 1 };
+}
+
+function attr(tag, name) {
+  const match = new RegExp(`${name}\\s*=\\s*["']([^"']*)["']`, "i").exec(tag);
+  return match ? decodeEntities(match[1]) : "";
+}
+
+function safeLinkUrl(url) {
+  const trimmed = String(url ?? "").trim();
+  if (trimmed.startsWith("/") || trimmed.startsWith("#")) {
+    return trimmed;
+  }
+  try {
+    const parsed = new URL(trimmed);
+    if (["http:", "https:", "mailto:"].includes(parsed.protocol)) {
+      return trimmed;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+// Parse the inline content of a block into text and link nodes. Images are
+// handled at the block level, not inline.
+function parseInline(html) {
+  const nodes = [];
+  const re = /<a\b[^>]*>([\s\S]*?)<\/a>|<br\s*\/?>/gi;
+  let last = 0;
+  let match;
+  const pushText = (segment) => {
+    const text = clean(segment);
+    if (text) {
+      nodes.push(textNode(text));
+    }
+  };
+
+  while ((match = re.exec(html))) {
+    pushText(html.slice(last, match.index));
+    if (/^<a/i.test(match[0])) {
+      const url = safeLinkUrl(attr(match[0], "href"));
+      const text = clean(match[1]);
+      if (text) {
+        nodes.push(url ? linkNode(url, text) : textNode(text));
+      }
+    } else {
+      nodes.push({ type: "linebreak", version: 1 });
+    }
+    last = re.lastIndex;
+  }
+  pushText(html.slice(last));
+  return nodes;
+}
+
+function imagesFromHtml(inner) {
+  const images = [];
+  const captionMatch = /<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/i.exec(inner);
+  const caption = captionMatch ? clean(captionMatch[1]) : "";
+  const imgRe = /<img\b[^>]*>/gi;
+  let match;
+  while ((match = imgRe.exec(inner))) {
+    const src = attr(match[0], "src");
+    if (src) {
+      images.push(imageNode(src, attr(match[0], "alt"), caption));
+    }
+  }
+  return images;
+}
+
 function listItemsFrom(innerHtml) {
   const items = [];
   const itemRe = /<li\b[^>]*>([\s\S]*?)<\/li>/gi;
   let match;
   while ((match = itemRe.exec(innerHtml))) {
-    const text = clean(match[1]);
-    items.push(block("listitem", text ? [textNode(text)] : [], { value: items.length + 1 }));
+    const children = parseInline(match[1]);
+    items.push(block("listitem", children, { value: items.length + 1 }));
   }
   return items;
 }
 
+// Split HTML at <img> tags, keeping the images, so an image inside a paragraph
+// becomes a top-level node (Payload upload nodes are block-level, not inline).
+function splitByImages(html) {
+  const parts = [];
+  const re = /<img\b[^>]*>/gi;
+  let last = 0;
+  let match;
+  while ((match = re.exec(html))) {
+    if (match.index > last) {
+      parts.push({ kind: "text", html: html.slice(last, match.index) });
+    }
+    parts.push({ kind: "image", tag: match[0] });
+    last = re.lastIndex;
+  }
+  if (last < html.length) {
+    parts.push({ kind: "text", html: html.slice(last) });
+  }
+  return parts;
+}
+
+// Build paragraph and image nodes from a segment of inline-ish HTML.
+function blocksFromSegment(segment) {
+  const nodes = [];
+  for (const part of splitByImages(segment)) {
+    if (part.kind === "image") {
+      const src = attr(part.tag, "src");
+      if (src) {
+        nodes.push(imageNode(src, attr(part.tag, "alt")));
+      }
+    } else {
+      const children = parseInline(part.html);
+      if (children.length > 0) {
+        nodes.push(block("paragraph", children));
+      }
+    }
+  }
+  return nodes;
+}
+
 function paragraphsFromPlain(segment) {
-  const text = clean(segment);
-  return text ? [block("paragraph", [textNode(text)])] : [];
+  return blocksFromSegment(segment);
 }
 
 export function htmlToLexical(html) {
   const source = String(html ?? "").replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
   const nodes = [];
-  const blockRe = /<(h[1-6]|p|blockquote|ul|ol)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+  // figure | block element | standalone image. Images become top-level nodes so
+  // they can be relinked to Payload upload nodes (which are block-level).
+  const blockRe = /<figure\b[^>]*>([\s\S]*?)<\/figure>|<(h[1-6]|p|blockquote|ul|ol)\b[^>]*>([\s\S]*?)<\/\2>|<img\b[^>]*>/gi;
   let lastIndex = 0;
   let match;
 
   while ((match = blockRe.exec(source))) {
     nodes.push(...paragraphsFromPlain(source.slice(lastIndex, match.index)));
-    const tag = match[1].toLowerCase();
-    const inner = match[2];
+    const whole = match[0];
 
-    if (/^h[1-6]$/.test(tag)) {
-      nodes.push(block("heading", [textNode(clean(inner))], { tag }));
-    } else if (tag === "blockquote") {
-      nodes.push(block("quote", [textNode(clean(inner))]));
-    } else if (tag === "ul" || tag === "ol") {
-      const ordered = tag === "ol";
-      nodes.push(
-        block("list", listItemsFrom(inner), {
-          listType: ordered ? "number" : "bullet",
-          tag,
-          start: 1
-        })
-      );
+    if (/^<figure/i.test(whole)) {
+      nodes.push(...imagesFromHtml(match[1]));
+    } else if (/^<img/i.test(whole)) {
+      const src = attr(whole, "src");
+      if (src) {
+        nodes.push(imageNode(src, attr(whole, "alt")));
+      }
     } else {
-      const text = clean(inner);
-      if (text) {
-        nodes.push(block("paragraph", [textNode(text)]));
+      const tag = match[2].toLowerCase();
+      const inner = match[3];
+      if (/^h[1-6]$/.test(tag)) {
+        nodes.push(block("heading", parseInline(inner), { tag }));
+      } else if (tag === "blockquote") {
+        nodes.push(block("quote", parseInline(inner)));
+      } else if (tag === "ul" || tag === "ol") {
+        const ordered = tag === "ol";
+        nodes.push(block("list", listItemsFrom(inner), { listType: ordered ? "number" : "bullet", tag, start: 1 }));
+      } else {
+        nodes.push(...blocksFromSegment(inner));
       }
     }
 
@@ -208,4 +335,27 @@ function normalizeDate(value) {
   const candidate = /[zZ]|[+-]\d{2}:?\d{2}$/.test(value) ? value : `${value}Z`;
   const date = new Date(candidate);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+// Propose a redirect from the post's old WordPress path to its new location so
+// old permalinks are preserved. Returns null when there is nothing to redirect.
+export function deriveRedirect(wpUrl, slug) {
+  if (!wpUrl || !slug) {
+    return null;
+  }
+  let sourcePath;
+  try {
+    sourcePath = new URL(wpUrl).pathname;
+  } catch {
+    return null;
+  }
+  sourcePath = sourcePath.replace(/\/+$/, "");
+  const destination = `/writing/${slug}`;
+  if (!sourcePath || sourcePath === "/" || sourcePath === destination) {
+    return null;
+  }
+  if (/[\s?#]/.test(sourcePath) || sourcePath.startsWith("//")) {
+    return null;
+  }
+  return { sourcePath, destination, statusCode: "301" };
 }

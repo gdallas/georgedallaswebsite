@@ -80,26 +80,92 @@ export function createPayloadClient(options = {}) {
       return Array.isArray(body?.docs) && body.docs.length > 0 ? body.docs[0] : null;
     },
 
-    async createDraft(data) {
-      const response = await fetchImpl(`${base}/api/posts`, {
-        method: "POST",
+    createDraft(data) {
+      return createIn("posts", data);
+    },
+
+    create(collection, data) {
+      return createIn(collection, data);
+    },
+
+    async update(collection, id, data) {
+      const response = await fetchImpl(`${base}/api/${collection}/${id}`, {
+        method: "PATCH",
         headers: headers(),
         body: JSON.stringify(data)
       });
       if (!response.ok) {
-        let detail = `HTTP ${response.status}`;
-        try {
-          const body = await response.json();
-          if (body?.errors) {
-            detail = JSON.stringify(body.errors);
-          }
-        } catch {
-          // keep the status-only detail
-        }
-        throw new Error(`CMS create failed: ${detail}.`);
+        throw new Error(`CMS update failed for ${collection}/${id}: ${await detailOf(response)}.`);
+      }
+      const body = await response.json();
+      return body?.doc ?? body;
+    },
+
+    async findOne(collection, field, value) {
+      const params = new URLSearchParams();
+      params.set(`where[${field}][equals]`, String(value));
+      params.set("limit", "1");
+      params.set("depth", "0");
+      const response = await fetchImpl(`${base}/api/${collection}?${params.toString()}`, { headers: headers() });
+      if (!response.ok) {
+        throw new Error(`CMS lookup failed for ${collection}: HTTP ${response.status}.`);
+      }
+      const body = await response.json();
+      return Array.isArray(body?.docs) && body.docs.length > 0 ? body.docs[0] : null;
+    },
+
+    // Multipart upload to the media collection. WordPress media lands under the
+    // `wordpress-imports` prefix and is flagged needs_alt_text when alt is
+    // missing, so it surfaces in the review queue (GDW-032).
+    async uploadMedia(buffer, meta = {}) {
+      const form = new FormData();
+      form.append("file", new Blob([buffer], { type: meta.mimeType || "application/octet-stream" }), meta.filename || "image");
+      form.append(
+        "_payload",
+        JSON.stringify({
+          alt: meta.alt || "",
+          source: meta.source,
+          caption: meta.caption,
+          importedFromWordPress: true,
+          prefix: "wordpress-imports",
+          reviewStatus: meta.alt ? "draft" : "needs_alt_text"
+        })
+      );
+      const uploadHeaders = headers();
+      // Let fetch set the multipart Content-Type (with boundary).
+      delete uploadHeaders["Content-Type"];
+      const response = await fetchImpl(`${base}/api/media`, { method: "POST", headers: uploadHeaders, body: form });
+      if (!response.ok) {
+        throw new Error(`CMS media upload failed: ${await detailOf(response)}.`);
       }
       const body = await response.json();
       return body?.doc ?? body;
     }
   };
+
+  async function createIn(collection, data) {
+    const response = await fetchImpl(`${base}/api/${collection}`, {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      throw new Error(`CMS create failed for ${collection}: ${await detailOf(response)}.`);
+    }
+    const body = await response.json();
+    return body?.doc ?? body;
+  }
+
+  async function detailOf(response) {
+    let detail = `HTTP ${response.status}`;
+    try {
+      const body = await response.json();
+      if (body?.errors) {
+        detail = JSON.stringify(body.errors);
+      }
+    } catch {
+      // keep the status-only detail
+    }
+    return detail;
+  }
 }
