@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - develop
+  # Manual rebuild from the Actions tab — e.g. to republish the static site
+  # after publishing CMS content (the build bakes in live CMS data, so a
+  # re-run picks up newly published posts without any code change).
+  workflow_dispatch:
 
 permissions:
   contents: read
