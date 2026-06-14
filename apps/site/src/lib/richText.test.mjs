@@ -11,6 +11,19 @@ describe("rich text rendering", () => {
     assert.equal(escapeHtml('<script>"x"&'), "&lt;script&gt;&quot;x&quot;&amp;");
   });
 
+  it("renders an expanded upload node as a figure with image", () => {
+    const html = renderRichText(
+      doc([{ type: "upload", relationTo: "media", value: { url: "https://cdn/x.png", alt: "A chart", caption: "Fig 1" } }])
+    );
+    assert.match(html, /<figure class="cc-figure">/);
+    assert.match(html, /<img src="https:\/\/cdn\/x\.png" alt="A chart" loading="lazy" \/>/);
+    assert.match(html, /<figcaption>Fig 1<\/figcaption>/);
+  });
+
+  it("skips an upload node with no resolved media url", () => {
+    assert.equal(renderRichText(doc([{ type: "upload", relationTo: "media", value: 7 }])), "");
+  });
+
   it("renders paragraphs with inline formatting", () => {
     const html = renderRichText(
       doc([

@@ -5,6 +5,9 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { AuditEvents } from "./collections/AuditEvents";
 import { Categories } from "./collections/Categories";
+import { ImportIssues } from "./collections/ImportIssues";
+import { ImportJobs } from "./collections/ImportJobs";
+import { ImportedItems } from "./collections/ImportedItems";
 import { Links } from "./collections/Links";
 import { Media } from "./collections/Media";
 import { Pages } from "./collections/Pages";
@@ -48,7 +51,21 @@ export default buildConfig({
       fileSize: maxMediaUploadBytes
     }
   },
-  collections: [Users, Media, Tags, Categories, Redirects, Posts, Pages, Projects, Links, AuditEvents],
+  collections: [
+    Users,
+    Media,
+    Tags,
+    Categories,
+    Redirects,
+    Posts,
+    Pages,
+    Projects,
+    Links,
+    AuditEvents,
+    ImportJobs,
+    ImportedItems,
+    ImportIssues
+  ],
   cookiePrefix: `gdw-${config.appEnv}`,
   cors: [config.cmsPublicUrl, config.publicSiteUrl],
   csrf: [config.cmsPublicUrl],

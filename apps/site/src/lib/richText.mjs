@@ -107,6 +107,18 @@ function renderNode(node) {
     }
     case "horizontalrule":
       return "<hr />";
+    case "upload": {
+      // Imported/embedded media. With depth>=1 the relationship is expanded to
+      // the media doc; render it as a figure when a public URL is available.
+      const media = node.value && typeof node.value === "object" ? node.value : null;
+      const url = media?.url ? safeUrl(media.url) : "#";
+      if (url === "#") {
+        return "";
+      }
+      const alt = escapeHtml(media?.alt ?? "");
+      const caption = media?.caption ? `<figcaption>${escapeHtml(media.caption)}</figcaption>` : "";
+      return `<figure class="cc-figure"><img src="${escapeHtml(url)}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+    }
     default:
       return renderChildren(node.children);
   }

@@ -338,6 +338,15 @@ pnpm test
 pnpm build
 ```
 
+End-to-end Playwright smoke tests run as a separate `E2E Smoke` CI job and locally:
+
+```bash
+pnpm --filter @georgedallas/site e2e:install   # one-time: download Chromium
+pnpm e2e                                        # build against a mock CMS + run smoke tests
+```
+
+They cover every public route, navigation, the discoverability endpoints, and end-to-end draft/private/future content exclusion, with opt-in CMS health/admin-login specs. See `docs/runbooks/e2e-testing.md`.
+
 As the project matures, CI should also include:
 
 - unit tests
@@ -501,6 +510,8 @@ The import process should:
 - flag cleanup issues
 - support review before publishing
 - avoid automatically publishing imported content without George approving the workflow
+
+A proof of concept lives in `apps/cms/scripts/wordpress-import/` (run with `pnpm --filter @georgedallas/cms import:wordpress`). It fetches posts from the WordPress REST API, imports a small subset into a local/dev CMS as private drafts preserving the original ID and URL, flags shortcodes/embeds it cannot convert, and is idempotent. The full media/redirect/review pipeline is a later ticket. See `docs/runbooks/wordpress-import.md`.
 
 ---
 

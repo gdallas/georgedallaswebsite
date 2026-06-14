@@ -9,6 +9,7 @@
     "lint": "node scripts/lint.mjs",
     "typecheck": "node scripts/typecheck.mjs && pnpm --filter @georgedallas/cms typecheck && pnpm --filter @georgedallas/site typecheck",
     "test": "node --test \"packages/**/*.test.mjs\" \"apps/**/*.test.mjs\"",
+    "e2e": "pnpm --filter @georgedallas/site e2e",
     "build": "node scripts/build.mjs && pnpm --filter @georgedallas/site build && pnpm --filter @georgedallas/cms build && pnpm --filter @georgedallas/infra synth",
     "format": "node scripts/format-check.mjs",
     "local:up": "docker compose up -d postgres minio",
