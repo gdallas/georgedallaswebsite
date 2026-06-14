@@ -20,6 +20,11 @@
       "types": "./src/redirects.d.ts",
       "import": "./src/redirects.mjs",
       "default": "./src/redirects.mjs"
+    },
+    "./rich-text": {
+      "types": "./src/rich-text.d.ts",
+      "import": "./src/rich-text.mjs",
+      "default": "./src/rich-text.mjs"
     }
   },
   "scripts": {
