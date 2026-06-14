@@ -5,6 +5,7 @@ import {
   publicBuildWhere,
   publicListingWhere
 } from "@georgedallas/shared/visibility";
+import { redirectActiveWhere } from "@georgedallas/shared/redirects";
 
 // Centralized, typed data layer for the public site. Every query is filtered
 // to published + public content twice over: the request sends a published
@@ -106,6 +107,12 @@ export async function getPublicProjects(config = {}) {
 export async function getPublicLinks(config = {}) {
   const docs = await fetchDocs("links", publicListingWhere(), config, "&sort=sortOrder");
   return docs.filter(isPublicListingVisible);
+}
+
+export async function getActiveRedirects(config = {}) {
+  // Access control also restricts anonymous reads to active redirects; the
+  // explicit where keeps it correct for authenticated builds too.
+  return fetchDocs("redirects", redirectActiveWhere(), config, "&sort=sourcePath");
 }
 
 export async function getNowPage(config = {}) {

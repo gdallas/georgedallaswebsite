@@ -1,3 +1,5 @@
+import type { RedirectRecord } from "@georgedallas/shared/redirects";
+
 export type CmsClientConfig = {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
@@ -100,3 +102,4 @@ export function getPublicProjects(config?: CmsClientConfig): Promise<PublicProje
 export function getPublicLinks(config?: CmsClientConfig): Promise<PublicLink[]>;
 export function getNowPage(config?: CmsClientConfig): Promise<PublicNowPage | null>;
 export function getSiteSettings(config?: CmsClientConfig): Promise<PublicSiteSettings>;
+export function getActiveRedirects(config?: CmsClientConfig): Promise<RedirectRecord[]>;

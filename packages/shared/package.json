@@ -15,6 +15,11 @@
       "types": "./src/visibility.d.ts",
       "import": "./src/visibility.mjs",
       "default": "./src/visibility.mjs"
+    },
+    "./redirects": {
+      "types": "./src/redirects.d.ts",
+      "import": "./src/redirects.mjs",
+      "default": "./src/redirects.mjs"
     }
   },
   "scripts": {
