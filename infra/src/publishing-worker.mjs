@@ -46,12 +46,19 @@ export class PublishingWorker {
 
   createFunction(scope) {
     const { security } = this.foundation;
+    const { account, region } = this.environment.awsEnv;
     const githubRef = this.environment.id === "prod" ? "main" : "develop";
+    const functionName = buildResourceName(this.environment.id, "publish-worker");
+    // The one-shot schedules target this same function. Reference its ARN as a
+    // deterministic string rather than `fn.functionArn` (an Fn::GetAtt on the
+    // function itself) — putting that self-reference in the function's own
+    // environment creates a CloudFormation circular dependency.
+    const workerArn = `arn:aws:lambda:${region}:${account}:function:${functionName}`;
     const unwrap = (name) =>
       security.secrets[name].secretValueFromJson("placeholder").unsafeUnwrap();
 
     const fn = new nodejs.NodejsFunction(scope, "PublishingWorkerFunction", {
-      functionName: buildResourceName(this.environment.id, "publish-worker"),
+      functionName,
       description: `Triggers site rebuilds and one-shot publish schedules for ${this.environment.id}.`,
       entry: path.join(repoRoot, "apps", "worker", "publishing", "index.mjs"),
       handler: "handler",
@@ -81,13 +88,10 @@ export class PublishingWorker {
         GITHUB_REF: githubRef,
         SCHEDULE_NAME_PREFIX: `${this.environment.id}-pub-`,
         SCHEDULE_GROUP_NAME: "default",
-        SCHEDULER_ROLE_ARN: security.schedulerExecutionRole.roleArn
+        SCHEDULER_ROLE_ARN: security.schedulerExecutionRole.roleArn,
+        SCHEDULER_TARGET_ARN: workerArn
       }
     });
-
-    // One-shot schedules target this same function; set after creation so the
-    // ARN is known.
-    fn.addEnvironment("SCHEDULER_TARGET_ARN", fn.functionArn);
 
     return fn;
   }
