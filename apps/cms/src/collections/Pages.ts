@@ -58,6 +58,15 @@ export const Pages: CollectionConfig = {
       type: "textarea"
     },
     {
+      name: "seoPreview",
+      type: "ui",
+      admin: {
+        components: {
+          Field: "/components/SeoPreview#SeoPreview"
+        }
+      }
+    },
+    {
       name: "showInNav",
       type: "checkbox",
       defaultValue: false
