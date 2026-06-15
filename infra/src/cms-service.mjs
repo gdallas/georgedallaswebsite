@@ -77,7 +77,13 @@ export class CmsService {
         MEDIA_PUBLIC_URL: `https://${this.foundation.media.distribution.distributionDomainName}`,
         PAYLOAD_SECRET: security.secrets["payload-secret"].secretValueFromJson("placeholder").unsafeUnwrap(),
         SESSION_SECRET: security.secrets["session-secret"].secretValueFromJson("placeholder").unsafeUnwrap(),
-        ORIGIN_VERIFY_SECRET: security.secrets["origin-verify"].secretValueFromJson("placeholder").unsafeUnwrap()
+        ORIGIN_VERIFY_SECRET: security.secrets["origin-verify"].secretValueFromJson("placeholder").unsafeUnwrap(),
+        WEBHOOK_SECRET: security.secrets["webhook-secret"].secretValueFromJson("placeholder").unsafeUnwrap(),
+        // Control bucket the CMS drops publish/schedule markers into (the
+        // bucket itself is created by the PublishingWorker construct under this
+        // deterministic name). The worker reacts to them outside the VPC.
+        PUBLISH_CONTROL_BUCKET: buildResourceName(this.environment.id, "publish-control"),
+        PUBLISH_MARKER_PREFIX: "publish/"
       }
     });
   }

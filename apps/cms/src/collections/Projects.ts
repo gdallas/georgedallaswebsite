@@ -3,6 +3,7 @@ import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEv
 import { requireContentMutation, requirePublicOrContentReadListing } from "../access/payloadAccess";
 import { listingStatusField, visibilityField } from "../fields/publishing";
 import { slugField } from "../fields/slug";
+import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
 import { validateOptionalExternalUrl } from "../validation/content.mjs";
 
 export const Projects: CollectionConfig = {
@@ -90,8 +91,11 @@ export const Projects: CollectionConfig = {
     },
     visibilityField
   ],
+  versions: {
+    maxPerDoc: 25
+  },
   hooks: {
-    afterChange: [auditCollectionChanges("projects")],
-    afterDelete: [auditCollectionDeletes("projects")]
+    afterChange: [auditCollectionChanges("projects"), publishSignalsAfterChange("projects", "listing")],
+    afterDelete: [auditCollectionDeletes("projects"), publishSignalsAfterDelete("projects", "listing")]
   }
 };

@@ -84,6 +84,39 @@ describe("content validation", () => {
     );
   });
 
+  it("requires publish metadata on scheduled content so it can auto-publish", () => {
+    const base = {
+      publishedAt: "2026-07-01T00:00:00.000Z",
+      status: "scheduled",
+      visibility: "public"
+    };
+    assert.equal(
+      validatePublishingState({ ...base, seoTitle: "Title" }, { now: "2026-06-12T00:00:00.000Z" }),
+      "Scheduled content requires seoDescription so it can publish automatically."
+    );
+    assert.equal(
+      validatePublishingState(
+        { ...base, seoTitle: "Title", seoDescription: "Description" },
+        { now: "2026-06-12T00:00:00.000Z" }
+      ),
+      true
+    );
+  });
+
+  it("keeps scheduled content hidden from the public build before and at its due time", () => {
+    const publishedAt = "2026-07-01T09:00:00.000Z";
+    const scheduled = { publishedAt, status: "scheduled", visibility: "public" };
+    // Before the publish time.
+    assert.equal(isPublicBuildVisible(scheduled, "2026-06-30T09:00:00.000Z"), false);
+    // After the publish time but status is still "scheduled" (worker hasn't run).
+    assert.equal(isPublicBuildVisible(scheduled, "2026-07-01T10:00:00.000Z"), false);
+    // Once the worker flips it to published it becomes visible.
+    assert.equal(
+      isPublicBuildVisible({ ...scheduled, status: "published" }, "2026-07-01T10:00:00.000Z"),
+      true
+    );
+  });
+
   it("filters public build visibility tightly", () => {
     const now = "2026-06-12T00:00:00.000Z";
     assert.equal(isPublicBuildVisible({ publishedAt: "2026-06-01T00:00:00.000Z", status: "published", visibility: "public" }, now), true);

@@ -4,6 +4,7 @@ import { requireContentMutation, requirePublicOrContentReadBuild } from "../acce
 import { publishedAtField, publishingStatusField, visibilityField } from "../fields/publishing";
 import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
+import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
 
 export const Posts: CollectionConfig = {
   slug: "posts",
@@ -108,9 +109,12 @@ export const Posts: CollectionConfig = {
       relationTo: "posts"
     }
   ],
+  versions: {
+    maxPerDoc: 25
+  },
   hooks: {
-    afterChange: [auditCollectionChanges("posts")],
-    afterDelete: [auditCollectionDeletes("posts")],
+    afterChange: [auditCollectionChanges("posts"), publishSignalsAfterChange("posts", "dated")],
+    afterDelete: [auditCollectionDeletes("posts"), publishSignalsAfterDelete("posts", "dated")],
     beforeChange: [
       createPublishingBeforeChangeHook({
         computeReadingTime: true,

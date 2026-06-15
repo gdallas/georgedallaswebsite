@@ -20,6 +20,11 @@
       "types": "./src/redirects.d.ts",
       "import": "./src/redirects.mjs",
       "default": "./src/redirects.mjs"
+    },
+    "./scheduling": {
+      "types": "./src/scheduling.d.ts",
+      "import": "./src/scheduling.mjs",
+      "default": "./src/scheduling.mjs"
     }
   },
   "scripts": {

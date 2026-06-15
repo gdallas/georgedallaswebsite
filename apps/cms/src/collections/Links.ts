@@ -2,6 +2,7 @@ import type { CollectionConfig } from "payload";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadListing } from "../access/payloadAccess";
 import { listingStatusField, visibilityField } from "../fields/publishing";
+import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
 import { validateLinkUrl } from "../validation/content.mjs";
 
 export const Links: CollectionConfig = {
@@ -72,8 +73,11 @@ export const Links: CollectionConfig = {
     },
     visibilityField
   ],
+  versions: {
+    maxPerDoc: 25
+  },
   hooks: {
-    afterChange: [auditCollectionChanges("links")],
-    afterDelete: [auditCollectionDeletes("links")]
+    afterChange: [auditCollectionChanges("links"), publishSignalsAfterChange("links", "listing")],
+    afterDelete: [auditCollectionDeletes("links"), publishSignalsAfterDelete("links", "listing")]
   }
 };
