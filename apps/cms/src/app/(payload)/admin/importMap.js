@@ -25,6 +25,7 @@ import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc056
 import { Dashboard as Dashboard_9a680279bc487e655cb510fd8d9dadff } from '../../../components/Dashboard'
 import { AdminSearch as AdminSearch_gdw036 } from '../../../components/AdminSearch'
 import { AdminSearchNavLink as AdminSearchNavLink_gdw036 } from '../../../components/AdminSearchNavLink'
+import { SeoPreview as SeoPreview_gdw038 } from '../../../components/SeoPreview'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -56,5 +57,6 @@ export const importMap = {
   "/components/Dashboard#Dashboard": Dashboard_9a680279bc487e655cb510fd8d9dadff,
   "/components/AdminSearch#AdminSearch": AdminSearch_gdw036,
   "/components/AdminSearchNavLink#AdminSearchNavLink": AdminSearchNavLink_gdw036,
+  "/components/SeoPreview#SeoPreview": SeoPreview_gdw038,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

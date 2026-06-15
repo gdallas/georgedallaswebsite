@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { datedKind, decideMarkers, listingKind, markerKey } from "./markers.mjs";
+import { datedKind, decideMarkers, globalKind, listingKind, markerKey } from "./markers.mjs";
 
 const now = new Date("2026-06-14T12:00:00.000Z");
 const published = {
@@ -86,6 +86,19 @@ describe("decideMarkers — schedule signals", () => {
     const proj = { id: 3, status: "published", visibility: "public" };
     const markers = decideMarkers({ kind: listingKind, collection: "projects", doc: proj, previousDoc: { id: 3, status: "draft", visibility: "private" }, now });
     assert.deepEqual(types(markers), ["rebuild"]);
+  });
+});
+
+describe("decideMarkers — globals", () => {
+  it("always emits a rebuild for a global change (no schedule, no visibility check)", () => {
+    const markers = decideMarkers({ kind: globalKind, collection: "now-page", doc: { id: 1, status: "published" }, now });
+    assert.deepEqual(types(markers), ["rebuild"]);
+    assert.equal(markers[0].reason, "global");
+  });
+
+  it("falls back to the collection slug when the global has no id", () => {
+    const markers = decideMarkers({ kind: globalKind, collection: "site-settings", doc: {}, now });
+    assert.equal(markers[0].id, "site-settings");
   });
 });
 

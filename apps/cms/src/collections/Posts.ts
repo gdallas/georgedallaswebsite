@@ -68,6 +68,15 @@ export const Posts: CollectionConfig = {
       type: "textarea"
     },
     {
+      name: "seoPreview",
+      type: "ui",
+      admin: {
+        components: {
+          Field: "/components/SeoPreview#SeoPreview"
+        }
+      }
+    },
+    {
       name: "socialImage",
       type: "upload",
       relationTo: "media"

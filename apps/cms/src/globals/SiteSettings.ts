@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
+import { publishSignalsGlobalAfterChange } from "../hooks/publishSignals";
 
 export const SiteSettings: GlobalConfig = {
   slug: "site-settings",
@@ -12,6 +13,9 @@ export const SiteSettings: GlobalConfig = {
   },
   admin: {
     group: "Content"
+  },
+  hooks: {
+    afterChange: [publishSignalsGlobalAfterChange("site-settings")]
   },
   fields: [
     {
