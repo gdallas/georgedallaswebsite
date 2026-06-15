@@ -36,8 +36,13 @@ export default buildConfig({
       views: {
         dashboard: {
           Component: "/components/Dashboard#Dashboard"
+        },
+        search: {
+          Component: "/components/AdminSearch#AdminSearch",
+          path: "/search"
         }
-      }
+      },
+      afterNavLinks: ["/components/AdminSearchNavLink#AdminSearchNavLink"]
     },
     importMap: {
       baseDir: path.resolve(dirname)

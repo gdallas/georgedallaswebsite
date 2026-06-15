@@ -11,6 +11,7 @@ export const Pages: CollectionConfig = {
   slug: "pages",
   admin: {
     defaultColumns: ["title", "template", "status", "visibility", "updatedAt"],
+    listSearchableFields: ["title", "slug", "seoTitle", "seoDescription"],
     useAsTitle: "title",
     preview: collectionPreview("pages")
   },

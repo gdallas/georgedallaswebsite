@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "typecheck": "astro check",
     "e2e": "node e2e/build-fixtures.mjs && playwright test",
@@ -19,6 +19,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.60.0",
+    "pagefind": "^1.4.0",
     "typescript": "^6.0.3"
   }
 }

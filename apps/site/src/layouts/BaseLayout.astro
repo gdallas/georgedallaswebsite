@@ -17,9 +17,22 @@ export interface Props {
   image?: string;
   ogType?: string;
   jsonLd?: unknown[];
+  // When true (default), the page's main content is included in the Pagefind
+  // search index (header/footer live outside <main>, so they are never indexed).
+  // List/utility pages opt out to keep results focused on real content.
+  searchable?: boolean;
+  noindex?: boolean;
 }
 
-const { title, description = DEFAULT_DESCRIPTION, image, ogType = "website", jsonLd = [] } = Astro.props;
+const {
+  title,
+  description = DEFAULT_DESCRIPTION,
+  image,
+  ogType = "website",
+  jsonLd = [],
+  searchable = true,
+  noindex = false
+} = Astro.props;
 
 const canonical = canonicalUrl(Astro.url.pathname, Astro.site);
 const ogImage = absoluteUrl(image ?? DEFAULT_OG_IMAGE, Astro.site);
@@ -33,6 +46,7 @@ const rssHref = absoluteUrl("/rss.xml", Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} — Writing`} href={rssHref} />
@@ -54,7 +68,7 @@ const rssHref = absoluteUrl("/rss.xml", Astro.site);
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader />
-    <main id="main" class="cc-container">
+    <main id="main" class="cc-container" data-pagefind-body={searchable || undefined}>
       <slot />
     </main>
     <SiteFooter />

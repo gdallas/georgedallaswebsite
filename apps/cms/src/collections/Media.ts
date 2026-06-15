@@ -7,6 +7,7 @@ export const Media: CollectionConfig = {
   slug: "media",
   admin: {
     defaultColumns: ["filename", "alt", "reviewStatus", "updatedAt"],
+    listSearchableFields: ["alt", "filename", "caption"],
     useAsTitle: "filename"
   },
   access: {

@@ -77,7 +77,19 @@ export class PublishingWorker {
         // self-contained regardless of what the managed runtime ships.
         externalModules: [],
         target: "node20",
-        format: nodejs.OutputFormat.ESM
+        format: nodejs.OutputFormat.ESM,
+        // The AWS SDK is CommonJS and calls require() internally; in an ESM
+        // bundle that throws "Dynamic require of X is not supported". Inject the
+        // standard shim so bundled CJS deps have require/__filename/__dirname.
+        // CDK's `banner` is a plain string (not esbuild's { js } object).
+        banner: [
+          "import { createRequire as topLevelCreateRequire } from 'module';",
+          "import { fileURLToPath as topLevelFileUrlToPath } from 'url';",
+          "import { dirname as topLevelDirname } from 'path';",
+          "const require = topLevelCreateRequire(import.meta.url);",
+          "const __filename = topLevelFileUrlToPath(import.meta.url);",
+          "const __dirname = topLevelDirname(__filename);"
+        ].join("")
       },
       environment: {
         CMS_INTERNAL_URL: `https://${this.environment.cmsDomain}`,

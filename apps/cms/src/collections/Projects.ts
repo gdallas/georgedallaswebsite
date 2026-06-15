@@ -10,6 +10,7 @@ export const Projects: CollectionConfig = {
   slug: "projects",
   admin: {
     defaultColumns: ["title", "status", "visibility", "featured", "sortOrder", "updatedAt"],
+    listSearchableFields: ["title", "summary", "slug"],
     useAsTitle: "title"
   },
   defaultSort: "sortOrder",
