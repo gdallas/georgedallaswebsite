@@ -5,12 +5,14 @@ import { publishedAtField, publishingStatusField, visibilityField } from "../fie
 import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
 import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
+import { collectionPreview } from "../preview/collectionPreview";
 
 export const Posts: CollectionConfig = {
   slug: "posts",
   admin: {
     defaultColumns: ["title", "status", "visibility", "publishedAt", "updatedAt"],
-    useAsTitle: "title"
+    useAsTitle: "title",
+    preview: collectionPreview("posts")
   },
   access: {
     create: requireContentMutation,

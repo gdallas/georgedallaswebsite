@@ -1,3 +1,1 @@
-export function escapeHtml(value: unknown): string;
-export function safeUrl(url: unknown): string;
-export function renderRichText(body: unknown): string;
+export { escapeHtml, safeUrl, renderRichText } from "@georgedallas/shared/rich-text";

@@ -5,12 +5,14 @@ import { publishedAtField, publishingStatusField, visibilityField } from "../fie
 import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
 import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
+import { collectionPreview } from "../preview/collectionPreview";
 
 export const Pages: CollectionConfig = {
   slug: "pages",
   admin: {
     defaultColumns: ["title", "template", "status", "visibility", "updatedAt"],
-    useAsTitle: "title"
+    useAsTitle: "title",
+    preview: collectionPreview("pages")
   },
   access: {
     create: requireContentMutation,

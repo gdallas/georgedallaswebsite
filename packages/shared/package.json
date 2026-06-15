@@ -21,6 +21,11 @@
       "import": "./src/redirects.mjs",
       "default": "./src/redirects.mjs"
     },
+    "./rich-text": {
+      "types": "./src/rich-text.d.ts",
+      "import": "./src/rich-text.mjs",
+      "default": "./src/rich-text.mjs"
+    },
     "./scheduling": {
       "types": "./src/scheduling.d.ts",
       "import": "./src/scheduling.mjs",
