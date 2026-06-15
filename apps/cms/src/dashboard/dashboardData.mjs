@@ -90,3 +90,36 @@ export function mergeRecentDocs(lists, dateField, limit) {
 export function documentEditHref(adminRoute, collection, id) {
   return `${adminRoute}/collections/${collection}/${id}`;
 }
+
+// --- Site health (content-issues) ----------------------------------------
+
+export const metadataIssueKinds = [
+  "missing_seo_title",
+  "missing_seo_description",
+  "missing_excerpt",
+  "missing_social_image"
+];
+
+export function openContentIssuesWhere() {
+  return { status: { equals: "open" } };
+}
+
+export function openContentIssuesByKindsWhere(kinds) {
+  return { and: [{ status: { equals: "open" } }, { kind: { in: kinds } }] };
+}
+
+// Link to the content-issues list filtered to open issues, optionally of one kind.
+export function contentIssuesHref(adminRoute, kind) {
+  const base = `${adminRoute}/collections/content-issues?where[status][equals]=open`;
+  return kind ? `${base}&where[kind][equals]=${kind}` : base;
+}
+
+// Build the dashboard "Site health" tiles from pre-counted totals.
+export function buildHealthTiles(adminRoute, counts) {
+  return [
+    { label: "Broken links", value: counts.brokenLinks ?? 0, href: contentIssuesHref(adminRoute, "broken_link"), alert: (counts.brokenLinks ?? 0) > 0 },
+    { label: "Missing metadata", value: counts.missingMetadata ?? 0, href: contentIssuesHref(adminRoute) },
+    { label: "Missing alt text", value: counts.missingAlt ?? 0, href: contentIssuesHref(adminRoute, "media_missing_alt") },
+    { label: "Stale Now page", value: counts.staleNow ?? 0, href: contentIssuesHref(adminRoute, "stale_now"), alert: (counts.staleNow ?? 0) > 0 }
+  ];
+}

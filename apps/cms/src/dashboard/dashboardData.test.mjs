@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildHealthTiles,
   buildQuickActions,
+  contentIssuesHref,
   continueLatestDraftAction,
   documentEditHref,
   draftsWhere,
   mediaNeedingAltTextWhere,
   mergeRecentDocs,
+  openContentIssuesByKindsWhere,
   recentlyPublishedWhere,
   scheduledWhere
 } from "./dashboardData.mjs";
@@ -77,5 +80,33 @@ describe("admin dashboard data", () => {
 
   it("builds edit links for merged documents", () => {
     assert.equal(documentEditHref("/admin", "pages", 12), "/admin/collections/pages/12");
+  });
+});
+
+describe("site health helpers", () => {
+  it("scopes the open-by-kinds where to open status and the given kinds", () => {
+    assert.deepEqual(openContentIssuesByKindsWhere(["broken_link"]), {
+      and: [{ status: { equals: "open" } }, { kind: { in: ["broken_link"] } }]
+    });
+  });
+
+  it("builds filtered content-issues list links", () => {
+    assert.equal(
+      contentIssuesHref("/admin"),
+      "/admin/collections/content-issues?where[status][equals]=open"
+    );
+    assert.equal(
+      contentIssuesHref("/admin", "broken_link"),
+      "/admin/collections/content-issues?where[status][equals]=open&where[kind][equals]=broken_link"
+    );
+  });
+
+  it("builds health tiles with alert flags for broken links and stale Now", () => {
+    const tiles = buildHealthTiles("/admin", { brokenLinks: 2, missingMetadata: 5, missingAlt: 0, staleNow: 1 });
+    const broken = tiles.find((t) => t.label === "Broken links");
+    assert.equal(broken.value, 2);
+    assert.equal(broken.alert, true);
+    assert.equal(tiles.find((t) => t.label === "Missing alt text").value, 0);
+    assert.equal(tiles.find((t) => t.label === "Stale Now page").alert, true);
   });
 });

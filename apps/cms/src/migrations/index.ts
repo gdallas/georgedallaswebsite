@@ -3,6 +3,7 @@ import * as migration_20260614_074954_add_wordpress_import_collections from './2
 import * as migration_20260614_090000_add_import_review_fields from './20260614_090000_add_import_review_fields';
 import * as migration_20260614_100000_add_redirect_status from './20260614_100000_add_redirect_status';
 import * as migration_20260615_002008_add_content_versions from './20260615_002008_add_content_versions';
+import * as migration_20260615_043010_add_content_health from './20260615_043010_add_content_health';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20260615_002008_add_content_versions.up,
     down: migration_20260615_002008_add_content_versions.down,
-    name: '20260615_002008_add_content_versions'
+    name: '20260615_002008_add_content_versions',
+  },
+  {
+    up: migration_20260615_043010_add_content_health.up,
+    down: migration_20260615_043010_add_content_health.down,
+    name: '20260615_043010_add_content_health'
   },
 ];
