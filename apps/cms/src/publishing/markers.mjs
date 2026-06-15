@@ -10,6 +10,9 @@ import { isPublicBuildVisible, isPublicListingVisible } from "@georgedallas/shar
 // scheduling; "listing" content (projects, links) is status+visibility only.
 export const datedKind = "dated";
 export const listingKind = "listing";
+// Globals (now-page, site-settings) are baked into the static build, so any
+// change to them warrants a rebuild — there is no per-doc visibility window.
+export const globalKind = "global";
 
 function isVisible(kind, doc, now) {
   if (!doc) {
@@ -26,6 +29,14 @@ function isVisible(kind, doc, now) {
 // when the public view actually changes, so unrelated draft edits stay quiet.
 export function decideMarkers({ kind = datedKind, collection, doc, previousDoc, operation = "change", now = new Date() }) {
   const markers = [];
+
+  // Globals always trigger a rebuild on change — their content is part of every
+  // build and there is no draft/visibility window to evaluate.
+  if (kind === globalKind) {
+    const gid = doc?.id ?? collection;
+    return [{ type: "rebuild", collection, id: String(gid), reason: "global" }];
+  }
+
   const id = (operation === "delete" ? doc?.id : doc?.id ?? previousDoc?.id) ?? null;
   if (id == null) {
     return markers;

@@ -1,6 +1,7 @@
 import type { GlobalAfterReadHook, GlobalConfig } from "payload";
 import { isNowPagePublic } from "@georgedallas/shared/visibility";
 import { auditGlobalChanges } from "../audit/auditEvents";
+import { publishSignalsGlobalAfterChange } from "../hooks/publishSignals";
 import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
 import { canReadContent } from "../access/roles.mjs";
 import { listingStatusField } from "../fields/publishing";
@@ -64,7 +65,7 @@ export const NowPage: GlobalConfig = {
     listingStatusField
   ],
   hooks: {
-    afterChange: [auditGlobalChanges("now-page")],
+    afterChange: [auditGlobalChanges("now-page"), publishSignalsGlobalAfterChange("now-page")],
     afterRead: [hideUnpublishedNowFromPublic]
   }
 };
