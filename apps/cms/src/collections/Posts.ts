@@ -11,6 +11,7 @@ export const Posts: CollectionConfig = {
   slug: "posts",
   admin: {
     defaultColumns: ["title", "status", "visibility", "publishedAt", "updatedAt"],
+    listSearchableFields: ["title", "excerpt", "slug", "seoTitle", "seoDescription"],
     useAsTitle: "title",
     preview: collectionPreview("posts")
   },

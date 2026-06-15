@@ -11,7 +11,9 @@ const siteDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const mock = await startMockCms();
 console.log(`[e2e] mock CMS listening on ${mock.url}; building site...`);
 
-const build = spawn("pnpm exec astro build", {
+// Build, then generate the Pagefind index over the output — mirrors the
+// production `build` script so the search E2E runs against a real index.
+const build = spawn("pnpm exec astro build && pnpm exec pagefind --site dist", {
   cwd: siteDir,
   env: { ...process.env, CMS_API_URL: mock.url },
   stdio: "inherit",
