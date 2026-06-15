@@ -174,24 +174,35 @@ export function validatePublishingState(data, options = {}) {
       return "Published content requires a publishedAt date.";
     }
 
-    for (const field of requiredMetadata) {
-      if (typeof data[field] !== "string" || data[field].trim().length === 0) {
-        return `Published content requires ${field}.`;
-      }
+    const missing = firstMissingMetadata(data, requiredMetadata);
+    if (missing) {
+      return `Published content requires ${missing}.`;
     }
   }
 
   if (status === "scheduled") {
-    if (!data.publishedAt) {
+    if (!data.publishedAt || new Date(data.publishedAt) <= now) {
       return "Scheduled content requires a future publishedAt date.";
     }
 
-    if (new Date(data.publishedAt) <= now) {
-      return "Scheduled content requires a future publishedAt date.";
+    // Scheduled content must already satisfy the publish requirements so the
+    // worker can flip it to published unattended without tripping validation.
+    const missing = firstMissingMetadata(data, requiredMetadata);
+    if (missing) {
+      return `Scheduled content requires ${missing} so it can publish automatically.`;
     }
   }
 
   return true;
+}
+
+function firstMissingMetadata(data, requiredMetadata) {
+  for (const field of requiredMetadata) {
+    if (typeof data[field] !== "string" || data[field].trim().length === 0) {
+      return field;
+    }
+  }
+  return null;
 }
 
 // Public visibility predicates and query filters now live in the shared

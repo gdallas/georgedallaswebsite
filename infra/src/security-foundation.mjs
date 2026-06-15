@@ -22,7 +22,16 @@ export class SecurityFoundation {
       iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaVPCAccessExecutionRole")
     );
 
+    // The publishing worker is an ordinary (non-VPC) Lambda, so its role just
+    // needs CloudWatch Logs from the basic execution policy.
+    this.jobsRuntimeRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")
+    );
+
+    this.schedulerExecutionRole = this.createSchedulerExecutionRole(scope);
+
     this.grantRuntimeSecretAccess();
+    this.grantPublishingAccess();
   }
 
   createEnvironmentKey(scope) {
@@ -43,6 +52,7 @@ export class SecurityFoundation {
       ["session-secret", "CMS session signing secret."],
       ["origin-verify", "Header value CloudFront injects so the CMS only serves CDN traffic."],
       ["webhook-secret", "Build and publish webhook signing secret."],
+      ["github-token", "Fine-grained GitHub PAT (actions:write) the publishing worker uses to trigger site rebuilds."],
       ["email-config", "Amazon SES sender and notification configuration."],
       ["external-api-keys", "Optional third-party API keys for import, ISBN, analytics, or integrations."]
     ];
@@ -153,8 +163,84 @@ export class SecurityFoundation {
     }
 
     this.secrets["webhook-secret"].grantRead(this.jobsRuntimeRole);
+    this.secrets["github-token"].grantRead(this.jobsRuntimeRole);
     this.secrets["email-config"].grantRead(this.jobsRuntimeRole);
     this.secrets["external-api-keys"].grantRead(this.jobsRuntimeRole);
+  }
+
+  // EventBridge Scheduler assumes this role when a one-shot publish schedule
+  // fires, so it can invoke the publishing worker. Referenced by deterministic
+  // ARN string (not construct) to avoid a circular dependency on the CMS stack
+  // where the worker lives.
+  createSchedulerExecutionRole(scope) {
+    const { account, region } = this.environment.awsEnv;
+    const workerArn = `arn:aws:lambda:${region}:${account}:function:${buildResourceName(this.environment.id, "publish-worker")}`;
+
+    const role = new iam.Role(scope, "SchedulerExecutionRole", {
+      roleName: buildResourceName(this.environment.id, "scheduler"),
+      description: `EventBridge Scheduler execution role for ${projectId} ${this.environment.id} publishing.`,
+      assumedBy: new iam.ServicePrincipal("scheduler.amazonaws.com")
+    });
+
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowInvokePublishingWorker",
+        actions: ["lambda:InvokeFunction"],
+        resources: [workerArn]
+      })
+    );
+
+    return role;
+  }
+
+  // Wire up the S3 "control plane" the VPC-isolated CMS uses to signal the
+  // internet-capable publishing worker (GDW-035). Both the control bucket and
+  // the schedules are referenced by deterministic ARN strings to keep the
+  // foundation stack free of dependencies on the CMS stack.
+  grantPublishingAccess() {
+    const { account, region } = this.environment.awsEnv;
+    const controlBucketArn = `arn:aws:s3:::${buildResourceName(this.environment.id, "publish-control")}`;
+    const scheduleArn = `arn:aws:scheduler:${region}:${account}:schedule/default/${this.environment.id}-pub-*`;
+
+    // The CMS writes publish/schedule markers.
+    this.cmsRuntimeRole.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowWritePublishMarkers",
+        actions: ["s3:PutObject"],
+        resources: [`${controlBucketArn}/*`]
+      })
+    );
+
+    // The worker reads markers, manages one-shot schedules, and passes the
+    // scheduler execution role when creating them.
+    this.jobsRuntimeRole.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowReadPublishMarkers",
+        actions: ["s3:GetObject"],
+        resources: [`${controlBucketArn}/*`]
+      })
+    );
+
+    this.jobsRuntimeRole.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowManagePublishSchedules",
+        actions: [
+          "scheduler:CreateSchedule",
+          "scheduler:UpdateSchedule",
+          "scheduler:DeleteSchedule",
+          "scheduler:GetSchedule"
+        ],
+        resources: [scheduleArn]
+      })
+    );
+
+    this.jobsRuntimeRole.addToPolicy(
+      new iam.PolicyStatement({
+        sid: "AllowPassSchedulerRole",
+        actions: ["iam:PassRole"],
+        resources: [this.schedulerExecutionRole.roleArn]
+      })
+    );
   }
 }
 

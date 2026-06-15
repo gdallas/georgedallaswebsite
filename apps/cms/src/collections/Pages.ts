@@ -4,6 +4,7 @@ import { requireContentMutation, requirePublicOrContentReadBuild } from "../acce
 import { publishedAtField, publishingStatusField, visibilityField } from "../fields/publishing";
 import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
+import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
 import { collectionPreview } from "../preview/collectionPreview";
 
 export const Pages: CollectionConfig = {
@@ -62,9 +63,12 @@ export const Pages: CollectionConfig = {
     },
     visibilityField
   ],
+  versions: {
+    maxPerDoc: 25
+  },
   hooks: {
-    afterChange: [auditCollectionChanges("pages")],
-    afterDelete: [auditCollectionDeletes("pages")],
+    afterChange: [auditCollectionChanges("pages"), publishSignalsAfterChange("pages", "dated")],
+    afterDelete: [auditCollectionDeletes("pages"), publishSignalsAfterDelete("pages", "dated")],
     beforeChange: [createPublishingBeforeChangeHook()]
   }
 };

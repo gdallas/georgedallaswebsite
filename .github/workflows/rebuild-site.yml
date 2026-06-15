@@ -1,0 +1,88 @@
+name: Rebuild Site
+
+# Content-only rebuild of the static public site. Triggered by the publishing
+# worker (workflow_dispatch via the GitHub API) the moment content is published
+# — manually or by a scheduled publish — so changes go live without waiting on a
+# poller (GDW-035). Unlike deploy-dev.yml this skips `cdk deploy`: it reads the
+# existing site bucket/distribution from the deployed stack outputs, rebuilds the
+# Astro site against the live CMS, syncs, and invalidates.
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "What triggered the rebuild (for the run log)."
+        required: false
+        default: "manual"
+
+permissions:
+  contents: read
+  id-token: write
+
+# A burst of publishes collapses to a single final build: a newer run cancels an
+# in-flight one.
+concurrency:
+  group: rebuild-site
+  cancel-in-progress: true
+
+jobs:
+  rebuild:
+    name: Rebuild and publish static site
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Build public site
+        run: pnpm --filter @georgedallas/site build
+        env:
+          CMS_API_URL: https://cms-dev.georgedallas.com
+
+      - name: Publish public site
+        run: |
+          OUTPUTS=$(aws cloudformation describe-stacks --stack-name georgedallaswebsite-dev-site --query "Stacks[0].Outputs" --output json)
+          BUCKET=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="SiteBucketName") | .OutputValue')
+          DIST_ID=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="SiteDistributionId") | .OutputValue')
+          if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ] || [ -z "$DIST_ID" ] || [ "$DIST_ID" = "null" ]; then
+            echo "Could not read site bucket/distribution from stack outputs."
+            echo "$OUTPUTS"
+            exit 1
+          fi
+          echo "Syncing build to s3://${BUCKET}"
+          aws s3 sync apps/site/dist "s3://${BUCKET}" --delete
+          echo "Invalidating CloudFront distribution ${DIST_ID}"
+          aws cloudfront create-invalidation --distribution-id "${DIST_ID}" --paths "/*"
+
+      - name: Smoke test public site
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --max-time 30 -o /dev/null https://dev.georgedallas.com/; then
+              echo "Public site responded."
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed; retrying..."
+            sleep 30
+          done
+          echo "Public site smoke test failed after 6 attempts."
+          exit 1
