@@ -1,10 +1,15 @@
-import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, PayloadRequest } from "payload";
+import type {
+  CollectionAfterChangeHook,
+  CollectionAfterDeleteHook,
+  GlobalAfterChangeHook,
+  PayloadRequest
+} from "payload";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { loadCmsConfig } from "../env";
 import { decideMarkers, markerKey } from "../publishing/markers.mjs";
 
 type CmsConfig = ReturnType<typeof loadCmsConfig>;
-type MarkerKind = "dated" | "listing";
+type MarkerKind = "dated" | "listing" | "global";
 
 // The CMS Lambda runs in an isolated subnet with only an S3 gateway endpoint, so
 // it cannot call GitHub/EventBridge directly. Instead it drops a small JSON
@@ -78,6 +83,15 @@ export function publishSignalsAfterChange(collectionSlug: string, kind: MarkerKi
 export function publishSignalsAfterDelete(collectionSlug: string, kind: MarkerKind = "dated"): CollectionAfterDeleteHook {
   return async ({ doc, req }) => {
     await emitMarkers(req, { kind, collection: collectionSlug, doc, operation: "delete" });
+    return doc;
+  };
+}
+
+// Globals are baked into every static build, so any change to one triggers a
+// rebuild (covers the Now page and site settings — GDW-035 follow-up).
+export function publishSignalsGlobalAfterChange(globalSlug: string): GlobalAfterChangeHook {
+  return async ({ doc, req }) => {
+    await emitMarkers(req, { kind: "global", collection: globalSlug, doc, operation: "change" });
     return doc;
   };
 }

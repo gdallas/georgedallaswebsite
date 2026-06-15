@@ -1,5 +1,6 @@
 export const datedKind: "dated";
 export const listingKind: "listing";
+export const globalKind: "global";
 
 export type ContentDoc = {
   id?: string | number;
@@ -26,7 +27,7 @@ export type ScheduleMarker = {
 export type PublishMarker = RebuildMarker | ScheduleMarker;
 
 export function decideMarkers(input: {
-  kind?: "dated" | "listing";
+  kind?: "dated" | "listing" | "global";
   collection: string;
   doc?: ContentDoc | null;
   previousDoc?: ContentDoc | null;
