@@ -9,7 +9,7 @@ const description =
 const jsonLd = [websiteJsonLd({ site: Astro.site }), personJsonLd({ site: Astro.site })];
 ---
 
-<BaseLayout title="George Dallas — AI engineer, therapist, systems thinker" description={description} jsonLd={jsonLd}>
+<BaseLayout title="George Dallas — AI engineer, therapist, systems thinker" description={description} jsonLd={jsonLd} searchable={false}>
   <section class="cc-hero">
     <p class="cc-eyebrow">George Dallas</p>
     <h1 class="cc-heading cc-heading--hero">

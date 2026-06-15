@@ -11,6 +11,7 @@ export const ImportIssues: CollectionConfig = {
   admin: {
     group: "WordPress import",
     defaultColumns: ["kind", "severity", "wordpressId", "resolved", "detail", "createdAt"],
+    listSearchableFields: ["detail", "notes", "kind", "wordpressId"],
     useAsTitle: "detail"
   },
   access: {

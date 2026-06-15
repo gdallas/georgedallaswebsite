@@ -9,6 +9,7 @@ export const Links: CollectionConfig = {
   slug: "links",
   admin: {
     defaultColumns: ["title", "category", "status", "visibility", "featured", "sortOrder"],
+    listSearchableFields: ["title", "url", "description"],
     useAsTitle: "title"
   },
   defaultSort: "sortOrder",
