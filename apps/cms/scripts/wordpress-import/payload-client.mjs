@@ -119,6 +119,14 @@ export function createPayloadClient(options = {}) {
       return Array.isArray(body?.docs) ? body.docs : [];
     },
 
+    async getGlobal(slug) {
+      const response = await fetchImpl(`${base}/api/globals/${slug}?depth=0`, { headers: headers() });
+      if (!response.ok) {
+        throw new Error(`CMS global fetch failed for ${slug}: HTTP ${response.status}.`);
+      }
+      return response.json();
+    },
+
     async findOne(collection, field, value) {
       const params = new URLSearchParams();
       params.set(`where[${field}][equals]`, String(value));

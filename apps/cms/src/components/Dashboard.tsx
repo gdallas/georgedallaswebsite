@@ -1,10 +1,14 @@
 import type { AdminViewServerProps, CollectionSlug, Where } from "payload";
 import {
+  buildHealthTiles,
   buildQuickActions,
+  contentIssuesHref,
   documentEditHref,
   draftsWhere,
   mediaNeedingAltTextWhere,
   mergeRecentDocs,
+  metadataIssueKinds,
+  openContentIssuesByKindsWhere,
   recentlyPublishedWhere,
   scheduledWhere
 } from "../dashboard/dashboardData.mjs";
@@ -101,6 +105,22 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     count("import-issues", unresolvedIssuesWhere()),
     find("imported-items", awaitingReviewWhere(), "-updatedAt", 6)
   ]);
+
+  const [brokenLinks, missingMetadata, missingAlt, staleNow, latestCheck] = await Promise.all([
+    count("content-issues", openContentIssuesByKindsWhere(["broken_link"])),
+    count("content-issues", openContentIssuesByKindsWhere(metadataIssueKinds)),
+    count("content-issues", openContentIssuesByKindsWhere(["media_missing_alt"])),
+    count("content-issues", openContentIssuesByKindsWhere(["stale_now"])),
+    find("content-checks", {}, "-finishedAt", 1)
+  ]);
+  const healthTiles = buildHealthTiles(adminRoute, {
+    brokenLinks: brokenLinks.totalDocs,
+    missingMetadata: missingMetadata.totalDocs,
+    missingAlt: missingAlt.totalDocs,
+    staleNow: staleNow.totalDocs
+  });
+  const lastCheck = latestCheck.docs[0] as { finishedAt?: string } | undefined;
+  const healthTotal = healthTiles.reduce((sum, tile) => sum + tile.value, 0);
 
   const job = latestImportJob.docs[0] as ImportJobDoc | undefined;
   const hasImportActivity = importedTotal.totalDocs > 0 || latestImportJob.totalDocs > 0;
@@ -220,6 +240,31 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
           ) : null}
         </section>
       </div>
+
+      <section className={styles.section} aria-labelledby="dashboard-health">
+        <h2 id="dashboard-health" className={styles.sectionTitle}>
+          Site health
+        </h2>
+        <p className={styles.jobMeta}>
+          {lastCheck?.finishedAt
+            ? `Last checked ${formatDate(lastCheck.finishedAt)}.`
+            : "No content check has run yet."}{" "}
+          {healthTotal === 0 ? "No open issues." : null}
+        </p>
+        <ul className={styles.stats}>
+          {healthTiles.map((tile) => (
+            <li key={tile.label}>
+              <a className={styles.statCard} href={tile.href} data-alert={tile.alert ? "true" : "false"}>
+                <span className={styles.statValue}>{tile.value}</span>
+                <span className={styles.statLabel}>{tile.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p className={styles.empty}>
+          <a href={contentIssuesHref(adminRoute)}>View all open content issues</a>
+        </p>
+      </section>
 
       <section className={styles.section} aria-labelledby="dashboard-import">
         <h2 id="dashboard-import" className={styles.sectionTitle}>

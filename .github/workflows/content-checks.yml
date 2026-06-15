@@ -1,0 +1,57 @@
+name: Content Checks
+
+# Weekly broken-link + content-quality sweep (GDW-037). Runs the standalone
+# checker against the dev CMS over HTTPS (the CMS itself has no internet egress,
+# so checking can't run inside it) and writes findings to the content-issues
+# collection. This never touches the public site build — broken external links
+# only create issues, they never fail a deploy.
+#
+# Requires repo secrets CMS_EMAIL / CMS_PASSWORD (a CMS user with content access).
+# Until they are set, scheduled runs no-op cleanly.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-checks
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Run content checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Run checks
+        env:
+          CMS_API_URL: https://cms-dev.georgedallas.com
+          CMS_EMAIL: ${{ secrets.CMS_EMAIL }}
+          CMS_PASSWORD: ${{ secrets.CMS_PASSWORD }}
+        run: |
+          if [ -z "$CMS_EMAIL" ] || [ -z "$CMS_PASSWORD" ]; then
+            echo "CMS_EMAIL / CMS_PASSWORD secrets are not set; skipping content checks."
+            echo "Add them in repo settings to enable the weekly sweep."
+            exit 0
+          fi
+          pnpm --filter @georgedallas/cms content:check
