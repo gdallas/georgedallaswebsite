@@ -101,6 +101,24 @@ export function createPayloadClient(options = {}) {
       return body?.doc ?? body;
     },
 
+    // Generic list query. `where` keys are full bracketed query params, e.g.
+    // { "where[status][equals]": "scheduled" }. URLSearchParams encodes the
+    // brackets so they survive CloudFront/Payload.
+    async list(collection, where = {}, { limit = 100, depth = 0 } = {}) {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(where)) {
+        params.set(key, String(value));
+      }
+      params.set("limit", String(limit));
+      params.set("depth", String(depth));
+      const response = await fetchImpl(`${base}/api/${collection}?${params.toString()}`, { headers: headers() });
+      if (!response.ok) {
+        throw new Error(`CMS list failed for ${collection}: HTTP ${response.status}.`);
+      }
+      const body = await response.json();
+      return Array.isArray(body?.docs) ? body.docs : [];
+    },
+
     async findOne(collection, field, value) {
       const params = new URLSearchParams();
       params.set(`where[${field}][equals]`, String(value));

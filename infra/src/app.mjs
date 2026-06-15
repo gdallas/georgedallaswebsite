@@ -7,6 +7,7 @@ import { buildStackName, standardTags } from "./naming.mjs";
 import { CmsService } from "./cms-service.mjs";
 import { DatabaseFoundation } from "./database-foundation.mjs";
 import { MediaFoundation } from "./media-foundation.mjs";
+import { PublishingWorker } from "./publishing-worker.mjs";
 import { SecurityFoundation } from "./security-foundation.mjs";
 import { SiteHosting } from "./site-hosting.mjs";
 
@@ -77,6 +78,7 @@ class CmsStack extends Stack {
     applyStandardTags(this, props.environmentName);
 
     new CmsService(this, props.environment, props.foundation, props.certificate);
+    new PublishingWorker(this, props.environment, props.foundation);
   }
 }
 

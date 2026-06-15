@@ -16,6 +16,15 @@ export type AppConfig = {
   payloadSecret: string;
   sessionSecret: string;
   originVerifySecret?: string;
+  // Deployed environments only. HMAC key the publishing worker uses to sign
+  // requests to the internal publish endpoint. Unset for local dev.
+  webhookSecret?: string;
+  // Deployed environments only. The private control bucket and key prefix the
+  // CMS writes publish/schedule markers to, picked up by the worker Lambda.
+  publishControl?: {
+    bucket: string;
+    prefix: string;
+  };
 };
 
 type EnvMap = Record<string, string | undefined>;
@@ -59,7 +68,9 @@ export function loadAppConfig(env: EnvMap = process.env): AppConfig {
     sessionSecret: required("SESSION_SECRET"),
     // Deployed environments only: CloudFront injects this header value so the
     // CMS can reject traffic that bypasses the CDN. Unset for local dev.
-    originVerifySecret: env.ORIGIN_VERIFY_SECRET?.trim() || undefined
+    originVerifySecret: env.ORIGIN_VERIFY_SECRET?.trim() || undefined,
+    webhookSecret: env.WEBHOOK_SECRET?.trim() || undefined,
+    publishControl: resolvePublishControl(env)
   };
 
   validateAppConfig(config, errors);
@@ -69,6 +80,16 @@ export function loadAppConfig(env: EnvMap = process.env): AppConfig {
   }
 
   return config;
+}
+
+function resolvePublishControl(env: EnvMap): AppConfig["publishControl"] {
+  const bucket = env.PUBLISH_CONTROL_BUCKET?.trim();
+  if (!bucket) {
+    return undefined;
+  }
+  const prefixRaw = env.PUBLISH_MARKER_PREFIX?.trim() || "publish/";
+  const prefix = prefixRaw.endsWith("/") ? prefixRaw : `${prefixRaw}/`;
+  return { bucket, prefix };
 }
 
 export function validateAppConfig(config: AppConfig, errors: string[] = []): void {

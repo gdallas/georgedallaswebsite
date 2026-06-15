@@ -35,7 +35,9 @@ export function loadAppConfig(env = process.env) {
     sessionSecret: required("SESSION_SECRET"),
     // Deployed environments only: CloudFront injects this header value so the
     // CMS can reject traffic that bypasses the CDN. Unset for local dev.
-    originVerifySecret: env.ORIGIN_VERIFY_SECRET?.trim() || undefined
+    originVerifySecret: env.ORIGIN_VERIFY_SECRET?.trim() || undefined,
+    webhookSecret: env.WEBHOOK_SECRET?.trim() || undefined,
+    publishControl: resolvePublishControl(env)
   };
 
   validateAppConfig(config, errors);
@@ -45,6 +47,16 @@ export function loadAppConfig(env = process.env) {
   }
 
   return config;
+}
+
+function resolvePublishControl(env) {
+  const bucket = env.PUBLISH_CONTROL_BUCKET?.trim();
+  if (!bucket) {
+    return undefined;
+  }
+  const prefixRaw = env.PUBLISH_MARKER_PREFIX?.trim() || "publish/";
+  const prefix = prefixRaw.endsWith("/") ? prefixRaw : `${prefixRaw}/`;
+  return { bucket, prefix };
 }
 
 export function validateAppConfig(config, errors = []) {
