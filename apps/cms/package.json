@@ -9,6 +9,7 @@
     "start": "next start -p 3000",
     "payload": "payload",
     "import:wordpress": "node scripts/wordpress-import/run.mjs",
+    "content:check": "node scripts/content-checks/run.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
