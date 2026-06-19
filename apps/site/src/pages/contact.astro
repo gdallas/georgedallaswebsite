@@ -4,14 +4,56 @@ import { loadSiteSettings } from "../lib/content.mjs";
 
 const settings = await loadSiteSettings();
 const links = settings?.primaryLinks ?? [];
+const cmsUrl = (process.env.CMS_API_URL ?? process.env.CMS_PUBLIC_URL ?? "").replace(/\/+$/, "");
+const contactAction = cmsUrl ? `${cmsUrl}/api/contact` : undefined;
+const contactStatus = Astro.url.searchParams.get("contact");
 ---
 
-<BaseLayout title="Contact — George Dallas" description="How to get in touch with George Dallas.">
+<BaseLayout title="Contact - George Dallas" description="How to get in touch with George Dallas.">
   <article class="cc-content">
     <h1 class="cc-heading cc-heading--hero">Contact</h1>
     <p>
-      The best way to reach me is through the channels below. I read everything, and reply when I can.
+      Send a note here, or use one of the links below. I read everything, and reply when I can.
     </p>
+
+    {contactStatus === "sent" && <p class="contact-alert contact-alert--success">Thanks. Your message is in the inbox.</p>}
+    {contactStatus === "invalid" && <p class="contact-alert">Please check the required fields and try again.</p>}
+    {contactStatus === "error" && <p class="contact-alert">Something blocked the form submission. The links below still work.</p>}
+
+    {
+      contactAction ? (
+        <form class="contact-form" method="post" action={contactAction}>
+          <input type="hidden" name="startedAt" value="" data-contact-started-at />
+          <div class="contact-honeypot" aria-hidden="true">
+            <label for="contact-website">Website</label>
+            <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+          <label>
+            <span>Name</span>
+            <input name="name" type="text" autocomplete="name" required maxlength="120" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" autocomplete="email" required maxlength="254" />
+          </label>
+          <label>
+            <span>Subject</span>
+            <input name="subject" type="text" required maxlength="160" />
+          </label>
+          <label>
+            <span>Message</span>
+            <textarea name="message" required minlength="10" maxlength="4000" rows="7"></textarea>
+          </label>
+          <label class="contact-consent">
+            <input name="consent" type="checkbox" required />
+            <span>Store this message so George can reply.</span>
+          </label>
+          <button class="cc-button cc-button--primary" type="submit">Send message</button>
+        </form>
+      ) : (
+        <p class="cc-muted">The contact form is not configured for this build yet.</p>
+      )
+    }
 
     {
       links.length > 0 ? (
@@ -23,13 +65,81 @@ const links = settings?.primaryLinks ?? [];
           ))}
         </ul>
       ) : (
-        <p class="cc-muted">Contact channels are being set up — please check back soon.</p>
+        <p class="cc-muted">Contact channels are being set up. Please check back soon.</p>
       )
     }
   </article>
 </BaseLayout>
 
+<script>
+  const startedAt = document.querySelector("[data-contact-started-at]");
+  if (startedAt instanceof HTMLInputElement) {
+    startedAt.value = String(Date.now());
+  }
+</script>
+
 <style>
+  .contact-form {
+    display: grid;
+    gap: 1rem;
+    margin-block: 2rem;
+    max-width: 42rem;
+  }
+
+  .contact-form label {
+    display: grid;
+    gap: 0.35rem;
+    color: var(--text-strong);
+    font-weight: 650;
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.75rem 0.85rem;
+    background: var(--surface);
+    color: var(--text-strong);
+    font: inherit;
+  }
+
+  .contact-form textarea {
+    resize: vertical;
+  }
+
+  .contact-consent {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    font-weight: 500;
+  }
+
+  .contact-consent input {
+    width: auto;
+    margin-block-start: 0.25rem;
+  }
+
+  .contact-honeypot {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .contact-alert {
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--surface-raised);
+  }
+
+  .contact-alert--success {
+    border-color: var(--accent);
+  }
+
   .contact-list {
     list-style: none;
     margin: 1.5rem 0 0;

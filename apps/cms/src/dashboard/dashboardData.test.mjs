@@ -3,12 +3,14 @@ import { describe, it } from "node:test";
 import {
   buildHealthTiles,
   buildQuickActions,
+  contactInboxHref,
   contentIssuesHref,
   continueLatestDraftAction,
   documentEditHref,
   draftsWhere,
   mediaNeedingAltTextWhere,
   mergeRecentDocs,
+  newCleanContactMessagesWhere,
   openContentIssuesByKindsWhere,
   recentlyPublishedWhere,
   scheduledWhere
@@ -32,10 +34,12 @@ describe("admin dashboard data", () => {
 
     assert.deepEqual(hrefs, [
       "/admin/collections/posts/create",
+      "/admin/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean",
       "/admin/globals/now-page",
       "/admin/collections/posts/create",
       "/admin/collections/links/create",
       "/admin/collections/projects/create",
+      "/admin/collections/books/create",
       "/admin/collections/media/create"
     ]);
   });
@@ -45,6 +49,9 @@ describe("admin dashboard data", () => {
     assert.deepEqual(recentlyPublishedWhere(), { status: { equals: "published" } });
     assert.deepEqual(scheduledWhere(), { status: { equals: "scheduled" } });
     assert.deepEqual(mediaNeedingAltTextWhere(), { reviewStatus: { equals: "needs_alt_text" } });
+    assert.deepEqual(newCleanContactMessagesWhere(), {
+      and: [{ status: { equals: "new" } }, { spamStatus: { equals: "clean" } }]
+    });
   });
 
   it("merges posts and pages into one recency-ordered list", () => {
@@ -80,6 +87,15 @@ describe("admin dashboard data", () => {
 
   it("builds edit links for merged documents", () => {
     assert.equal(documentEditHref("/admin", "pages", 12), "/admin/collections/pages/12");
+  });
+});
+
+describe("contact inbox helpers", () => {
+  it("links to new clean messages", () => {
+    assert.equal(
+      contactInboxHref("/admin"),
+      "/admin/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean"
+    );
   });
 });
 

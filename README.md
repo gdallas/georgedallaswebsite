@@ -124,7 +124,7 @@ Run the CMS locally:
 pnpm --filter @georgedallas/cms dev
 ```
 
-The CMS runs on `http://localhost:3000` with the admin at `http://localhost:3000/admin` and a health check at `http://localhost:3000/api/health`.
+The CMS runs on `http://localhost:3000` with the admin at `http://localhost:3000/admin` and a health check at `http://localhost:3000/api/health`. Public contact form submissions post to `http://localhost:3000/api/contact` and are reviewed in the admin inbox.
 
 Run the public site placeholder:
 
@@ -155,7 +155,9 @@ Required local variables:
 - `PAYLOAD_SECRET`
 - `SESSION_SECRET`
 
-Environment validation lives in `packages/shared/src/config.ts`. Local and development configuration must not use production database URLs.
+Environment validation lives in `packages/shared/src/config.ts`. Local and development configuration must not use production database URLs. The contact inbox and public form are documented in `docs/runbooks/contact-form.md`.
+
+The public bookshelf and CMS book workflow are documented in `docs/runbooks/bookshelf.md`.
 
 ---
 

@@ -2,21 +2,23 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BrandButton from "../components/brand/BrandButton.astro";
 import BrandCard from "../components/brand/BrandCard.astro";
+import { loadCurrentlyReadingBooks } from "../lib/content.mjs";
 import { personJsonLd, websiteJsonLd } from "../lib/seo.mjs";
 
 const description =
-  "George Dallas — AI engineer, therapist, and systems thinker on Vancouver Island. Writing, projects, and an honest record of what I'm working on now.";
+  "George Dallas - AI engineer, therapist, and systems thinker on Vancouver Island. Writing, projects, and an honest record of what I'm working on now.";
 const jsonLd = [websiteJsonLd({ site: Astro.site }), personJsonLd({ site: Astro.site })];
+const readingNow = await loadCurrentlyReadingBooks();
 ---
 
-<BaseLayout title="George Dallas — AI engineer, therapist, systems thinker" description={description} jsonLd={jsonLd} searchable={false}>
+<BaseLayout title="George Dallas - AI engineer, therapist, systems thinker" description={description} jsonLd={jsonLd} searchable={false}>
   <section class="cc-hero">
     <p class="cc-eyebrow">George Dallas</p>
     <h1 class="cc-heading cc-heading--hero">
       AI engineer. Therapist. Systems thinker. Based on Vancouver Island.
     </h1>
     <p class="cc-muted">
-      Writing, projects, and an honest record of what I'm working on — updated weekly, hosted quietly.
+      Writing, projects, and an honest record of what I'm working on - updated weekly, hosted quietly.
     </p>
     <div class="hero-actions">
       <BrandButton href="/about" variant="primary">About me</BrandButton>
@@ -35,8 +37,17 @@ const jsonLd = [websiteJsonLd({ site: Astro.site }), personJsonLd({ site: Astro.
       <BrandCard eyebrow="Projects" title="Things I've built" href="/projects">
         <p>Selected software and systems work, with the reasoning behind it.</p>
       </BrandCard>
+      <BrandCard eyebrow="Bookshelf" title="Reading log" href="/bookshelf">
+        {
+          readingNow.length > 0 ? (
+            <p>Currently reading {readingNow.slice(0, 2).map((book) => book.title).join(" and ")}.</p>
+          ) : (
+            <p>Books, notes, and reading-now entries as they get published.</p>
+          )
+        }
+      </BrandCard>
       <BrandCard eyebrow="Now" title="What I'm doing now" href="/now">
-        <p>Current focus, reading, listening — refreshed as life changes.</p>
+        <p>Current focus, reading, listening - refreshed as life changes.</p>
       </BrandCard>
     </div>
   </section>

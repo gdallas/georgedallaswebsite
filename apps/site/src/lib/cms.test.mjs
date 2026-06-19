@@ -3,7 +3,9 @@ import { describe, it } from "node:test";
 import {
   CmsUnavailableError,
   encodeWhere,
+  getCurrentlyReadingBooks,
   getNowPage,
+  getPublicBooks,
   getPublicProjects,
   getPublishedPost,
   getPublishedPosts,
@@ -83,6 +85,23 @@ describe("public data layer", () => {
 
     const projects = await getPublicProjects({ baseUrl, fetchImpl });
     assert.deepEqual(projects.map((p) => p.slug), ["shipped"]);
+  });
+
+  it("filters books to published, public listings and derives reading-now items", async () => {
+    const { fetchImpl } = mockFetch({
+      "/api/books": {
+        docs: [
+          { id: 1, title: "Reading", readingStatus: "reading", status: "published", visibility: "public" },
+          { id: 2, title: "Finished", readingStatus: "finished", status: "published", visibility: "public" },
+          { id: 3, title: "Draft", readingStatus: "reading", status: "draft", visibility: "public" },
+          { id: 4, title: "Private", readingStatus: "reading", status: "published", visibility: "private" }
+        ]
+      }
+    });
+
+    const books = await getPublicBooks({ baseUrl, fetchImpl });
+    assert.deepEqual(books.map((book) => book.title), ["Reading", "Finished"]);
+    assert.deepEqual((await getCurrentlyReadingBooks({ baseUrl, fetchImpl })).map((book) => book.title), ["Reading"]);
   });
 
   it("returns the Now page only when published", async () => {
