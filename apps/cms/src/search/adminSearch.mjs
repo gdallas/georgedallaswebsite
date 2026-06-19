@@ -9,7 +9,7 @@
 // docs/runbooks/search.md.
 
 // Per-collection search config. `fields` are matched with `like`; `title`/
-// `subtitle` map a found doc to display text. books/timeline/contact-messages
+// `subtitle` map a found doc to display text. books/timeline
 // are intentionally absent until those collections exist (GDW ticket wording:
 // "when implemented").
 export const adminSearchCollections = [
@@ -54,6 +54,13 @@ export const adminSearchCollections = [
     fields: ["detail", "notes", "kind", "wordpressId"],
     title: (doc) => doc.kind || doc.detail,
     subtitle: (doc) => doc.severity
+  },
+  {
+    slug: "contact-messages",
+    label: "Contact messages",
+    fields: ["name", "email", "subject", "message", "notes"],
+    title: (doc) => doc.subject || doc.name || doc.email,
+    subtitle: (doc) => doc.status
   }
 ];
 
