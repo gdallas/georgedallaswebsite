@@ -5,6 +5,7 @@ import * as migration_20260614_100000_add_redirect_status from './20260614_10000
 import * as migration_20260615_002008_add_content_versions from './20260615_002008_add_content_versions';
 import * as migration_20260615_043010_add_content_health from './20260615_043010_add_content_health';
 import * as migration_20260619_160000_add_contact_messages from './20260619_160000_add_contact_messages';
+import * as migration_20260619_170000_add_books from './20260619_170000_add_books';
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260619_160000_add_contact_messages.up,
     down: migration_20260619_160000_add_contact_messages.down,
     name: '20260619_160000_add_contact_messages'
+  },
+  {
+    up: migration_20260619_170000_add_books.up,
+    down: migration_20260619_170000_add_books.down,
+    name: '20260619_170000_add_books'
   },
 ];

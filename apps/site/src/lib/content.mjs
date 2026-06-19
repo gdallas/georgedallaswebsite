@@ -68,6 +68,22 @@ export async function loadLinks() {
   return cms.getPublicLinks();
 }
 
+export async function loadBooks() {
+  if (!cmsConfigured()) {
+    warnOnce();
+    return [];
+  }
+  return cms.getPublicBooks();
+}
+
+export async function loadCurrentlyReadingBooks() {
+  if (!cmsConfigured()) {
+    warnOnce();
+    return [];
+  }
+  return cms.getCurrentlyReadingBooks();
+}
+
 export async function loadNowPage() {
   if (!cmsConfigured()) {
     warnOnce();

@@ -4,6 +4,7 @@ import { buildConfig } from "payload";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { AuditEvents } from "./collections/AuditEvents";
+import { Books } from "./collections/Books";
 import { Categories } from "./collections/Categories";
 import { ContactMessages } from "./collections/ContactMessages";
 import { ContentChecks } from "./collections/ContentChecks";
@@ -69,6 +70,7 @@ export default buildConfig({
     Pages,
     Projects,
     Links,
+    Books,
     AuditEvents,
     ImportJobs,
     ImportedItems,

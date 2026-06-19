@@ -66,6 +66,24 @@ export type PublicLink = {
   sortOrder?: number | null;
 };
 
+export type BookReadingStatus = "reading" | "finished" | "paused" | "want_to_read" | "reference";
+
+export type PublicBook = {
+  id: number | string;
+  title: string;
+  author: string;
+  isbn?: string | null;
+  coverImage?: MediaRef | null;
+  readingStatus?: BookReadingStatus | null;
+  rating?: number | null;
+  dateStarted?: string | null;
+  dateFinished?: string | null;
+  notes?: unknown;
+  relatedPosts?: PublicPost[] | Array<number | string> | null;
+  externalUrl?: string | null;
+  sortOrder?: number | null;
+};
+
 export type PublicNowPage = {
   status?: string | null;
   currentFocus?: string | null;
@@ -100,6 +118,8 @@ export function getPublishedPages(config?: CmsClientConfig): Promise<PublicPage[
 export function getPublishedPage(slug: string, config?: CmsClientConfig): Promise<PublicPage | null>;
 export function getPublicProjects(config?: CmsClientConfig): Promise<PublicProject[]>;
 export function getPublicLinks(config?: CmsClientConfig): Promise<PublicLink[]>;
+export function getPublicBooks(config?: CmsClientConfig): Promise<PublicBook[]>;
+export function getCurrentlyReadingBooks(config?: CmsClientConfig): Promise<PublicBook[]>;
 export function getNowPage(config?: CmsClientConfig): Promise<PublicNowPage | null>;
 export function getSiteSettings(config?: CmsClientConfig): Promise<PublicSiteSettings>;
 export function getActiveRedirects(config?: CmsClientConfig): Promise<RedirectRecord[]>;

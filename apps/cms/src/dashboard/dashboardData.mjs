@@ -29,6 +29,11 @@ export function buildQuickActions(adminRoute, latestDraft) {
       href: `${adminRoute}/collections/projects/create`
     },
     {
+      label: "Add book note",
+      description: "Log something you are reading or finished.",
+      href: `${adminRoute}/collections/books/create`
+    },
+    {
       label: "Upload media",
       description: "Add images with alt text.",
       href: `${adminRoute}/collections/media/create`
