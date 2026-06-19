@@ -39,6 +39,7 @@ describe("admin dashboard data", () => {
       "/admin/collections/posts/create",
       "/admin/collections/links/create",
       "/admin/collections/projects/create",
+      "/admin/collections/books/create",
       "/admin/collections/media/create"
     ]);
   });

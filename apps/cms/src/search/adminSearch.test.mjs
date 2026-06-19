@@ -37,6 +37,7 @@ describe("toResultItem", () => {
   const posts = adminSearchCollections.find((c) => c.slug === "posts");
   const media = adminSearchCollections.find((c) => c.slug === "media");
   const contactMessages = adminSearchCollections.find((c) => c.slug === "contact-messages");
+  const books = adminSearchCollections.find((c) => c.slug === "books");
 
   it("maps a post to title/subtitle/href", () => {
     const item = toResultItem(posts, { id: 7, title: "Fractals", status: "published" }, "/admin");
@@ -60,6 +61,16 @@ describe("toResultItem", () => {
       title: "Hello",
       subtitle: "new",
       href: "/admin/collections/contact-messages/4"
+    });
+  });
+
+  it("maps a book to title/author/href", () => {
+    const item = toResultItem(books, { id: 4, title: "A Systems Book", author: "Ada Example" }, "/admin");
+    assert.deepEqual(item, {
+      id: 4,
+      title: "A Systems Book",
+      subtitle: "Ada Example",
+      href: "/admin/collections/books/4"
     });
   });
 });

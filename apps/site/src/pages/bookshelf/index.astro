@@ -1,0 +1,148 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadBooks } from "../../lib/content.mjs";
+import { renderRichText } from "../../lib/richText.mjs";
+
+const books = await loadBooks();
+
+const readingStatusLabels: Record<string, string> = {
+  reading: "Reading now",
+  finished: "Finished",
+  paused: "Paused",
+  want_to_read: "Want to read",
+  reference: "Reference"
+};
+
+const readingStatusOrder = ["reading", "finished", "paused", "want_to_read", "reference"];
+const grouped = readingStatusOrder
+  .map((status) => ({
+    status,
+    label: readingStatusLabels[status],
+    items: books.filter((book) => book.readingStatus === status)
+  }))
+  .filter((group) => group.items.length > 0);
+
+function formatDate(value: string | null | undefined): string {
+  if (!value) {
+    return "";
+  }
+  return new Date(value).toLocaleDateString("en-CA", { dateStyle: "medium" });
+}
+---
+
+<BaseLayout title="Bookshelf - George Dallas" description="Books George Dallas is reading, finished, or keeps as reference.">
+  <header class="page-head">
+    <h1 class="cc-heading cc-heading--hero">Bookshelf</h1>
+    <p class="cc-muted">A reading log: books in progress, finished notes, references, and things I want to read.</p>
+  </header>
+
+  {
+    books.length === 0 ? (
+      <p class="cc-muted">No public books yet. The shelf is being arranged.</p>
+    ) : (
+      grouped.map((group) => (
+        <section class="book-group" aria-labelledby={`books-${group.status}`}>
+          <h2 id={`books-${group.status}`} class="cc-heading cc-heading--section">{group.label}</h2>
+          <ul class="book-list">
+            {group.items.map((book) => (
+              <li>
+                <article class="book-card">
+                  {book.coverImage?.url && (
+                    <img
+                      src={book.coverImage.url}
+                      alt={book.coverImage.alt || `Cover of ${book.title}`}
+                      loading="lazy"
+                      width={book.coverImage.width || 160}
+                      height={book.coverImage.height || 240}
+                    />
+                  )}
+                  <div>
+                    <p class="cc-eyebrow">{book.author}</p>
+                    <h3 class="cc-heading cc-heading--card">{book.title}</h3>
+                    <p class="book-meta">
+                      {book.rating != null ? `${book.rating}/5` : ""}
+                      {book.rating != null && (book.dateFinished || book.dateStarted) ? " · " : ""}
+                      {book.dateFinished ? `Finished ${formatDate(book.dateFinished)}` : ""}
+                      {!book.dateFinished && book.dateStarted ? `Started ${formatDate(book.dateStarted)}` : ""}
+                    </p>
+                    {book.notes && <div class="book-notes" set:html={renderRichText(book.notes)} />}
+                    <p class="book-links">
+                      {book.externalUrl && <a href={book.externalUrl} target="_blank" rel="noopener noreferrer">More about this book</a>}
+                    </p>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-block-end: 2rem;
+  }
+
+  .page-head p {
+    margin-block-start: 0.5rem;
+  }
+
+  .book-group {
+    margin-block-end: 2.5rem;
+  }
+
+  .book-list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .book-card {
+    display: grid;
+    grid-template-columns: minmax(5rem, 8rem) 1fr;
+    gap: 1rem;
+    align-items: start;
+    padding-block: 1.25rem;
+    border-block-start: 1px solid var(--border);
+  }
+
+  .book-card img {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: 0.4rem;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+  }
+
+  .book-card:not(:has(img)) {
+    grid-template-columns: 1fr;
+  }
+
+  .book-card h3 {
+    margin-block-end: 0.35rem;
+  }
+
+  .book-meta,
+  .book-links {
+    color: var(--text-muted);
+    margin-block: 0.35rem 0;
+  }
+
+  .book-notes {
+    margin-block-start: 0.75rem;
+  }
+
+  @media (max-width: 42rem) {
+    .book-card {
+      grid-template-columns: 1fr;
+    }
+
+    .book-card img {
+      max-inline-size: 8rem;
+    }
+  }
+</style>
