@@ -36,6 +36,7 @@ describe("adminEditUrl", () => {
 describe("toResultItem", () => {
   const posts = adminSearchCollections.find((c) => c.slug === "posts");
   const media = adminSearchCollections.find((c) => c.slug === "media");
+  const contactMessages = adminSearchCollections.find((c) => c.slug === "contact-messages");
 
   it("maps a post to title/subtitle/href", () => {
     const item = toResultItem(posts, { id: 7, title: "Fractals", status: "published" }, "/admin");
@@ -50,6 +51,16 @@ describe("toResultItem", () => {
   it("falls back to filename then a placeholder title for media", () => {
     assert.equal(toResultItem(media, { id: 3, filename: "x.png", reviewStatus: "public" }, "/admin").title, "x.png");
     assert.equal(toResultItem(media, { id: 9 }, "/admin").title, "Untitled (#9)");
+  });
+
+  it("maps a contact message to the inbox item", () => {
+    const item = toResultItem(contactMessages, { id: 4, subject: "Hello", status: "new" }, "/admin");
+    assert.deepEqual(item, {
+      id: 4,
+      title: "Hello",
+      subtitle: "new",
+      href: "/admin/collections/contact-messages/4"
+    });
   });
 });
 

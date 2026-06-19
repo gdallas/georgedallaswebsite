@@ -2,12 +2,14 @@ import type { AdminViewServerProps, CollectionSlug, Where } from "payload";
 import {
   buildHealthTiles,
   buildQuickActions,
+  contactInboxHref,
   contentIssuesHref,
   documentEditHref,
   draftsWhere,
   mediaNeedingAltTextWhere,
   mergeRecentDocs,
   metadataIssueKinds,
+  newCleanContactMessagesWhere,
   openContentIssuesByKindsWhere,
   recentlyPublishedWhere,
   scheduledWhere
@@ -106,12 +108,13 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     find("imported-items", awaitingReviewWhere(), "-updatedAt", 6)
   ]);
 
-  const [brokenLinks, missingMetadata, missingAlt, staleNow, latestCheck] = await Promise.all([
+  const [brokenLinks, missingMetadata, missingAlt, staleNow, latestCheck, newContactMessages] = await Promise.all([
     count("content-issues", openContentIssuesByKindsWhere(["broken_link"])),
     count("content-issues", openContentIssuesByKindsWhere(metadataIssueKinds)),
     count("content-issues", openContentIssuesByKindsWhere(["media_missing_alt"])),
     count("content-issues", openContentIssuesByKindsWhere(["stale_now"])),
-    find("content-checks", {}, "-finishedAt", 1)
+    find("content-checks", {}, "-finishedAt", 1),
+    count("contact-messages", newCleanContactMessagesWhere())
   ]);
   const healthTiles = buildHealthTiles(adminRoute, {
     brokenLinks: brokenLinks.totalDocs,
@@ -238,6 +241,18 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
               </li>
             </ul>
           ) : null}
+          {newContactMessages.totalDocs > 0 ? (
+            <ul className={styles.docList}>
+              <li>
+                <a href={contactInboxHref(adminRoute)}>
+                  <span>
+                    {newContactMessages.totalDocs} new contact message
+                    {newContactMessages.totalDocs === 1 ? "" : "s"}
+                  </span>
+                </a>
+              </li>
+            </ul>
+          ) : null}
         </section>
       </div>
 
@@ -260,6 +275,16 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
               </a>
             </li>
           ))}
+          <li>
+            <a
+              className={styles.statCard}
+              href={contactInboxHref(adminRoute)}
+              data-alert={newContactMessages.totalDocs > 0 ? "true" : "false"}
+            >
+              <span className={styles.statValue}>{newContactMessages.totalDocs}</span>
+              <span className={styles.statLabel}>New messages</span>
+            </a>
+          </li>
         </ul>
         <p className={styles.empty}>
           <a href={contentIssuesHref(adminRoute)}>View all open content issues</a>

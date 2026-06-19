@@ -4,6 +4,11 @@ export function buildQuickActions(adminRoute, latestDraft) {
   return [
     continueLatestDraftAction(adminRoute, latestDraft),
     {
+      label: "Review inbox",
+      description: "Read new contact messages.",
+      href: `${adminRoute}/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean`
+    },
+    {
       label: "Update Now page",
       description: "Refresh what you are focused on, reading, and listening to.",
       href: `${adminRoute}/globals/now-page`
@@ -77,6 +82,16 @@ export function mediaNeedingAltTextWhere() {
       equals: "needs_alt_text"
     }
   };
+}
+
+export function newCleanContactMessagesWhere() {
+  return {
+    and: [{ status: { equals: "new" } }, { spamStatus: { equals: "clean" } }]
+  };
+}
+
+export function contactInboxHref(adminRoute) {
+  return `${adminRoute}/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean`;
 }
 
 export function mergeRecentDocs(lists, dateField, limit) {

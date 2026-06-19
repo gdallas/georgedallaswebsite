@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { AuditEvents } from "./collections/AuditEvents";
 import { Categories } from "./collections/Categories";
+import { ContactMessages } from "./collections/ContactMessages";
 import { ContentChecks } from "./collections/ContentChecks";
 import { ContentIssues } from "./collections/ContentIssues";
 import { ImportIssues } from "./collections/ImportIssues";
@@ -72,6 +73,7 @@ export default buildConfig({
     ImportJobs,
     ImportedItems,
     ImportIssues,
+    ContactMessages,
     ContentIssues,
     ContentChecks
   ],
