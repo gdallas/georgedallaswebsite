@@ -137,12 +137,37 @@ describe("public data layer", () => {
     const fetchImpl = async () => {
       throw new Error("ECONNREFUSED");
     };
-    await assert.rejects(getPublishedPosts({ baseUrl, fetchImpl }), CmsUnavailableError);
+    await assert.rejects(getPublishedPosts({ baseUrl, fetchImpl, retryDelayMs: 0 }), CmsUnavailableError);
   });
 
   it("throws CmsUnavailableError on a non-OK CMS response", async () => {
     const fetchImpl = async () => ({ ok: false, status: 503, json: async () => ({}) });
-    await assert.rejects(getSiteSettings({ baseUrl, fetchImpl }), CmsUnavailableError);
+    await assert.rejects(getSiteSettings({ baseUrl, fetchImpl, retryDelayMs: 0 }), CmsUnavailableError);
+  });
+
+  it("retries transient CMS responses before failing the build", async () => {
+    let attempts = 0;
+    const fetchImpl = async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        return { ok: false, status: 500, json: async () => ({}) };
+      }
+      return { ok: true, status: 200, json: async () => ({ siteTitle: "George Dallas" }) };
+    };
+
+    assert.equal((await getSiteSettings({ baseUrl, fetchImpl, retryDelayMs: 0 })).siteTitle, "George Dallas");
+    assert.equal(attempts, 2);
+  });
+
+  it("does not retry non-transient CMS responses", async () => {
+    let attempts = 0;
+    const fetchImpl = async () => {
+      attempts += 1;
+      return { ok: false, status: 404, json: async () => ({}) };
+    };
+
+    await assert.rejects(getSiteSettings({ baseUrl, fetchImpl, retryDelayMs: 0 }), CmsUnavailableError);
+    assert.equal(attempts, 1);
   });
 
   it("requires a configured base URL", async () => {
