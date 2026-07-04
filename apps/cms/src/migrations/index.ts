@@ -6,6 +6,7 @@ import * as migration_20260615_002008_add_content_versions from './20260615_0020
 import * as migration_20260615_043010_add_content_health from './20260615_043010_add_content_health';
 import * as migration_20260619_160000_add_contact_messages from './20260619_160000_add_contact_messages';
 import * as migration_20260619_170000_add_books from './20260619_170000_add_books';
+import * as migration_20260619_180000_add_timeline_entries from './20260619_180000_add_timeline_entries';
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20260619_170000_add_books.up,
     down: migration_20260619_170000_add_books.down,
     name: '20260619_170000_add_books'
+  },
+  {
+    up: migration_20260619_180000_add_timeline_entries.up,
+    down: migration_20260619_180000_add_timeline_entries.down,
+    name: '20260619_180000_add_timeline_entries'
   },
 ];

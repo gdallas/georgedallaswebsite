@@ -5,7 +5,8 @@ import type {
   PublicPage,
   PublicPost,
   PublicProject,
-  PublicSiteSettings
+  PublicSiteSettings,
+  PublicTimelineEntry
 } from "./cms.mjs";
 
 export function loadSiteSettings(): Promise<PublicSiteSettings | null>;
@@ -16,6 +17,7 @@ export function loadProjects(): Promise<PublicProject[]>;
 export function loadLinks(): Promise<PublicLink[]>;
 export function loadBooks(): Promise<PublicBook[]>;
 export function loadCurrentlyReadingBooks(): Promise<PublicBook[]>;
+export function loadTimelineEntries(): Promise<PublicTimelineEntry[]>;
 export function loadNowPage(): Promise<PublicNowPage | null>;
 export function loadActiveRedirectRoutes(): Promise<
   Array<{ params: { redirect: string }; props: { source: string; destination: string; statusCode: string } }>
