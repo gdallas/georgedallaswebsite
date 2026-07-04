@@ -52,15 +52,23 @@ function projectTitle(project: { title?: string | null } | string | number): str
     entries.length === 0 ? (
       <p class="cc-muted">No public timeline entries yet. The story is being assembled.</p>
     ) : (
-      <ol class="timeline-list" aria-label="Timeline entries">
-        {entries.map((entry) => (
-          <li class="timeline-item">
-            <article class="timeline-card">
-              <div class="timeline-marker" aria-hidden="true"></div>
-              <div class="timeline-content">
+      <div class="timeline-tree">
+        <div class="timeline-canopy" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <ol class="timeline-list" aria-label="Timeline entries">
+          {entries.map((entry) => (
+            <li class="timeline-item" data-type={entry.type ?? "personal"}>
+              <div class="timeline-branch" aria-hidden="true">
+                <span></span>
+              </div>
+              <article class="timeline-card">
                 <p class="timeline-meta">
                   <time datetime={entry.eventDate}>{formatDate(entry.eventDate)}</time>
-                  {entry.type && <span>{typeLabels[entry.type] ?? entry.type}</span>}
+                  {entry.type && <span class="timeline-type">{typeLabels[entry.type] ?? entry.type}</span>}
                 </p>
                 <h2 class="cc-heading cc-heading--card">{entry.title}</h2>
                 {entry.summary && <p>{entry.summary}</p>}
@@ -121,11 +129,11 @@ function projectTitle(project: { title?: string | null } | string | number): str
                     )}
                   </div>
                 )}
-              </div>
-            </article>
-          </li>
-        ))}
-      </ol>
+              </article>
+            </li>
+          ))}
+        </ol>
+      </div>
     )
   }
 </BaseLayout>
@@ -139,53 +147,272 @@ function projectTitle(project: { title?: string | null } | string | number): str
     margin-block-start: 0.5rem;
   }
 
+  .timeline-tree {
+    --trunk-width: clamp(2.4rem, 4.8vw, 4.4rem);
+    --branch-top: 2.1rem;
+    position: relative;
+    padding-block-start: 6.25rem;
+  }
+
+  .timeline-tree::before {
+    content: "";
+    position: absolute;
+    inset-block: 4.15rem -0.25rem;
+    inset-inline-start: 50%;
+    z-index: 0;
+    inline-size: var(--trunk-width);
+    border-radius: 42% 58% 34% 44% / 3rem 2.4rem 1rem 1.2rem;
+    background:
+      radial-gradient(ellipse at 66% 16%, rgb(255 244 228 / 0.13) 0 4%, transparent 5%),
+      radial-gradient(ellipse at 35% 34%, rgb(36 22 15 / 0.82) 0 5%, transparent 6%),
+      radial-gradient(ellipse at 63% 58%, rgb(20 13 9 / 0.72) 0 4%, transparent 5%),
+      linear-gradient(100deg, rgb(255 244 228 / 0.17), transparent 18%),
+      repeating-linear-gradient(
+        96deg,
+        rgb(255 244 228 / 0.06) 0 0.22rem,
+        transparent 0.22rem 0.82rem,
+        rgb(30 18 12 / 0.22) 0.82rem 1.08rem,
+        transparent 1.08rem 1.75rem
+      ),
+      linear-gradient(90deg, #6b432b 0%, #4f2f20 34%, #7a4a2d 54%, #2d1b14 100%);
+    box-shadow:
+      inset 0.46rem 0 0 rgb(255 244 228 / 0.08),
+      inset -0.62rem 0 0 rgb(0 0 0 / 0.24),
+      inset 0 0 1.3rem rgb(0 0 0 / 0.28),
+      0 0 0 1px rgb(255 244 228 / 0.06),
+      0.45rem 0.9rem 1.8rem rgb(0 0 0 / 0.22);
+    transform: translateX(-50%);
+  }
+
+  .timeline-tree::after {
+    content: "";
+    position: absolute;
+    inset-block: 5.1rem 1.4rem;
+    inset-inline-start: 50%;
+    z-index: 0;
+    inline-size: calc(var(--trunk-width) * 0.68);
+    border-radius: 999px 999px 45% 55%;
+    background:
+      repeating-linear-gradient(
+        92deg,
+        transparent 0 0.9rem,
+        rgb(255 244 228 / 0.06) 0.9rem 1.05rem,
+        transparent 1.05rem 1.7rem
+      );
+    opacity: 0.9;
+    transform: translateX(-48%);
+    pointer-events: none;
+  }
+
+  .timeline-canopy {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 50%;
+    z-index: 1;
+    inline-size: min(25rem, 82vw);
+    block-size: 8rem;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .timeline-canopy::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-end: -0.45rem;
+    inline-size: clamp(2.25rem, 4vw, 3.8rem);
+    block-size: 3.2rem;
+    border-radius: 46% 54% 0 0 / 100% 100% 0 0;
+    background:
+      repeating-linear-gradient(
+        96deg,
+        rgb(255 244 228 / 0.06) 0 0.16rem,
+        transparent 0.16rem 0.72rem
+      ),
+      linear-gradient(90deg, #6b432b, #43291d 52%, #251813);
+    box-shadow: inset -0.36rem 0 0 rgb(0 0 0 / 0.2);
+    transform: translateX(-50%);
+  }
+
+  .timeline-canopy span {
+    position: absolute;
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 35% 30%, rgb(255 244 228 / 0.16), transparent 34%),
+      linear-gradient(145deg, color-mix(in srgb, var(--color-fern) 82%, var(--color-soft-linen)), #3f623f);
+    border: 1px solid rgb(241 232 216 / 0.12);
+    box-shadow: 0 18px 44px rgb(0 0 0 / 0.22);
+  }
+
+  .timeline-canopy span:nth-child(1) {
+    inset-inline-start: 4%;
+    inset-block-start: 2rem;
+    inline-size: 42%;
+    block-size: 4.7rem;
+  }
+
+  .timeline-canopy span:nth-child(2) {
+    inset-inline-start: 26%;
+    inset-block-start: 0.45rem;
+    inline-size: 48%;
+    block-size: 5.9rem;
+  }
+
+  .timeline-canopy span:nth-child(3) {
+    inset-inline-end: 5%;
+    inset-block-start: 2.05rem;
+    inline-size: 40%;
+    block-size: 4.6rem;
+  }
+
+  .timeline-canopy span:nth-child(4) {
+    inset-inline-start: 32%;
+    inset-block-start: 3.3rem;
+    inline-size: 36%;
+    block-size: 4rem;
+    background:
+      radial-gradient(circle at 42% 22%, rgb(255 244 228 / 0.14), transparent 34%),
+      linear-gradient(145deg, #6f8d60, #344f34);
+  }
+
   .timeline-list {
+    position: relative;
+    z-index: 1;
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0;
+    gap: clamp(1.4rem, 3vw, 2.4rem);
   }
 
   .timeline-item {
+    --timeline-tone: var(--accent);
+    --timeline-tone-strong: var(--accent-strong);
+    --timeline-tone-soft: rgb(196 122 69 / 0.16);
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 4rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .timeline-item[data-type="career"] {
+    --timeline-tone: var(--color-copper);
+    --timeline-tone-strong: var(--color-copper-dark);
+    --timeline-tone-soft: rgb(196 122 69 / 0.17);
+  }
+
+  .timeline-item[data-type="project"] {
+    --timeline-tone: var(--color-desaturated-cyan);
+    --timeline-tone-strong: #4d8588;
+    --timeline-tone-soft: rgb(108 166 168 / 0.16);
+  }
+
+  .timeline-item[data-type="writing"] {
+    --timeline-tone: var(--color-warning);
+    --timeline-tone-strong: #a87028;
+    --timeline-tone-soft: rgb(229 180 102 / 0.17);
+  }
+
+  .timeline-item[data-type="education"] {
+    --timeline-tone: var(--color-fern);
+    --timeline-tone-strong: #58764f;
+    --timeline-tone-soft: rgb(120 148 111 / 0.18);
+  }
+
+  .timeline-item[data-type="personal"] {
+    --timeline-tone: #b18acb;
+    --timeline-tone-strong: #82609a;
+    --timeline-tone-soft: rgb(177 138 203 / 0.16);
+  }
+
+  .timeline-item[data-type="site_update"] {
+    --timeline-tone: var(--color-granite);
+    --timeline-tone-strong: #6f6961;
+    --timeline-tone-soft: rgb(129 124 115 / 0.2);
   }
 
   .timeline-card {
-    display: grid;
-    grid-template-columns: 1.5rem minmax(0, 1fr);
-    gap: 1rem;
-    padding-block: 0 2rem;
+    grid-column: 1;
+    position: relative;
+    min-width: 0;
+    padding: clamp(1rem, 2.2vw, 1.35rem);
+    border: 1px solid color-mix(in srgb, var(--timeline-tone) 45%, var(--border));
+    border-radius: var(--radius-md);
+    background:
+      linear-gradient(145deg, var(--timeline-tone-soft), transparent 32%),
+      linear-gradient(145deg, color-mix(in srgb, var(--surface) 90%, transparent), color-mix(in srgb, var(--surface-raised) 74%, transparent));
+    box-shadow: var(--shadow-card);
   }
 
   .timeline-card::before {
     content: "";
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: center;
-    inline-size: 2px;
-    block-size: 100%;
-    background: var(--border);
+    position: absolute;
+    inset-block: 0.75rem;
+    inline-size: 0.22rem;
+    border-radius: 999px;
+    background: var(--timeline-tone);
   }
 
-  .timeline-marker {
+  .timeline-item:nth-child(odd) .timeline-card {
     grid-column: 1;
+    justify-self: end;
+    margin-inline-end: clamp(0.35rem, 1.5vw, 1.1rem);
+  }
+
+  .timeline-item:nth-child(even) .timeline-card {
+    grid-column: 3;
+    justify-self: start;
+    margin-inline-start: clamp(0.35rem, 1.5vw, 1.1rem);
+  }
+
+  .timeline-item:nth-child(odd) .timeline-card::before {
+    inset-inline-end: -1px;
+  }
+
+  .timeline-item:nth-child(even) .timeline-card::before {
+    inset-inline-start: -1px;
+  }
+
+  .timeline-branch {
+    grid-column: 2;
     grid-row: 1;
-    z-index: 1;
-    inline-size: 0.9rem;
-    block-size: 0.9rem;
-    margin-block-start: 0.35rem;
-    justify-self: center;
-    border: 2px solid var(--accent);
+    position: relative;
+    min-block-size: 4.4rem;
+  }
+
+  .timeline-branch::before {
+    content: "";
+    position: absolute;
+    inset-block-start: var(--branch-top);
+    inset-inline-start: 50%;
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    border: 0.22rem solid var(--timeline-tone);
     border-radius: 999px;
     background: var(--surface);
+    box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--background) 86%, transparent);
+    transform: translate(-50%, -50%);
   }
 
-  .timeline-content {
-    grid-column: 2;
-    min-width: 0;
-    padding-block-end: 1rem;
-    border-block-end: 1px solid var(--border);
+  .timeline-branch span {
+    position: absolute;
+    inset-block-start: var(--branch-top);
+    inline-size: calc(50% + clamp(0.7rem, 1.8vw, 1.35rem));
+    block-size: 0.46rem;
+    border-radius: 999px;
+    background:
+      repeating-linear-gradient(92deg, transparent 0 0.5rem, rgb(255 244 228 / 0.08) 0.5rem 0.58rem),
+      linear-gradient(90deg, #6b432b, #3a2419);
+    box-shadow: inset 0 -0.12rem 0 rgb(0 0 0 / 0.18);
+    transform: translateY(-50%);
+  }
+
+  .timeline-item:nth-child(odd) .timeline-branch span {
+    inset-inline-start: calc(-50% - clamp(0.7rem, 1.8vw, 1.35rem));
+  }
+
+  .timeline-item:nth-child(even) .timeline-branch span {
+    inset-inline-start: 50%;
   }
 
   .timeline-meta {
@@ -197,18 +424,33 @@ function projectTitle(project: { title?: string | null } | string | number): str
     font-size: 0.9rem;
   }
 
-  .timeline-meta span {
-    color: var(--accent-strong, var(--accent));
+  .timeline-type {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.48rem;
+    border: 1px solid color-mix(in srgb, var(--timeline-tone) 62%, transparent);
+    border-radius: var(--radius-pill);
+    background: var(--timeline-tone-soft);
+    color: var(--timeline-tone);
     font-weight: 650;
   }
 
-  .timeline-content img {
+  .timeline-card h2 {
+    margin-block-start: 0;
+  }
+
+  .timeline-card > p:not(.timeline-meta) {
+    color: var(--text);
+  }
+
+  .timeline-card img {
     display: block;
-    max-inline-size: min(100%, 34rem);
+    inline-size: 100%;
+    max-inline-size: 34rem;
     block-size: auto;
     margin-block-start: 1rem;
     border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    border-radius: var(--radius-sm);
   }
 
   .timeline-body {
@@ -239,10 +481,67 @@ function projectTitle(project: { title?: string | null } | string | number): str
     font-weight: 650;
   }
 
-  @media (max-width: 42rem) {
-    .timeline-card {
-      grid-template-columns: 1rem minmax(0, 1fr);
-      gap: 0.75rem;
+  @media (max-width: 48rem) {
+    .timeline-tree {
+      --trunk-width: 2.25rem;
+      padding-block-start: 5rem;
+    }
+
+    .timeline-tree::before {
+      inset-inline-start: 0;
+      transform: none;
+    }
+
+    .timeline-tree::after {
+      inset-inline-start: 0.25rem;
+      transform: none;
+    }
+
+    .timeline-canopy {
+      inset-inline-start: 0;
+      inline-size: min(20rem, 92vw);
+      transform: none;
+    }
+
+    .timeline-list {
+      gap: 1.35rem;
+    }
+
+    .timeline-item,
+    .timeline-item:nth-child(odd),
+    .timeline-item:nth-child(even) {
+      grid-template-columns: 1.5rem minmax(0, 1fr);
+      column-gap: 0.9rem;
+    }
+
+    .timeline-card,
+    .timeline-item:nth-child(odd) .timeline-card,
+    .timeline-item:nth-child(even) .timeline-card {
+      grid-column: 2;
+      justify-self: stretch;
+      margin-inline: 0;
+    }
+
+    .timeline-card::before,
+    .timeline-item:nth-child(odd) .timeline-card::before,
+    .timeline-item:nth-child(even) .timeline-card::before {
+      inset-inline-start: -1px;
+      inset-inline-end: auto;
+    }
+
+    .timeline-branch {
+      grid-column: 1;
+    }
+
+    .timeline-branch::before {
+      inset-inline-start: 50%;
+    }
+
+    .timeline-branch span,
+    .timeline-item:nth-child(odd) .timeline-branch span,
+    .timeline-item:nth-child(even) .timeline-branch span {
+      inset-inline-start: 50%;
+      inline-size: calc(100% + 0.9rem);
     }
   }
 </style>

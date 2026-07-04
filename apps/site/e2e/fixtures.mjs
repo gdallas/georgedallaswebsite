@@ -110,6 +110,39 @@ export const LINKS = [
   }
 ];
 
+export const TIMELINE_ENTRIES = [
+  {
+    id: 1,
+    title: "Started clinical training",
+    type: "education",
+    eventDate: "2026-04-10T00:00:00.000Z",
+    status: "published",
+    visibility: "public",
+    summary: "A seeded education milestone for the public timeline.",
+    sortOrder: 1
+  },
+  {
+    id: 2,
+    title: "Shipped the personal site",
+    type: "project",
+    eventDate: "2026-03-20T00:00:00.000Z",
+    status: "published",
+    visibility: "public",
+    summary: "A project milestone that should appear on the opposite side of the tree.",
+    sortOrder: 2
+  },
+  {
+    id: 3,
+    title: "Published a seeded essay",
+    type: "writing",
+    eventDate: "2026-02-15T00:00:00.000Z",
+    status: "published",
+    visibility: "public",
+    summary: "A writing milestone used to exercise timeline category color coding.",
+    sortOrder: 3
+  }
+];
+
 export const NOW_PAGE = {
   status: "published",
   currentFocus: "Shipping the personal site",
@@ -133,6 +166,7 @@ export const RESPONSES = {
   "/api/pages": { docs: PAGES },
   "/api/projects": { docs: PROJECTS },
   "/api/links": { docs: LINKS },
+  "/api/timeline-entries": { docs: TIMELINE_ENTRIES },
   "/api/globals/now-page": NOW_PAGE,
   "/api/globals/site-settings": SITE_SETTINGS
 };
