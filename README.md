@@ -158,6 +158,7 @@ Required local variables:
 Environment validation lives in `packages/shared/src/config.ts`. Local and development configuration must not use production database URLs. The contact inbox and public form are documented in `docs/runbooks/contact-form.md`.
 
 The public bookshelf and CMS book workflow are documented in `docs/runbooks/bookshelf.md`.
+The public timeline and CMS timeline workflow are documented in `docs/runbooks/timeline.md`.
 
 ---
 

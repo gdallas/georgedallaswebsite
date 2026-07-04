@@ -19,6 +19,7 @@ import { Posts } from "./collections/Posts";
 import { Projects } from "./collections/Projects";
 import { Redirects } from "./collections/Redirects";
 import { Tags } from "./collections/Tags";
+import { TimelineEntries } from "./collections/TimelineEntries";
 import { createUsersCollection } from "./collections/Users";
 import { loadCmsConfig } from "./env";
 import { NowPage } from "./globals/NowPage";
@@ -71,6 +72,7 @@ export default buildConfig({
     Projects,
     Links,
     Books,
+    TimelineEntries,
     AuditEvents,
     ImportJobs,
     ImportedItems,

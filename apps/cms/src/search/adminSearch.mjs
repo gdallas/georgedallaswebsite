@@ -9,8 +9,7 @@
 // docs/runbooks/search.md.
 
 // Per-collection search config. `fields` are matched with `like`; `title`/
-// `subtitle` map a found doc to display text. Timeline entries are intentionally
-// absent until that collection exists (GDW ticket wording: "when implemented").
+// `subtitle` map a found doc to display text.
 export const adminSearchCollections = [
   {
     slug: "posts",
@@ -46,6 +45,13 @@ export const adminSearchCollections = [
     fields: ["title", "author", "isbn"],
     title: (doc) => doc.title,
     subtitle: (doc) => doc.author || doc.readingStatus
+  },
+  {
+    slug: "timeline-entries",
+    label: "Timeline entries",
+    fields: ["title", "summary", "type"],
+    title: (doc) => doc.title,
+    subtitle: (doc) => doc.type || doc.eventDate
   },
   {
     slug: "media",

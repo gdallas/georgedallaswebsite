@@ -1,0 +1,248 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadTimelineEntries } from "../../lib/content.mjs";
+import { renderRichText } from "../../lib/richText.mjs";
+
+const entries = await loadTimelineEntries();
+
+const typeLabels: Record<string, string> = {
+  career: "Career",
+  project: "Project",
+  writing: "Writing",
+  education: "Education",
+  personal: "Personal",
+  site_update: "Site update"
+};
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" });
+}
+
+function isExternalUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value);
+}
+
+function timelineLink(link: { label?: string | null; url?: string | null }): { label: string; url: string } | null {
+  if (!link.label || !link.url) {
+    return null;
+  }
+  return { label: link.label, url: link.url };
+}
+
+function isPresent<T>(value: T | null): value is T {
+  return value !== null;
+}
+
+function postHref(post: { slug?: string | null } | string | number): string | null {
+  return typeof post === "object" && post?.slug ? `/writing/${post.slug}` : null;
+}
+
+function projectTitle(project: { title?: string | null } | string | number): string | null {
+  return typeof project === "object" && project?.title ? project.title : null;
+}
+---
+
+<BaseLayout title="Timeline - George Dallas" description="A visual timeline of career, project, writing, education, and site milestones.">
+  <header class="page-head">
+    <h1 class="cc-heading cc-heading--hero">Timeline</h1>
+    <p class="cc-muted">Career milestones, projects, writing, education, personal notes, and site updates in one readable thread.</p>
+  </header>
+
+  {
+    entries.length === 0 ? (
+      <p class="cc-muted">No public timeline entries yet. The story is being assembled.</p>
+    ) : (
+      <ol class="timeline-list" aria-label="Timeline entries">
+        {entries.map((entry) => (
+          <li class="timeline-item">
+            <article class="timeline-card">
+              <div class="timeline-marker" aria-hidden="true"></div>
+              <div class="timeline-content">
+                <p class="timeline-meta">
+                  <time datetime={entry.eventDate}>{formatDate(entry.eventDate)}</time>
+                  {entry.type && <span>{typeLabels[entry.type] ?? entry.type}</span>}
+                </p>
+                <h2 class="cc-heading cc-heading--card">{entry.title}</h2>
+                {entry.summary && <p>{entry.summary}</p>}
+                {entry.image?.url && (
+                  <img
+                    src={entry.image.url}
+                    alt={entry.image.alt || ""}
+                    loading="lazy"
+                    width={entry.image.width || 640}
+                    height={entry.image.height || 360}
+                  />
+                )}
+                {entry.body && <div class="timeline-body" set:html={renderRichText(entry.body)} />}
+                {entry.links && entry.links.length > 0 && (
+                  <ul class="timeline-links">
+                    {entry.links
+                      .map(timelineLink)
+                      .filter(isPresent)
+                      .map((link) => (
+                        <li>
+                          {isExternalUrl(link.url) ? (
+                            <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+                          ) : (
+                            <a href={link.url}>{link.label}</a>
+                          )}
+                        </li>
+                      ))}
+                  </ul>
+                )}
+                {((entry.relatedPosts && entry.relatedPosts.some(postHref)) ||
+                  (entry.relatedProjects && entry.relatedProjects.some(projectTitle))) && (
+                  <div class="timeline-related" aria-label={`Related items for ${entry.title}`}>
+                    {entry.relatedPosts && entry.relatedPosts.some(postHref) && (
+                      <p>
+                        <span>Related writing:</span>{" "}
+                        {entry.relatedPosts
+                          .filter(postHref)
+                          .map((post, index, posts) => (
+                            <>
+                              <a href={postHref(post)}>{typeof post === "object" ? post.title : "Related post"}</a>
+                              {index < posts.length - 1 ? ", " : ""}
+                            </>
+                          ))}
+                      </p>
+                    )}
+                    {entry.relatedProjects && entry.relatedProjects.some(projectTitle) && (
+                      <p>
+                        <span>Related projects:</span>{" "}
+                        {entry.relatedProjects
+                          .filter(projectTitle)
+                          .map((project, index, projects) => (
+                            <>
+                              {projectTitle(project)}
+                              {index < projects.length - 1 ? ", " : ""}
+                            </>
+                          ))}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </article>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-block-end: 2rem;
+  }
+
+  .page-head p {
+    margin-block-start: 0.5rem;
+  }
+
+  .timeline-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+
+  .timeline-item {
+    position: relative;
+  }
+
+  .timeline-card {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 0 2rem;
+  }
+
+  .timeline-card::before {
+    content: "";
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    inline-size: 2px;
+    block-size: 100%;
+    background: var(--border);
+  }
+
+  .timeline-marker {
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 1;
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+    margin-block-start: 0.35rem;
+    justify-self: center;
+    border: 2px solid var(--accent);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+
+  .timeline-content {
+    grid-column: 2;
+    min-width: 0;
+    padding-block-end: 1rem;
+    border-block-end: 1px solid var(--border);
+  }
+
+  .timeline-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    margin: 0 0 0.35rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .timeline-meta span {
+    color: var(--accent-strong, var(--accent));
+    font-weight: 650;
+  }
+
+  .timeline-content img {
+    display: block;
+    max-inline-size: min(100%, 34rem);
+    block-size: auto;
+    margin-block-start: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+  }
+
+  .timeline-body {
+    margin-block-start: 1rem;
+  }
+
+  .timeline-links {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+  }
+
+  .timeline-related {
+    margin-block-start: 1rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .timeline-related p {
+    margin-block: 0.35rem 0;
+  }
+
+  .timeline-related span {
+    color: var(--text);
+    font-weight: 650;
+  }
+
+  @media (max-width: 42rem) {
+    .timeline-card {
+      grid-template-columns: 1rem minmax(0, 1fr);
+      gap: 0.75rem;
+    }
+  }
+</style>

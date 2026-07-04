@@ -84,6 +84,22 @@ export type PublicBook = {
   sortOrder?: number | null;
 };
 
+export type TimelineEntryType = "career" | "project" | "writing" | "education" | "personal" | "site_update";
+
+export type PublicTimelineEntry = {
+  id: number | string;
+  title: string;
+  eventDate: string;
+  type?: TimelineEntryType | null;
+  summary?: string | null;
+  body?: unknown;
+  image?: MediaRef | null;
+  links?: Array<{ label?: string | null; url?: string | null }> | null;
+  relatedPosts?: PublicPost[] | Array<number | string> | null;
+  relatedProjects?: PublicProject[] | Array<number | string> | null;
+  sortOrder?: number | null;
+};
+
 export type PublicNowPage = {
   status?: string | null;
   currentFocus?: string | null;
@@ -120,6 +136,7 @@ export function getPublicProjects(config?: CmsClientConfig): Promise<PublicProje
 export function getPublicLinks(config?: CmsClientConfig): Promise<PublicLink[]>;
 export function getPublicBooks(config?: CmsClientConfig): Promise<PublicBook[]>;
 export function getCurrentlyReadingBooks(config?: CmsClientConfig): Promise<PublicBook[]>;
+export function getPublicTimelineEntries(config?: CmsClientConfig): Promise<PublicTimelineEntry[]>;
 export function getNowPage(config?: CmsClientConfig): Promise<PublicNowPage | null>;
 export function getSiteSettings(config?: CmsClientConfig): Promise<PublicSiteSettings>;
 export function getActiveRedirects(config?: CmsClientConfig): Promise<RedirectRecord[]>;

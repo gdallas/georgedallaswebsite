@@ -118,6 +118,11 @@ export async function getCurrentlyReadingBooks(config = {}) {
   return (await getPublicBooks(config)).filter((book) => book.readingStatus === "reading");
 }
 
+export async function getPublicTimelineEntries(config = {}) {
+  const docs = await fetchDocs("timeline-entries", publicListingWhere(), config, "&sort=-eventDate,sortOrder");
+  return docs.filter(isPublicListingVisible);
+}
+
 export async function getActiveRedirects(config = {}) {
   // Access control also restricts anonymous reads to active redirects; the
   // explicit where keeps it correct for authenticated builds too.

@@ -7,6 +7,7 @@ import {
   getNowPage,
   getPublicBooks,
   getPublicProjects,
+  getPublicTimelineEntries,
   getPublishedPost,
   getPublishedPosts,
   getSiteSettings
@@ -102,6 +103,26 @@ describe("public data layer", () => {
     const books = await getPublicBooks({ baseUrl, fetchImpl });
     assert.deepEqual(books.map((book) => book.title), ["Reading", "Finished"]);
     assert.deepEqual((await getCurrentlyReadingBooks({ baseUrl, fetchImpl })).map((book) => book.title), ["Reading"]);
+  });
+
+  it("filters timeline entries to published, public listings", async () => {
+    const { fetchImpl, calls } = mockFetch({
+      "/api/timeline-entries": {
+        docs: [
+          { id: 1, title: "Launch", status: "published", visibility: "public", eventDate: "2026-06-01T00:00:00.000Z" },
+          { id: 2, title: "Draft", status: "draft", visibility: "public", eventDate: "2026-06-02T00:00:00.000Z" },
+          { id: 3, title: "Private", status: "published", visibility: "private", eventDate: "2026-06-03T00:00:00.000Z" }
+        ]
+      }
+    });
+
+    const entries = await getPublicTimelineEntries({ baseUrl, fetchImpl });
+    assert.deepEqual(entries.map((entry) => entry.title), ["Launch"]);
+
+    const url = new URL(calls[0]);
+    assert.equal(url.searchParams.get("where[and][0][status][equals]"), "published");
+    assert.equal(url.searchParams.get("where[and][1][visibility][equals]"), "public");
+    assert.equal(url.searchParams.get("sort"), "-eventDate,sortOrder");
   });
 
   it("returns the Now page only when published", async () => {
