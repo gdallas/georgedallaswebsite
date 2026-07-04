@@ -24,6 +24,10 @@ export class CmsUnavailableError extends Error {
   }
 }
 
+const TRANSIENT_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
+const DEFAULT_RETRY_ATTEMPTS = 3;
+const DEFAULT_RETRY_DELAY_MS = 2_000;
+
 function resolveBaseUrl(config) {
   const raw = config.baseUrl ?? (typeof process !== "undefined" ? process.env?.CMS_API_URL : undefined);
   if (!raw) {
@@ -54,20 +58,50 @@ export function encodeWhere(where) {
   return params.toString();
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function retryAttempts(config) {
+  const attempts = Number(config.retryAttempts ?? DEFAULT_RETRY_ATTEMPTS);
+  return Number.isFinite(attempts) ? Math.max(1, attempts) : DEFAULT_RETRY_ATTEMPTS;
+}
+
+function retryDelayMs(config) {
+  const delayMs = Number(config.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS);
+  return Number.isFinite(delayMs) ? Math.max(0, delayMs) : DEFAULT_RETRY_DELAY_MS;
+}
+
 async function fetchJson(url, config) {
   const fetchImpl = config.fetchImpl ?? fetch;
-  let response;
-  try {
-    response = await fetchImpl(url, { headers: { Accept: "application/json" } });
-  } catch (cause) {
-    throw new CmsUnavailableError(`Failed to reach the CMS at ${url}.`, { cause });
+  const attempts = retryAttempts(config);
+  let lastError;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    let response;
+    try {
+      response = await fetchImpl(url, { headers: { Accept: "application/json" } });
+    } catch (cause) {
+      lastError = new CmsUnavailableError(`Failed to reach the CMS at ${url}.`, { cause });
+    }
+
+    if (response?.ok) {
+      return response.json();
+    }
+
+    if (response && !response.ok) {
+      lastError = new CmsUnavailableError(`The CMS returned HTTP ${response.status} for ${url}.`);
+      if (!TRANSIENT_STATUS_CODES.has(response.status)) {
+        throw lastError;
+      }
+    }
+
+    if (attempt < attempts) {
+      await sleep(retryDelayMs(config));
+    }
   }
 
-  if (!response.ok) {
-    throw new CmsUnavailableError(`The CMS returned HTTP ${response.status} for ${url}.`);
-  }
-
-  return response.json();
+  throw lastError;
 }
 
 async function fetchDocs(slug, where, config, extraQuery = "") {
@@ -116,6 +150,11 @@ export async function getPublicBooks(config = {}) {
 
 export async function getCurrentlyReadingBooks(config = {}) {
   return (await getPublicBooks(config)).filter((book) => book.readingStatus === "reading");
+}
+
+export async function getPublicTimelineEntries(config = {}) {
+  const docs = await fetchDocs("timeline-entries", publicListingWhere(), config, "&sort=-eventDate,sortOrder");
+  return docs.filter(isPublicListingVisible);
 }
 
 export async function getActiveRedirects(config = {}) {

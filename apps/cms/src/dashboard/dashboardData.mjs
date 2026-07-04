@@ -34,6 +34,11 @@ export function buildQuickActions(adminRoute, latestDraft) {
       href: `${adminRoute}/collections/books/create`
     },
     {
+      label: "Add timeline entry",
+      description: "Record a milestone, project, or site update.",
+      href: `${adminRoute}/collections/timeline-entries/create`
+    },
+    {
       label: "Upload media",
       description: "Add images with alt text.",
       href: `${adminRoute}/collections/media/create`

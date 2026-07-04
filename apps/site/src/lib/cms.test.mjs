@@ -7,6 +7,7 @@ import {
   getNowPage,
   getPublicBooks,
   getPublicProjects,
+  getPublicTimelineEntries,
   getPublishedPost,
   getPublishedPosts,
   getSiteSettings
@@ -104,6 +105,26 @@ describe("public data layer", () => {
     assert.deepEqual((await getCurrentlyReadingBooks({ baseUrl, fetchImpl })).map((book) => book.title), ["Reading"]);
   });
 
+  it("filters timeline entries to published, public listings", async () => {
+    const { fetchImpl, calls } = mockFetch({
+      "/api/timeline-entries": {
+        docs: [
+          { id: 1, title: "Launch", status: "published", visibility: "public", eventDate: "2026-06-01T00:00:00.000Z" },
+          { id: 2, title: "Draft", status: "draft", visibility: "public", eventDate: "2026-06-02T00:00:00.000Z" },
+          { id: 3, title: "Private", status: "published", visibility: "private", eventDate: "2026-06-03T00:00:00.000Z" }
+        ]
+      }
+    });
+
+    const entries = await getPublicTimelineEntries({ baseUrl, fetchImpl });
+    assert.deepEqual(entries.map((entry) => entry.title), ["Launch"]);
+
+    const url = new URL(calls[0]);
+    assert.equal(url.searchParams.get("where[and][0][status][equals]"), "published");
+    assert.equal(url.searchParams.get("where[and][1][visibility][equals]"), "public");
+    assert.equal(url.searchParams.get("sort"), "-eventDate,sortOrder");
+  });
+
   it("returns the Now page only when published", async () => {
     const draft = mockFetch({ "/api/globals/now-page": { status: "draft", currentFocus: null } });
     assert.equal(await getNowPage({ baseUrl, fetchImpl: draft.fetchImpl }), null);
@@ -116,12 +137,37 @@ describe("public data layer", () => {
     const fetchImpl = async () => {
       throw new Error("ECONNREFUSED");
     };
-    await assert.rejects(getPublishedPosts({ baseUrl, fetchImpl }), CmsUnavailableError);
+    await assert.rejects(getPublishedPosts({ baseUrl, fetchImpl, retryDelayMs: 0 }), CmsUnavailableError);
   });
 
   it("throws CmsUnavailableError on a non-OK CMS response", async () => {
     const fetchImpl = async () => ({ ok: false, status: 503, json: async () => ({}) });
-    await assert.rejects(getSiteSettings({ baseUrl, fetchImpl }), CmsUnavailableError);
+    await assert.rejects(getSiteSettings({ baseUrl, fetchImpl, retryDelayMs: 0 }), CmsUnavailableError);
+  });
+
+  it("retries transient CMS responses before failing the build", async () => {
+    let attempts = 0;
+    const fetchImpl = async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        return { ok: false, status: 500, json: async () => ({}) };
+      }
+      return { ok: true, status: 200, json: async () => ({ siteTitle: "George Dallas" }) };
+    };
+
+    assert.equal((await getSiteSettings({ baseUrl, fetchImpl, retryDelayMs: 0 })).siteTitle, "George Dallas");
+    assert.equal(attempts, 2);
+  });
+
+  it("does not retry non-transient CMS responses", async () => {
+    let attempts = 0;
+    const fetchImpl = async () => {
+      attempts += 1;
+      return { ok: false, status: 404, json: async () => ({}) };
+    };
+
+    await assert.rejects(getSiteSettings({ baseUrl, fetchImpl, retryDelayMs: 0 }), CmsUnavailableError);
+    assert.equal(attempts, 1);
   });
 
   it("requires a configured base URL", async () => {

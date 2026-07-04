@@ -84,6 +84,14 @@ export async function loadCurrentlyReadingBooks() {
   return cms.getCurrentlyReadingBooks();
 }
 
+export async function loadTimelineEntries() {
+  if (!cmsConfigured()) {
+    warnOnce();
+    return [];
+  }
+  return cms.getPublicTimelineEntries();
+}
+
 export async function loadNowPage() {
   if (!cmsConfigured()) {
     warnOnce();
