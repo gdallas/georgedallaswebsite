@@ -58,6 +58,9 @@ function projectTitle(project: { title?: string | null } | string | number): str
           <span></span>
           <span></span>
           <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
         <ol class="timeline-list" aria-label="Timeline entries">
           {entries.map((entry) => (
@@ -151,7 +154,7 @@ function projectTitle(project: { title?: string | null } | string | number): str
     --trunk-width: clamp(2.4rem, 4.8vw, 4.4rem);
     --branch-top: 2.1rem;
     position: relative;
-    padding-block-start: 6.25rem;
+    padding-block-start: 9.25rem;
   }
 
   .timeline-tree::before {
@@ -206,11 +209,11 @@ function projectTitle(project: { title?: string | null } | string | number): str
 
   .timeline-canopy {
     position: absolute;
-    inset-block-start: 0;
+    inset-block-start: -0.3rem;
     inset-inline-start: 50%;
     z-index: 1;
-    inline-size: min(25rem, 82vw);
-    block-size: 8rem;
+    inline-size: min(34rem, 92vw);
+    block-size: 12rem;
     transform: translateX(-50%);
     pointer-events: none;
   }
@@ -219,9 +222,9 @@ function projectTitle(project: { title?: string | null } | string | number): str
     content: "";
     position: absolute;
     inset-inline-start: 50%;
-    inset-block-end: -0.45rem;
+    inset-block-end: -0.25rem;
     inline-size: clamp(2.25rem, 4vw, 3.8rem);
-    block-size: 3.2rem;
+    block-size: 4.1rem;
     border-radius: 46% 54% 0 0 / 100% 100% 0 0;
     background:
       repeating-linear-gradient(
@@ -236,43 +239,80 @@ function projectTitle(project: { title?: string | null } | string | number): str
 
   .timeline-canopy span {
     position: absolute;
-    border-radius: 999px;
+    left: 50%;
+    border-radius: 54% 46% 64% 36% / 76% 78% 22% 24%;
     background:
-      radial-gradient(circle at 35% 30%, rgb(255 244 228 / 0.16), transparent 34%),
-      linear-gradient(145deg, color-mix(in srgb, var(--color-fern) 82%, var(--color-soft-linen)), #3f623f);
-    border: 1px solid rgb(241 232 216 / 0.12);
-    box-shadow: 0 18px 44px rgb(0 0 0 / 0.22);
+      repeating-linear-gradient(
+        168deg,
+        rgb(255 244 228 / 0.08) 0 0.1rem,
+        transparent 0.1rem 0.72rem
+      ),
+      linear-gradient(180deg, #7d9b70 0%, #526f4b 44%, #273f2f 100%);
+    border-block-start: 1px solid rgb(241 232 216 / 0.14);
+    box-shadow: 0 18px 38px rgb(0 0 0 / 0.2);
+    clip-path: polygon(50% 0, 96% 42%, 78% 46%, 100% 67%, 68% 62%, 86% 87%, 56% 74%, 50% 100%, 44% 74%, 14% 87%, 32% 62%, 0 67%, 22% 46%, 4% 42%);
+    transform: translateX(-50%);
   }
 
   .timeline-canopy span:nth-child(1) {
-    inset-inline-start: 4%;
-    inset-block-start: 2rem;
-    inline-size: 42%;
-    block-size: 4.7rem;
+    inset-block-start: 0;
+    inline-size: 36%;
+    block-size: 3.4rem;
+    opacity: 0.94;
   }
 
   .timeline-canopy span:nth-child(2) {
-    inset-inline-start: 26%;
-    inset-block-start: 0.45rem;
-    inline-size: 48%;
-    block-size: 5.9rem;
+    inset-block-start: 1.45rem;
+    inline-size: 52%;
+    block-size: 4.2rem;
+    background:
+      repeating-linear-gradient(168deg, rgb(255 244 228 / 0.07) 0 0.1rem, transparent 0.1rem 0.72rem),
+      linear-gradient(180deg, #78946f 0%, #4f6d48 48%, #243b2c 100%);
   }
 
   .timeline-canopy span:nth-child(3) {
-    inset-inline-end: 5%;
-    inset-block-start: 2.05rem;
-    inline-size: 40%;
-    block-size: 4.6rem;
+    inset-block-start: 3.15rem;
+    inline-size: 68%;
+    block-size: 4.8rem;
+    opacity: 0.98;
   }
 
   .timeline-canopy span:nth-child(4) {
-    inset-inline-start: 32%;
-    inset-block-start: 3.3rem;
-    inline-size: 36%;
-    block-size: 4rem;
+    inset-block-start: 5.05rem;
+    inline-size: 84%;
+    block-size: 5.15rem;
     background:
-      radial-gradient(circle at 42% 22%, rgb(255 244 228 / 0.14), transparent 34%),
-      linear-gradient(145deg, #6f8d60, #344f34);
+      repeating-linear-gradient(168deg, rgb(255 244 228 / 0.07) 0 0.1rem, transparent 0.1rem 0.78rem),
+      linear-gradient(180deg, #708d63 0%, #456341 47%, #21382b 100%);
+  }
+
+  .timeline-canopy span:nth-child(5) {
+    inset-block-start: 7.1rem;
+    inline-size: 100%;
+    block-size: 4.75rem;
+    opacity: 0.92;
+    background:
+      repeating-linear-gradient(168deg, rgb(255 244 228 / 0.06) 0 0.1rem, transparent 0.1rem 0.82rem),
+      linear-gradient(180deg, #6b875f 0%, #3f5d3c 48%, #1f3429 100%);
+  }
+
+  .timeline-canopy span:nth-child(6),
+  .timeline-canopy span:nth-child(7) {
+    inset-block-start: 5.8rem;
+    inline-size: 37%;
+    block-size: 3.1rem;
+    opacity: 0.76;
+    filter: saturate(0.95);
+  }
+
+  .timeline-canopy span:nth-child(6) {
+    left: 26%;
+    transform: translateX(-50%) rotate(-9deg);
+  }
+
+  .timeline-canopy span:nth-child(7) {
+    left: 74%;
+    transform: translateX(-50%) rotate(9deg);
   }
 
   .timeline-list {
@@ -293,6 +333,35 @@ function projectTitle(project: { title?: string | null } | string | number): str
     display: grid;
     grid-template-columns: minmax(0, 1fr) 4rem minmax(0, 1fr);
     align-items: start;
+  }
+
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0.15rem;
+    z-index: 0;
+    inline-size: min(18rem, 34vw);
+    block-size: 6.2rem;
+    opacity: 0.36;
+    background:
+      repeating-linear-gradient(
+        165deg,
+        rgb(241 232 216 / 0.08) 0 0.08rem,
+        transparent 0.08rem 0.58rem
+      ),
+      linear-gradient(180deg, rgb(120 148 111 / 0.7), rgb(37 63 45 / 0.52));
+    clip-path: polygon(0 26%, 84% 10%, 70% 24%, 100% 30%, 64% 38%, 88% 50%, 56% 52%, 72% 70%, 42% 62%, 48% 88%, 24% 68%, 8% 86%, 16% 56%);
+    pointer-events: none;
+  }
+
+  .timeline-item:nth-child(odd)::before {
+    inset-inline-end: calc(50% + 0.85rem);
+    transform: rotate(-6deg);
+  }
+
+  .timeline-item:nth-child(even)::before {
+    inset-inline-start: calc(50% + 0.85rem);
+    transform: scaleX(-1) rotate(-6deg);
   }
 
   .timeline-item[data-type="career"] {
@@ -334,6 +403,7 @@ function projectTitle(project: { title?: string | null } | string | number): str
   .timeline-card {
     grid-column: 1;
     position: relative;
+    z-index: 2;
     min-width: 0;
     padding: clamp(1rem, 2.2vw, 1.35rem);
     border: 1px solid color-mix(in srgb, var(--timeline-tone) 45%, var(--border));
@@ -377,6 +447,7 @@ function projectTitle(project: { title?: string | null } | string | number): str
     grid-column: 2;
     grid-row: 1;
     position: relative;
+    z-index: 1;
     min-block-size: 4.4rem;
   }
 
@@ -484,7 +555,7 @@ function projectTitle(project: { title?: string | null } | string | number): str
   @media (max-width: 48rem) {
     .timeline-tree {
       --trunk-width: 2.25rem;
-      padding-block-start: 5rem;
+      padding-block-start: 8rem;
     }
 
     .timeline-tree::before {
@@ -499,7 +570,18 @@ function projectTitle(project: { title?: string | null } | string | number): str
 
     .timeline-canopy {
       inset-inline-start: 0;
-      inline-size: min(20rem, 92vw);
+      inline-size: min(23rem, 96vw);
+      transform: none;
+    }
+
+    .timeline-canopy span {
+      left: 48%;
+    }
+
+    .timeline-item::before {
+      inset-inline-start: 0.65rem;
+      inline-size: min(14rem, 56vw);
+      opacity: 0.26;
       transform: none;
     }
 
