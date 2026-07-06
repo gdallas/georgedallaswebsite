@@ -1,13 +1,17 @@
 name: Content Checks
 
-# Weekly broken-link + content-quality sweep (GDW-037). Runs the standalone
-# checker against the dev CMS over HTTPS (the CMS itself has no internet egress,
-# so checking can't run inside it) and writes findings to the content-issues
-# collection. This never touches the public site build — broken external links
-# only create issues, they never fail a deploy.
+# Weekly broken-link + content-quality sweep (GDW-037, extended to production
+# in GDW-052). Runs the standalone checker against each CMS over HTTPS (the
+# CMS itself has no internet egress, so checking can't run inside it) and
+# writes findings to that environment's content-issues collection. This never
+# touches the public site build — broken external links only create issues,
+# they never fail a deploy.
 #
-# Requires repo secrets CMS_EMAIL / CMS_PASSWORD (a CMS user with content access).
-# Until they are set, scheduled runs no-op cleanly.
+# Per-environment repo secrets:
+#   dev:  CMS_EMAIL / CMS_PASSWORD
+#   prod: PROD_CMS_EMAIL / PROD_CMS_PASSWORD
+# A leg whose secrets are unset skips cleanly, so environments can be enabled
+# independently. Use a dedicated editor-role CMS user, not the owner account.
 
 on:
   schedule:
@@ -23,8 +27,21 @@ concurrency:
 
 jobs:
   check:
-    name: Run content checks
+    name: Run content checks (${{ matrix.environment }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - environment: dev
+            cms_url: https://cms-dev.georgedallas.com
+            email_secret: CMS_EMAIL
+            password_secret: CMS_PASSWORD
+          - environment: prod
+            cms_url: https://cms.georgedallas.com
+            email_secret: PROD_CMS_EMAIL
+            password_secret: PROD_CMS_PASSWORD
+            allow_prod: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -45,13 +62,16 @@ jobs:
 
       - name: Run checks
         env:
-          CMS_API_URL: https://cms-dev.georgedallas.com
-          CMS_EMAIL: ${{ secrets.CMS_EMAIL }}
-          CMS_PASSWORD: ${{ secrets.CMS_PASSWORD }}
+          CMS_API_URL: ${{ matrix.cms_url }}
+          CMS_EMAIL: ${{ secrets[matrix.email_secret] }}
+          CMS_PASSWORD: ${{ secrets[matrix.password_secret] }}
+          # The checker refuses production by default (safe for ad-hoc local
+          # runs); this scheduled sweep is the sanctioned prod caller.
+          CONTENT_CHECKS_ALLOW_PROD: ${{ matrix.allow_prod || 'false' }}
         run: |
           if [ -z "$CMS_EMAIL" ] || [ -z "$CMS_PASSWORD" ]; then
-            echo "CMS_EMAIL / CMS_PASSWORD secrets are not set; skipping content checks."
-            echo "Add them in repo settings to enable the weekly sweep."
+            echo "${{ matrix.email_secret }} / ${{ matrix.password_secret }} are not set; skipping ${{ matrix.environment }} content checks."
+            echo "Add them in repo settings to enable this leg of the weekly sweep."
             exit 0
           fi
           pnpm --filter @georgedallas/cms content:check
