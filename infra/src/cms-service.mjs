@@ -50,8 +50,37 @@ export class CmsService {
       description: `Payload CMS for ${this.environment.id}, behind CloudFront.`,
       code: lambda.DockerImageCode.fromImageAsset(repoRoot, {
         file: "apps/cms/Dockerfile",
-        // Keep the asset hash stable across unrelated repo changes.
-        exclude: ["infra/cdk.out", ".git", "node_modules", "**/node_modules", "**/.next"]
+        // Keep the asset hash stable across unrelated repo changes: only files
+        // the image build consumes (root manifests, apps/cms, packages/shared)
+        // should influence it, or every merge rebuilds and pushes a new CMS
+        // image and the CDK assets ECR repository grows without bound. The
+        // other workspace package.json files stay included so pnpm's frozen
+        // lockfile check still sees every importer.
+        exclude: [
+          "infra/cdk.out",
+          ".git",
+          "node_modules",
+          "**/node_modules",
+          "**/.next",
+          "**/*.md",
+          "docs",
+          ".github",
+          ".agents",
+          ".claude",
+          "scripts",
+          "local-data",
+          "apps/site/src",
+          "apps/site/public",
+          "apps/site/e2e",
+          "apps/worker/publishing",
+          "infra/src",
+          "infra/cdk.json",
+          "infra/cdk.context.json",
+          "**/test-results",
+          "**/playwright-report",
+          "docker-compose.yml",
+          ".env.example"
+        ]
       }),
       architecture: lambda.Architecture.X86_64,
       memorySize: 1536,

@@ -58,6 +58,32 @@ describe("public data layer", () => {
     assert.equal(url.searchParams.get("where[and][2][publishedAt][less_than_equal]"), now.toISOString());
   });
 
+  it("follows pagination so multi-page collections are never truncated", async () => {
+    const doc = (id) => ({
+      id,
+      slug: `post-${id}`,
+      status: "published",
+      visibility: "public",
+      publishedAt: "2026-06-01T00:00:00.000Z"
+    });
+    const pages = {
+      1: { docs: [doc(1), doc(2)], hasNextPage: true },
+      2: { docs: [doc(3)], hasNextPage: false }
+    };
+    const calls = [];
+    const fetchImpl = async (url) => {
+      calls.push(url);
+      const page = Number(new URL(url).searchParams.get("page"));
+      return { ok: true, status: 200, json: async () => pages[page] ?? { docs: [] } };
+    };
+
+    const posts = await getPublishedPosts({ baseUrl, fetchImpl, now });
+    assert.deepEqual(posts.map((p) => p.slug), ["post-1", "post-2", "post-3"]);
+    assert.equal(calls.length, 2);
+    assert.equal(new URL(calls[0]).searchParams.get("page"), "1");
+    assert.equal(new URL(calls[1]).searchParams.get("page"), "2");
+  });
+
   it("returns null for a post slug that is not publicly visible", async () => {
     const { fetchImpl } = mockFetch({
       "/api/posts": {

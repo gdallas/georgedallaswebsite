@@ -173,8 +173,9 @@ async function publishDoc(collection, id) {
 
   let lastError;
   for (let attempt = 1; attempt <= 5; attempt += 1) {
+    let response;
     try {
-      const response = await fetch(url, {
+      response = await fetch(url, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -183,20 +184,28 @@ async function publishDoc(collection, id) {
         },
         body
       });
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (response) {
       const text = await response.text().catch(() => "");
       if (response.ok) {
         console.log("Scheduled publish result", collection, id, text);
         return;
       }
-      // 4xx (bad signature/body) will not improve on retry.
-      if (response.status >= 400 && response.status < 500) {
-        throw new Error(`Publish rejected (${response.status}): ${text}`);
-      }
       lastError = new Error(`Publish failed (${response.status}): ${text}`);
-    } catch (error) {
-      lastError = error;
+      // 4xx (bad signature/body) will not improve on retry, so fail
+      // immediately — thrown outside the network try/catch so it cannot be
+      // swallowed back into the retry loop.
+      if (response.status >= 400 && response.status < 500) {
+        throw lastError;
+      }
     }
-    await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+
+    if (attempt < 5) {
+      await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+    }
   }
 
   throw lastError ?? new Error("Scheduled publish failed");
