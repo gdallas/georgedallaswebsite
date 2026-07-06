@@ -17,9 +17,42 @@ export class SiteHosting {
     this.certificate = certificate;
     this.bucket = this.createBucket(scope);
     this.urlRewriteFunction = this.createUrlRewriteFunction(scope);
+    this.responseHeadersPolicy = this.createResponseHeadersPolicy(scope);
     this.distribution = this.createDistribution(scope);
     this.createDnsRecords(scope);
     this.addOutputs(scope);
+  }
+
+  // Baseline security headers, set at the edge so every static response
+  // carries them (docs/security/threat-model.md). No CSP yet: Astro inlines
+  // styles and Pagefind loads dynamic imports + WASM on /search, so a strict
+  // policy needs real testing before it ships.
+  createResponseHeadersPolicy(scope) {
+    return new cloudfront.ResponseHeadersPolicy(scope, "SiteSecurityHeaders", {
+      responseHeadersPolicyName: buildResourceName(this.environment.id, "site-headers"),
+      securityHeadersBehavior: {
+        strictTransportSecurity: {
+          accessControlMaxAge: Duration.days(365),
+          includeSubdomains: true,
+          override: true
+        },
+        contentTypeOptions: { override: true },
+        frameOptions: { frameOption: cloudfront.HeadersFrameOption.SAMEORIGIN, override: true },
+        referrerPolicy: {
+          referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+          override: true
+        }
+      },
+      customHeadersBehavior: {
+        customHeaders: [
+          {
+            header: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), payment=()",
+            override: true
+          }
+        ]
+      }
+    });
   }
 
   createBucket(scope) {
@@ -77,6 +110,7 @@ export class SiteHosting {
         origin: origins.S3BucketOrigin.withOriginAccessControl(this.bucket),
         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        responseHeadersPolicy: this.responseHeadersPolicy,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         functionAssociations: [
           {
