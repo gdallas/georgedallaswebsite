@@ -8,25 +8,21 @@ records), so there is no legacy traffic to migrate._
 
 ## 1. Before the first prod deploy
 
-- [ ] **[George] Apply branch protection rulesets** for `develop` and `main`
-      (`docs/runbooks/github-branch-protection.md`). Without this, deploys can
-      be triggered by a direct push.
-- [ ] **[George] GitHub environment `production`** (Settings → Environments):
-      add yourself as a **required reviewer** and restrict deployment
-      branches to `main`. This makes every prod deploy pause for your
-      approval.
+- [x] **Apply branch protection rulesets** for `develop` and `main` — done
+      2026-07-06 (`protect-develop`/`protect-main`, active; approvals=0 while
+      merge authority is delegated — raise to 1 post-launch).
+- [x] **GitHub environment `production`** — required reviewer configured
+      2026-07-06; deploy runs now pause for approval.
 - [ ] **[George] Enable MFA** on the GitHub account and AWS root/`gdallas`
       IAM users (threat model action).
 - [ ] **[George] Rotate the exposed dev credentials**: the dev CMS owner
       password (admin UI) and the dev GitHub PAT (regenerate in GitHub →
       update `/georgedallaswebsite/dev/github-token` `placeholder` key →
       redeploy dev-cms stack or wait for the next dev deploy).
-- [ ] Deploy `prod-foundation` (creates the prod deploy role, KMS key,
-      secrets, VPC, Aurora, media bucket — no Docker needed):
-      `cd infra && npx cdk deploy prod-foundation --require-approval never`
-- [ ] Set the `production` environment variables so workflows can deploy:
-      `AWS_DEPLOY_ROLE_ARN=arn:aws:iam::833090513890:role/georgedallaswebsite-prod-github-deploy`
-      and `AWS_REGION=ca-central-1`.
+- [x] Deploy `prod-foundation` + cert stacks — done 2026-07-06 (all three
+      CREATE_COMPLETE).
+- [x] Set the `production` environment variables — done 2026-07-06
+      (`AWS_DEPLOY_ROLE_ARN`, `AWS_REGION`).
 - [ ] **[George] Create the prod GitHub PAT** (fine-grained: this repo only,
       Actions read+write, 90-day expiry with a calendar reminder) and store
       it: `aws secretsmanager put-secret-value --secret-id
@@ -81,7 +77,8 @@ records), so there is no legacy traffic to migrate._
 - [ ] **Restore drill performed and dated** (see
       `database-backup-restore.md`): restore the latest prod (or dev)
       snapshot to a scratch cluster, connect, count rows, tear down. Record
-      the date here: `last drill: ____`.
+      the date here: `last drill: 2026-07-06` (dev PITR restore to scratch
+      cluster reached available; scratch cluster deleted).
 - [ ] **[George] Final human pass** on the live site — launch is not
       complete until you have read it on your own devices.
 
