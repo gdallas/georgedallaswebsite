@@ -13,6 +13,12 @@ export type MediaRef = {
   height?: number | null;
 };
 
+export type PublicTag = {
+  id: number | string;
+  name?: string | null;
+  slug?: string | null;
+};
+
 export type PublicPost = {
   id: number | string;
   title: string;
@@ -27,6 +33,8 @@ export type PublicPost = {
   canonicalUrl?: string | null;
   featuredImage?: MediaRef | null;
   socialImage?: MediaRef | null;
+  // Depth=1 responses resolve tags to objects; deeper truncation can leave ids.
+  tags?: PublicTag[] | Array<number | string> | null;
 };
 
 export type PublicPage = {

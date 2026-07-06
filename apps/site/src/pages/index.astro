@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BrandButton from "../components/brand/BrandButton.astro";
 import BrandCard from "../components/brand/BrandCard.astro";
+import TagChips from "../components/TagChips.astro";
 import {
   loadCurrentlyReadingBooks,
   loadNowPage,
@@ -36,17 +37,38 @@ function formatDate(value: string | null | undefined) {
 ---
 
 <BaseLayout title="George Dallas - AI engineer, therapist, systems thinker" description={description} jsonLd={jsonLd} searchable={false}>
-  <section class="cc-hero">
-    <p class="cc-eyebrow">George Dallas</p>
-    <h1 class="cc-heading cc-heading--hero">
-      AI engineer. Therapist. Systems thinker. Based on Vancouver Island.
-    </h1>
-    <p class="cc-muted">
-      Writing, projects, and an honest record of what I'm working on - updated weekly, hosted quietly.
-    </p>
-    <div class="hero-actions">
-      <BrandButton href="/about" variant="primary">About me</BrandButton>
-      <BrandButton href="/writing" variant="secondary">Read the writing</BrandButton>
+  <section class="cc-hero cc-hero--photo home-hero">
+    <picture>
+      <source
+        type="image/avif"
+        srcset="/images/home/star-trails-960.avif 960w, /images/home/star-trails-1600.avif 1600w, /images/home/star-trails-2400.avif 2400w"
+        sizes="(max-width: 74rem) 100vw, 72rem"
+      />
+      <img
+        class="cc-hero__backdrop"
+        src="/images/home/star-trails-1600.jpg"
+        srcset="/images/home/star-trails-960.jpg 960w, /images/home/star-trails-1600.jpg 1600w, /images/home/star-trails-2400.jpg 2400w"
+        sizes="(max-width: 74rem) 100vw, 72rem"
+        alt=""
+        width="6016"
+        height="2650"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
+    <div class="home-hero__content">
+      <p class="cc-eyebrow">George Dallas</p>
+      <h1 class="cc-heading cc-heading--hero">
+        AI engineer. Therapist. Systems thinker. Based on Vancouver Island.
+      </h1>
+      <p class="cc-muted">
+        Writing, projects, and an honest record of what I'm working on - updated weekly, hosted quietly.
+      </p>
+      <div class="hero-actions">
+        <BrandButton href="/about" variant="primary">About me</BrandButton>
+        <BrandButton href="/writing" variant="secondary">Read the writing</BrandButton>
+      </div>
     </div>
   </section>
 
@@ -70,6 +92,7 @@ function formatDate(value: string | null | undefined) {
                   {formatDate(post.publishedAt)}
                   {post.readingTime ? ` · ${post.readingTime} min read` : ""}
                 </p>
+                <TagChips tags={post.tags} class="post-teaser__chips" />
                 {post.excerpt && <p class="post-teaser__excerpt">{post.excerpt}</p>}
               </article>
             </li>
@@ -97,7 +120,26 @@ function formatDate(value: string | null | undefined) {
     }
   </section>
 
-  <hr class="cc-divider" />
+  <figure class="photo-band">
+    <picture>
+      <source
+        type="image/avif"
+        srcset="/images/home/rialto-sunset-960.avif 960w, /images/home/rialto-sunset-1600.avif 1600w, /images/home/rialto-sunset-2400.avif 2400w"
+        sizes="(max-width: 74rem) 100vw, 72rem"
+      />
+      <img
+        src="/images/home/rialto-sunset-1600.jpg"
+        srcset="/images/home/rialto-sunset-960.jpg 960w, /images/home/rialto-sunset-1600.jpg 1600w, /images/home/rialto-sunset-2400.jpg 2400w"
+        sizes="(max-width: 74rem) 100vw, 72rem"
+        alt="A sea stack silhouetted against an orange sunset over the Pacific, waves rolling toward a dark gravel beach"
+        width="6000"
+        height="2100"
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
+    <figcaption>Dusk on the Pacific Northwest coast — Rialto Beach, Olympic Peninsula.</figcaption>
+  </figure>
 
   <section aria-labelledby="projects-heading">
     <div class="section-head">
@@ -151,11 +193,66 @@ function formatDate(value: string | null | undefined) {
 </BaseLayout>
 
 <style>
+  .home-hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: clamp(22rem, 46vw, 30rem);
+    padding: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .home-hero__content {
+    max-width: 46rem;
+  }
+
+  .home-hero h1 {
+    margin-block: 0.5rem 0;
+  }
+
+  .home-hero .cc-muted {
+    max-width: 38rem;
+  }
+
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-block-start: 1.5rem;
+  }
+
+  .photo-band {
+    position: relative;
+    margin: clamp(2rem, 5vw, 3.5rem) 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .photo-band img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 20 / 7;
+    object-fit: cover;
+  }
+
+  @media (max-width: 40rem) {
+    .photo-band img {
+      aspect-ratio: 16 / 10;
+    }
+  }
+
+  .photo-band figcaption {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    padding: 2.25rem 1.25rem 0.85rem;
+    background: linear-gradient(0deg, rgb(24 18 14 / 0.7), transparent);
+    color: #e8ddcb;
+    font-size: var(--text-xs);
+    letter-spacing: 0.04em;
+    text-align: right;
   }
 
   .section-head {
@@ -212,6 +309,10 @@ function formatDate(value: string | null | undefined) {
   .post-teaser__excerpt {
     margin: 0;
     color: var(--text-muted);
+  }
+
+  :global(.post-teaser__chips) {
+    margin-block-end: 0.5rem;
   }
 
   .now-focus {

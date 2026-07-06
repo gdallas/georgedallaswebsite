@@ -9,14 +9,20 @@
   color-scheme: dark light;
 
   --color-deep-cedar: #18120e;
-  --color-burnt-umber: #241b16;
-  --color-dark-bark: #3a2d25;
+  --color-burnt-umber: #271d15;
+  --color-dark-bark: #453529;
   --color-warm-linen: #f1e8d8;
   --color-soft-linen: #fff4e4;
   --color-taupe: #b8afa3;
   --color-copper: #c47a45;
+  /* Brighter copper + cyan tuned for dark backgrounds: the base brand hues
+     read muddy at small sizes on deep cedar (copper ~5:1 but low chroma,
+     cyan ~6:1 but visually grey). These lifted variants keep the hue family
+     while actually registering as colour. */
+  --color-copper-bright: #d98d52;
   --color-copper-dark: #9d5730;
   --color-desaturated-cyan: #6ca6a8;
+  --color-cyan-bright: #7fbfc2;
   --color-fern: #78946f;
   --color-granite: #817c73;
   --color-mist: #e7ded2;
@@ -31,13 +37,13 @@
   --text: var(--color-warm-linen);
   --text-strong: var(--color-soft-linen);
   --text-muted: var(--color-taupe);
-  --border: color-mix(in srgb, var(--color-taupe) 20%, transparent);
-  --accent: var(--color-copper);
-  --accent-hover: var(--color-copper-dark);
+  --border: color-mix(in srgb, var(--color-taupe) 26%, transparent);
+  --accent: var(--color-copper-bright);
+  --accent-hover: var(--color-copper);
   /* Copper dark enough to carry light button text at >=4.5:1 (WCAG 2.2 AA).
-     Plain --accent (#c47a45) only reaches ~3.1:1 with linen text. */
+     Plain copper (#c47a45) only reaches ~3.1:1 with linen text. */
   --accent-strong: var(--color-copper-dark);
-  --link: var(--color-desaturated-cyan);
+  --link: var(--color-cyan-bright);
   --success: var(--color-fern);
 
   --font-display: Fraunces, Georgia, 'Times New Roman', serif;
@@ -85,6 +91,10 @@
   --content: 44rem;
 }
 
+/* Light theme. Applied two ways: explicitly via the header toggle
+   ([data-theme='light']), or implicitly when the visitor's system prefers
+   light and no explicit choice has been stored (the media query below).
+   Keep both blocks' declarations identical. */
 [data-theme='light'] {
   color-scheme: light;
   --background: var(--color-mist);
@@ -99,4 +109,22 @@
   --accent-hover: #7f4325;
   --accent-strong: #7f4325;
   --link: #346f72;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --background: var(--color-mist);
+    --background-rgb: 231 222 210;
+    --surface: #f6ebdc;
+    --surface-raised: var(--color-soft-linen);
+    --text: var(--color-ink);
+    --text-strong: #120f0d;
+    --text-muted: #685f57;
+    --border: rgb(33 26 22 / 0.16);
+    --accent: #9d5730;
+    --accent-hover: #7f4325;
+    --accent-strong: #7f4325;
+    --link: #346f72;
+  }
 }
