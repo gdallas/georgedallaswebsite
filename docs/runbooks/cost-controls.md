@@ -7,7 +7,7 @@ George's budget target for this website is under USD $10/month total. Infrastruc
 - Region: `ca-central-1` for all project resources.
 - Database: Aurora Serverless v2 with scale-to-zero — $0 compute while idle, ~$0.10/month storage for a small content database, an estimated $1–2/month in ACU-hours for a few editing hours per week.
 - VPCs use no NAT gateways (a NAT gateway alone is ~$35/month — never add one without an ADR).
-- Dev foundation idle estimate: ~$4/month (KMS key $1, six Secrets Manager secrets ~$2.40, Aurora storage, S3 pennies).
+- Dev foundation idle estimate: ~$4–5/month (KMS key $1, seven Secrets Manager secrets ~$2.80, Aurora storage, S3 pennies).
 - The prod foundation stack is defined but deliberately **not deployed** until launch preparation (GDW-051), which roughly doubles foundation cost when it lands.
 
 ## Budget alert

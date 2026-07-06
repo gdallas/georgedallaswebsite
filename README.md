@@ -46,8 +46,8 @@ Astro public website
 Payload CMS admin/backend
 PostgreSQL database
 S3 media storage
-ECS Fargate backend hosting
-Amplify Hosting or S3 + CloudFront frontend hosting
+Lambda container backend hosting (see docs/adr/2026-06-12-cms-lambda-hosting.md)
+S3 + CloudFront frontend hosting
 EventBridge / Lambda / SQS background jobs
 Amazon SES for email
 AWS Secrets Manager for secrets
@@ -79,7 +79,7 @@ Expected structure:
 └── README.md
 ```
 
-The current foundation uses a pnpm workspace with dependency-light placeholders. Astro and Payload are intentionally deferred to their implementation tickets so the project can keep the early foundation small and reviewable.
+The repo is a pnpm workspace. The Astro public site (`apps/site`), the Payload CMS (`apps/cms`), the publishing worker (`apps/worker`), and the CDK infrastructure (`infra`) are all implemented; `packages/shared` holds the logic they share. `docs/playbook.md` is the architecture and operations playbook, and `AGENTS.md` is the condensed reference for AI agents.
 
 ---
 
@@ -126,13 +126,13 @@ pnpm --filter @georgedallas/cms dev
 
 The CMS runs on `http://localhost:3000` with the admin at `http://localhost:3000/admin` and a health check at `http://localhost:3000/api/health`. Public contact form submissions post to `http://localhost:3000/api/contact` and are reviewed in the admin inbox.
 
-Run the public site placeholder:
+Run the public site:
 
 ```bash
 pnpm --filter @georgedallas/site dev
 ```
 
-The public site command prints scaffold status until the Astro ticket is implemented.
+The public site runs on `http://localhost:4321`. Building against a live CMS uses `CMS_API_URL` (unset, pages render their empty states).
 
 ---
 
@@ -375,11 +375,10 @@ A merge into `develop` triggers deployment to the development AWS environment vi
 Dev deployment currently:
 
 1. assumes the dev deploy role through GitHub OIDC (no long-lived keys)
-2. runs `cdk deploy dev-foundation dev-cms-cert dev-cms`, which builds the CMS container image, pushes it to the CDK assets ECR repository, and updates the Lambda-based CMS (see `docs/runbooks/cms-hosting.md`)
+2. runs `cdk deploy dev-foundation dev-cms-cert dev-cms dev-site-cert dev-site`, which builds the CMS container image, pushes it to the CDK assets ECR repository, and updates the Lambda-based CMS (see `docs/runbooks/cms-hosting.md`)
 3. runs committed database migrations automatically on CMS startup
 4. smoke-tests `https://cms-dev.georgedallas.com/api/health`
-
-Astro site build and dev frontend deployment are added with GDW-014/GDW-026.
+5. builds the Astro site against the live dev CMS, syncs it to the site bucket, invalidates CloudFront, and smoke-tests `https://dev.georgedallas.com`
 
 ### Production deploy
 
