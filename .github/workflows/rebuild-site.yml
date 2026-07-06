@@ -54,6 +54,25 @@ jobs:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      # The CMS may be fully cold here (Lambda cold start + Aurora resume can
+      # take ~30-45s together). deploy-dev.yml warms it via its health check;
+      # this content-only workflow needs its own warm-up or the build's first
+      # queries can exhaust the data layer's retry budget. site-settings is a
+      # public global whose read touches the database, so a 200 means both the
+      # Lambda and Aurora are awake.
+      - name: Warm CMS before build
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --max-time 70 -o /dev/null "https://cms-dev.georgedallas.com/api/globals/site-settings?depth=0"; then
+              echo "CMS is warm."
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed (cold start + database resume); retrying..."
+            sleep 15
+          done
+          echo "CMS did not respond after warm-up attempts."
+          exit 1
+
       - name: Build public site
         run: pnpm --filter @georgedallas/site build
         env:
