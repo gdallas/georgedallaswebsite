@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import TagChips from "../../components/TagChips.astro";
 import { loadPublishedPosts } from "../../lib/content.mjs";
 import { renderRichText } from "../../lib/richText.mjs";
 import { articleJsonLd } from "../../lib/seo.mjs";
@@ -32,6 +33,7 @@ function formatDate(value: string | null | undefined) {
       {formatDate(post.publishedAt)}
       {post.readingTime ? ` · ${post.readingTime} min read` : ""}
     </p>
+    <TagChips tags={post.tags} class="post-page-chips" />
     {bodyHtml ? <div class="cc-prose" set:html={bodyHtml} /> : <p class="cc-muted">This post has no content yet.</p>}
   </article>
 </BaseLayout>
@@ -46,5 +48,11 @@ function formatDate(value: string | null | undefined) {
   }
   .post-meta {
     margin-block: 0.5rem 2rem;
+  }
+  .post-meta:has(+ :global(.post-page-chips)) {
+    margin-block-end: 0.75rem;
+  }
+  :global(.post-page-chips) {
+    margin-block-end: 2rem;
   }
 </style>

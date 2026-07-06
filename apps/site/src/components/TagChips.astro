@@ -1,0 +1,55 @@
+---
+// Renders a post's tags as toned cc-chips. Tags arrive from Payload at
+// depth=1 as objects ({ name, slug }); anything unresolved (bare ids) is
+// skipped. Tone buckets follow the site's three threads — AI (cyan),
+// therapy (fern), systems (copper) — so tag colour carries meaning.
+export interface Props {
+  tags?: unknown[] | null;
+  class?: string;
+}
+
+const { tags, class: className = "" } = Astro.props;
+
+function toneFor(name: string): string | undefined {
+  const n = name.toLowerCase();
+  if (/(^|\W)(ai|ml|data|machine|computer|vision|signal|maths?|statistic|probability|fractal|chaos|compression)/.test(n)) {
+    return "ai";
+  }
+  if (/(therap|psycholog|identity|philosoph|mind|life)/.test(n)) {
+    return "therapy";
+  }
+  if (/(system|engineer|platform|network|econom|business|internet)/.test(n)) {
+    return "systems";
+  }
+  return undefined;
+}
+
+const names = (Array.isArray(tags) ? tags : [])
+  .map((tag) =>
+    tag && typeof tag === "object" ? ((tag as { name?: string; slug?: string }).name ?? (tag as { slug?: string }).slug) : null
+  )
+  .filter((name): name is string => Boolean(name));
+---
+
+{
+  names.length > 0 && (
+    <ul class={`cc-chip-list ${className}`}>
+      {names.map((name) => (
+        <li class="cc-chip" data-tone={toneFor(name)}>
+          {name}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .cc-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+</style>

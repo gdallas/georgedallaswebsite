@@ -64,6 +64,19 @@ const rssHref = absoluteUrl("/rss.xml", Astro.site);
     <meta name="twitter:image" content={ogImage} />
 
     {jsonLd.map((data) => <script type="application/ld+json" is:inline set:html={jsonLdToString(data)} />)}
+
+    <script is:inline>
+      // Apply the stored theme before first paint so there is no flash.
+      // No stored value means "follow the system preference" (handled in CSS).
+      (() => {
+        try {
+          const stored = localStorage.getItem("theme");
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.dataset.theme = stored;
+          }
+        } catch {}
+      })();
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -83,8 +96,10 @@ const rssHref = absoluteUrl("/rss.xml", Astro.site);
   }
 
   main {
+    /* Width comes from .cc-container. Do not set width here: this scoped
+       selector compiles to main[data-astro-cid-*] (specificity 0-1-1), which
+       silently beats .cc-container's max-width and makes every page full-bleed. */
     flex: 1;
-    width: 100%;
     padding-block: clamp(2rem, 5vw, 4rem);
   }
 

@@ -31,8 +31,8 @@ body {
   min-height: 100%;
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgb(196 122 69 / 0.12), transparent 34rem),
-    radial-gradient(circle at 82% 8%, rgb(108 166 168 / 0.10), transparent 28rem),
+    radial-gradient(circle at top left, rgb(196 122 69 / 0.14), transparent 34rem),
+    radial-gradient(circle at 82% 8%, rgb(108 166 168 / 0.12), transparent 28rem),
     linear-gradient(180deg, rgb(var(--background-rgb) / 1), rgb(var(--background-rgb) / .94));
   color: var(--text);
   font-size: var(--text-base);
@@ -109,6 +109,29 @@ img, svg { max-width: 100%; height: auto; }
 
 .cc-prose p { margin-block: 1.1em; }
 .cc-prose strong { color: var(--text-strong); }
+
+/* Imported post images are mostly charts and photos on white; matting them in
+   warm linen turns the glare against the dark theme into an intentional
+   frame, and reads as a subtle border in the light theme. */
+.cc-prose img {
+  display: block;
+  margin-inline: auto;
+  background: var(--color-warm-linen);
+  padding: clamp(0.5rem, 1.5vw, 0.875rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.cc-prose figure {
+  margin: 2rem 0;
+}
+
+.cc-prose figcaption {
+  margin-block-start: 0.6rem;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
 .cc-prose blockquote {
   margin: 2rem 0;
   padding: 1.25rem 1.5rem;
@@ -167,8 +190,11 @@ img, svg { max-width: 100%; height: auto; }
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  /* Opaque surfaces: translucent cards over the dark body gradient read as
+     murk rather than objects. Solid steps carry the elevation instead of
+     shadows, which are invisible on a near-black page. */
   background:
-    linear-gradient(145deg, color-mix(in srgb, var(--surface) 88%, transparent), color-mix(in srgb, var(--surface-raised) 70%, transparent));
+    linear-gradient(145deg, color-mix(in srgb, var(--surface-raised) 42%, var(--surface)), var(--surface));
   box-shadow: var(--shadow-card);
 }
 
@@ -178,11 +204,23 @@ img, svg { max-width: 100%; height: auto; }
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at top left, rgb(196 122 69 / 0.13), transparent 18rem),
-    linear-gradient(90deg, rgb(108 166 168 / 0.04), transparent 45%);
+    radial-gradient(circle at top left, rgb(196 122 69 / 0.16), transparent 18rem),
+    linear-gradient(90deg, rgb(108 166 168 / 0.05), transparent 45%);
 }
 
 .cc-card > * { position: relative; }
+
+/* Cards whose whole surface leads somewhere: lift + copper edge on hover. */
+.cc-card--interactive {
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard);
+}
+
+.cc-card--interactive:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
 
 .cc-chip {
   display: inline-flex;
@@ -220,12 +258,43 @@ img, svg { max-width: 100%; height: auto; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.16;
+  opacity: 0.3;
   background-image:
     linear-gradient(90deg, rgb(196 122 69 / .55) 1px, transparent 1px),
     linear-gradient(rgb(108 166 168 / .35) 1px, transparent 1px);
   background-size: 72px 72px;
   mask-image: radial-gradient(circle at 80% 45%, black, transparent 58%);
+}
+
+/* Hero with a photographic backdrop. The panel keeps its own dark palette in
+   both themes (the photo is dark), so text colours are pinned locally rather
+   than inherited from the active theme. */
+.cc-hero--photo {
+  --text: var(--color-warm-linen);
+  --text-strong: var(--color-soft-linen);
+  --text-muted: #cfc4b2;
+}
+
+.cc-hero--photo::after { content: none; }
+
+.cc-hero__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 76% 32%;
+}
+
+.cc-hero--photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgb(24 18 14 / 0.9) 22%, rgb(24 18 14 / 0.52) 56%, rgb(24 18 14 / 0.12)),
+    linear-gradient(0deg, rgb(24 18 14 / 0.72), transparent 42%);
 }
 
 .cc-divider {
