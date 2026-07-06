@@ -9,7 +9,7 @@ export interface Props {
 const { eyebrow, title, href, class: className = '' } = Astro.props;
 ---
 
-<article class={`cc-card brand-card ${className}`}>
+<article class={`cc-card brand-card ${href ? "cc-card--interactive brand-card--link" : ""} ${className}`}>
   {eyebrow && <p class="cc-eyebrow">{eyebrow}</p>}
   {title && <h3 class="cc-heading cc-heading--card">{href ? <a href={href}>{title}</a> : title}</h3>}
   <div class="brand-card__body"><slot /></div>
@@ -23,8 +23,18 @@ const { eyebrow, title, href, class: className = '' } = Astro.props;
   .brand-card .cc-eyebrow { margin: 0 0 0.75rem; }
   .brand-card h3 { margin: 0 0 0.75rem; }
   .brand-card h3 a { color: inherit; text-decoration: none; }
-  .brand-card h3 a:hover { color: var(--accent); }
+  .brand-card h3 a:hover,
+  .brand-card--link:hover h3 a { color: var(--accent); }
   .brand-card__body { color: var(--text-muted); }
   .brand-card__body :global(p:first-child) { margin-top: 0; }
   .brand-card__body :global(p:last-child) { margin-bottom: 0; }
+
+  /* Stretch the title link over the whole card. The heading must stay
+     unpositioned so the overlay anchors to the card itself. */
+  .brand-card--link h3 { position: static; }
+  .brand-card--link h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
 </style>
