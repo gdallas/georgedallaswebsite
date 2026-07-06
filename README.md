@@ -206,8 +206,11 @@ Branch protection settings are documented in `docs/runbooks/github-branch-protec
 
 Repository security guidance is in `SECURITY.md`. Dependabot and dependency review are configured in `.github/`.
 
+Post-launch maintenance — automated checks, review cadences, secret rotation, and incident basics — is documented in `docs/runbooks/maintenance.md`; the production cutover record is `docs/runbooks/launch-checklist.md`.
+
 Infrastructure runbooks:
 
+- `docs/runbooks/maintenance.md`
 - `docs/runbooks/infrastructure.md`
 - `docs/runbooks/infra-security.md`
 - `docs/runbooks/database-infrastructure.md`
