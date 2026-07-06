@@ -252,3 +252,35 @@ img, svg { max-width: 100%; height: auto; }
     linear-gradient(135deg, rgb(196 122 69 / 0.08), transparent 45%);
   background-size: 22px 22px, auto;
 }
+
+/* Print: articles read as clean documents — chrome hidden, links legible. */
+@media print {
+  .site-header,
+  .site-footer,
+  .skip-link {
+    display: none;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .cc-prose a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+
+  .cc-prose img,
+  .cc-prose figure {
+    max-width: 100%;
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+}

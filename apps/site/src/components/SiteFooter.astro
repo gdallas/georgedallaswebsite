@@ -6,8 +6,18 @@ const year = new Date().getFullYear();
 
 <footer class="site-footer">
   <div class="cc-container site-footer__inner">
-    <CedarCircuitryLogo variant="full" />
-    <p class="cc-muted">© {year} George Dallas. Built slowly, on purpose, on Vancouver Island.</p>
+    <div class="site-footer__brand">
+      <CedarCircuitryLogo variant="full" />
+      <p class="cc-muted">© {year} George Dallas. Built slowly, on purpose, on Vancouver Island.</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="/colophon">Colophon</a></li>
+        <li><a href="/rss.xml">RSS</a></li>
+        <li><a href="/search">Search</a></li>
+        <li><a href="/contact">Contact</a></li>
+      </ul>
+    </nav>
   </div>
 </footer>
 
@@ -26,7 +36,37 @@ const year = new Date().getFullYear();
     padding-block: 1.5rem;
   }
 
-  .site-footer__inner p {
+  .site-footer__brand {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .site-footer__brand p {
     margin: 0;
+  }
+
+  nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--accent);
+  }
+
+  nav a:focus-visible {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
   }
 </style>

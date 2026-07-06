@@ -104,11 +104,28 @@ async function fetchJson(url, config) {
   throw lastError;
 }
 
+const PAGE_SIZE = 100;
+const MAX_PAGES = 50;
+
 async function fetchDocs(slug, where, config, extraQuery = "") {
   const base = resolveBaseUrl(config);
-  const url = `${base}/api/${slug}?depth=1&limit=100&${encodeWhere(where)}${extraQuery}`;
-  const body = await fetchJson(url, config);
-  return Array.isArray(body?.docs) ? body.docs : [];
+  const docs = [];
+
+  // Follow Payload's pagination so a collection past one page can never be
+  // silently truncated out of the static build (writing index, RSS, sitemap).
+  for (let page = 1; page <= MAX_PAGES; page += 1) {
+    const url = `${base}/api/${slug}?depth=1&limit=${PAGE_SIZE}&page=${page}&${encodeWhere(where)}${extraQuery}`;
+    const body = await fetchJson(url, config);
+    const pageDocs = Array.isArray(body?.docs) ? body.docs : [];
+    docs.push(...pageDocs);
+    if (!body?.hasNextPage || pageDocs.length === 0) {
+      return docs;
+    }
+  }
+
+  throw new CmsUnavailableError(
+    `The CMS returned more than ${MAX_PAGES * PAGE_SIZE} documents for ${slug}; refusing to build with truncated content.`
+  );
 }
 
 export async function getPublishedPosts(config = {}) {

@@ -27,6 +27,7 @@ export class CmsService {
     this.functionUrl = this.function.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE
     });
+    this.responseHeadersPolicy = this.createResponseHeadersPolicy(scope);
     this.distribution = this.createDistribution(scope);
     this.createDnsRecords(scope);
     this.addOutputs(scope);
@@ -50,8 +51,37 @@ export class CmsService {
       description: `Payload CMS for ${this.environment.id}, behind CloudFront.`,
       code: lambda.DockerImageCode.fromImageAsset(repoRoot, {
         file: "apps/cms/Dockerfile",
-        // Keep the asset hash stable across unrelated repo changes.
-        exclude: ["infra/cdk.out", ".git", "node_modules", "**/node_modules", "**/.next"]
+        // Keep the asset hash stable across unrelated repo changes: only files
+        // the image build consumes (root manifests, apps/cms, packages/shared)
+        // should influence it, or every merge rebuilds and pushes a new CMS
+        // image and the CDK assets ECR repository grows without bound. The
+        // other workspace package.json files stay included so pnpm's frozen
+        // lockfile check still sees every importer.
+        exclude: [
+          "infra/cdk.out",
+          ".git",
+          "node_modules",
+          "**/node_modules",
+          "**/.next",
+          "**/*.md",
+          "docs",
+          ".github",
+          ".agents",
+          ".claude",
+          "scripts",
+          "local-data",
+          "apps/site/src",
+          "apps/site/public",
+          "apps/site/e2e",
+          "apps/worker/publishing",
+          "infra/src",
+          "infra/cdk.json",
+          "infra/cdk.context.json",
+          "**/test-results",
+          "**/playwright-report",
+          "docker-compose.yml",
+          ".env.example"
+        ]
       }),
       architecture: lambda.Architecture.X86_64,
       memorySize: 1536,
@@ -88,6 +118,34 @@ export class CmsService {
     });
   }
 
+  // Edge security headers for the admin/API (docs/security/threat-model.md).
+  // SAMEORIGIN (not DENY) so Payload admin views that frame same-origin
+  // content keep working; X-Robots-Tag keeps the admin and API out of search
+  // indexes. Payload manages CORS itself, so no CORS behavior is set here.
+  createResponseHeadersPolicy(scope) {
+    return new cloudfront.ResponseHeadersPolicy(scope, "CmsSecurityHeaders", {
+      responseHeadersPolicyName: buildResourceName(this.environment.id, "cms-headers"),
+      securityHeadersBehavior: {
+        strictTransportSecurity: {
+          accessControlMaxAge: Duration.days(365),
+          includeSubdomains: true,
+          override: true
+        },
+        contentTypeOptions: { override: true },
+        frameOptions: { frameOption: cloudfront.HeadersFrameOption.SAMEORIGIN, override: true },
+        referrerPolicy: {
+          referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+          override: true
+        }
+      },
+      customHeadersBehavior: {
+        customHeaders: [
+          { header: "X-Robots-Tag", value: "noindex, nofollow", override: true }
+        ]
+      }
+    });
+  }
+
   createDistribution(scope) {
     return new cloudfront.Distribution(scope, "CmsDistribution", {
       comment: `Payload CMS admin/API for ${this.environment.id}.`,
@@ -105,6 +163,7 @@ export class CmsService {
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        responseHeadersPolicy: this.responseHeadersPolicy,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       }
     });

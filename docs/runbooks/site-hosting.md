@@ -24,7 +24,7 @@ Private S3 bucket (georgedallaswebsite-<env>-site, BLOCK_ALL public access)
 - An S3 REST origin behind OAC serves objects by exact key and does not resolve directory indexes, but Astro emits pages as `<route>/index.html`. A CloudFront Function (viewer-request) appends `index.html` to directory URIs so clean URLs resolve. A path whose last segment contains a `.` is treated as a file and passed through unchanged, so avoid dots in page slugs.
 - `priceClass` is `PriceClass_100` (North America + Europe edges) — the cheapest tier that covers the expected audience.
 - `astro.config.mjs` pins `site: "https://georgedallas.com"`, so canonical URLs always point at production; dev serves the same build under `dev.georgedallas.com`.
-- A custom 404 page is not wired yet; it lands with GDW-042. Until then a missing path returns the default CloudFront/S3 error.
+- Missing paths render the custom 404 page: the Astro build emits `/404.html` and the distribution maps origin 403/404 responses to it with a 404 status (private S3 REST origins answer 403 for absent keys). Wired in `infra/src/site-hosting.mjs` (GDW-042).
 
 ## Deployment
 

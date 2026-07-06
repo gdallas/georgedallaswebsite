@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BrandButton from "../components/brand/BrandButton.astro";
+---
+
+<BaseLayout title="Page not found — George Dallas" description="That page doesn't exist here." noindex={true} searchable={false}>
+  <section class="cc-hero not-found">
+    <p class="cc-eyebrow">404</p>
+    <h1 class="cc-heading cc-heading--hero">This page isn't here.</h1>
+    <p class="cc-muted">
+      The path may have changed, or the link may simply be wrong. Old blog posts moved here with
+      redirects, so if you followed one that broke, the search page will probably find what you
+      were after.
+    </p>
+    <div class="not-found__actions">
+      <BrandButton href="/" variant="primary">Back to the homepage</BrandButton>
+      <BrandButton href="/search" variant="secondary">Search the site</BrandButton>
+    </div>
+    <p class="cc-muted not-found__more">
+      Or head straight to the <a href="/writing">writing</a>, the
+      <a href="/projects">projects</a>, or <a href="/contact">say hello</a> and tell me what broke.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 1.5rem;
+  }
+
+  .not-found__more {
+    margin-block-start: 1.5rem;
+  }
+
+  .not-found__more a {
+    color: var(--link);
+  }
+</style>

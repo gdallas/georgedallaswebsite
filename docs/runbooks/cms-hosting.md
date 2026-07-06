@@ -52,10 +52,10 @@ Review generated migrations in the PR like any other code. Destructive migration
 Merge to `develop` triggers `.github/workflows/deploy-dev.yml`:
 
 1. GitHub OIDC assumes `georgedallaswebsite-dev-github-deploy` (no long-lived keys).
-2. `cdk deploy dev-foundation dev-cms-cert dev-cms` builds the container image, pushes it to the CDK assets ECR repository, and updates the stacks.
+2. `cdk deploy dev-foundation dev-cms-cert dev-cms dev-site-cert dev-site` builds the container image, pushes it to the CDK assets ECR repository, and updates the stacks; the workflow then builds the Astro site against the live CMS, syncs it to the site bucket, and invalidates CloudFront.
 3. A smoke test polls `https://cms-dev.georgedallas.com/api/health` with retries to absorb the cold start.
 
-CloudFormation rolls back automatically on failure, leaving the previous Lambda version serving. Production deployment lands with GDW-015 and uses the protected `production` GitHub environment.
+CloudFormation rolls back automatically on failure, leaving the previous Lambda version serving. Production deploys the same way from `main` via `.github/workflows/deploy-prod.yml` in the protected `production` GitHub environment (add required reviewers there to gate each prod deploy); content-only rebuilds use `rebuild-site.yml`, which derives its environment from the dispatch ref (`develop` = dev, `main` = prod). See `docs/runbooks/launch-checklist.md` for cutover.
 
 ## Upload size limit
 

@@ -17,7 +17,8 @@ const STATIC_ROUTES = [
   { path: "/bookshelf", changefreq: "monthly", priority: "0.6" },
   { path: "/timeline", changefreq: "monthly", priority: "0.6" },
   { path: "/links", changefreq: "monthly", priority: "0.6" },
-  { path: "/contact", changefreq: "yearly", priority: "0.5" }
+  { path: "/contact", changefreq: "yearly", priority: "0.5" },
+  { path: "/colophon", changefreq: "yearly", priority: "0.3" }
 ];
 
 function toUtcString(value) {
