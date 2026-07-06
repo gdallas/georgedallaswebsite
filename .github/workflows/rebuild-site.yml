@@ -3,9 +3,12 @@ name: Rebuild Site
 # Content-only rebuild of the static public site. Triggered by the publishing
 # worker (workflow_dispatch via the GitHub API) the moment content is published
 # — manually or by a scheduled publish — so changes go live without waiting on a
-# poller (GDW-035). Unlike deploy-dev.yml this skips `cdk deploy`: it reads the
-# existing site bucket/distribution from the deployed stack outputs, rebuilds the
-# Astro site against the live CMS, syncs, and invalidates.
+# poller (GDW-035). Unlike the deploy workflows this skips `cdk deploy`: it
+# reads the existing site bucket/distribution from the deployed stack outputs,
+# rebuilds the Astro site against the live CMS, syncs, and invalidates.
+#
+# Environment-aware (GDW-051): the dev worker dispatches on ref `develop`, the
+# prod worker on ref `main`; everything env-specific derives from that ref.
 
 on:
   workflow_dispatch:
@@ -19,17 +22,21 @@ permissions:
   contents: read
   id-token: write
 
-# A burst of publishes collapses to a single final build: a newer run cancels an
-# in-flight one.
+# A burst of publishes collapses to a single final build per environment: a
+# newer run cancels an in-flight one on the same ref.
 concurrency:
-  group: rebuild-site
+  group: rebuild-site-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   rebuild:
     name: Rebuild and publish static site
     runs-on: ubuntu-latest
-    environment: development
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+    env:
+      CMS_URL: ${{ github.ref_name == 'main' && 'https://cms.georgedallas.com' || 'https://cms-dev.georgedallas.com' }}
+      SITE_URL: ${{ github.ref_name == 'main' && 'https://georgedallas.com' || 'https://dev.georgedallas.com' }}
+      SITE_STACK: ${{ github.ref_name == 'main' && 'georgedallaswebsite-prod-site' || 'georgedallaswebsite-dev-site' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -55,15 +62,15 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       # The CMS may be fully cold here (Lambda cold start + Aurora resume can
-      # take ~30-45s together). deploy-dev.yml warms it via its health check;
-      # this content-only workflow needs its own warm-up or the build's first
-      # queries can exhaust the data layer's retry budget. site-settings is a
-      # public global whose read touches the database, so a 200 means both the
-      # Lambda and Aurora are awake.
+      # take ~30-45s together). The deploy workflows warm it via their health
+      # checks; this content-only workflow needs its own warm-up or the build's
+      # first queries can exhaust the data layer's retry budget. site-settings
+      # is a public global whose read touches the database, so a 200 means both
+      # the Lambda and Aurora are awake.
       - name: Warm CMS before build
         run: |
           for attempt in 1 2 3 4 5 6; do
-            if curl --fail --silent --show-error --max-time 70 -o /dev/null "https://cms-dev.georgedallas.com/api/globals/site-settings?depth=0"; then
+            if curl --fail --silent --show-error --max-time 70 -o /dev/null "${CMS_URL}/api/globals/site-settings?depth=0"; then
               echo "CMS is warm."
               exit 0
             fi
@@ -76,11 +83,11 @@ jobs:
       - name: Build public site
         run: pnpm --filter @georgedallas/site build
         env:
-          CMS_API_URL: https://cms-dev.georgedallas.com
+          CMS_API_URL: ${{ env.CMS_URL }}
 
       - name: Publish public site
         run: |
-          OUTPUTS=$(aws cloudformation describe-stacks --stack-name georgedallaswebsite-dev-site --query "Stacks[0].Outputs" --output json)
+          OUTPUTS=$(aws cloudformation describe-stacks --stack-name "$SITE_STACK" --query "Stacks[0].Outputs" --output json)
           BUCKET=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="SiteBucketName") | .OutputValue')
           DIST_ID=$(echo "$OUTPUTS" | jq -r '.[] | select(.OutputKey=="SiteDistributionId") | .OutputValue')
           if [ -z "$BUCKET" ] || [ "$BUCKET" = "null" ] || [ -z "$DIST_ID" ] || [ "$DIST_ID" = "null" ]; then
@@ -96,7 +103,7 @@ jobs:
       - name: Smoke test public site
         run: |
           for attempt in 1 2 3 4 5 6; do
-            if curl --fail --silent --show-error --max-time 30 -o /dev/null https://dev.georgedallas.com/; then
+            if curl --fail --silent --show-error --max-time 30 -o /dev/null "${SITE_URL}/"; then
               echo "Public site responded."
               exit 0
             fi
