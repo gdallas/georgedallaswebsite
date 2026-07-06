@@ -73,7 +73,7 @@ describe("sitemap", () => {
     });
     const xml = buildSitemapXml(entries);
     assert.match(xml, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
-    for (const path of ["/", "/about", "/writing", "/now", "/projects", "/bookshelf", "/timeline", "/links", "/contact"]) {
+    for (const path of ["/", "/about", "/writing", "/now", "/projects", "/bookshelf", "/timeline", "/links", "/contact", "/colophon"]) {
       const loc = path === "/" ? "https://georgedallas.com/" : `https://georgedallas.com${path}`;
       assert.ok(xml.includes(`<loc>${loc}</loc>`), `sitemap missing ${loc}`);
     }

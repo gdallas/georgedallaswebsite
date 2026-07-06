@@ -54,6 +54,27 @@ test("contact page renders", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Contact" })).toBeVisible();
 });
 
+test("homepage surfaces recent writing and the now snapshot", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Recent writing" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Test Post One" })).toBeVisible();
+  await expect(page.getByText("Shipping the personal site")).toBeVisible();
+});
+
+test("colophon page renders from the footer link", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("navigation", { name: "Footer" }).getByRole("link", { name: "Colophon" }).click();
+  await expect(page).toHaveURL(/\/colophon\/?$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Colophon" })).toBeVisible();
+});
+
+test("unknown routes render the custom 404 page", async ({ page }) => {
+  const response = await page.goto("/this-page-does-not-exist");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1, name: "This page isn't here." })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to the homepage" })).toBeVisible();
+});
+
 test("discoverability endpoints are generated", async ({ request }) => {
   for (const path of ["/robots.txt", "/sitemap.xml", "/rss.xml"]) {
     const response = await request.get(path);

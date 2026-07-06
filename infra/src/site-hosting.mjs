@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy } from "aws-cdk-lib";
+import { CfnOutput, Duration, RemovalPolicy } from "aws-cdk-lib";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as route53 from "aws-cdk-lib/aws-route53";
@@ -84,10 +84,16 @@ export class SiteHosting {
             eventType: cloudfront.FunctionEventType.VIEWER_REQUEST
           }
         ]
-      }
-      // A custom 404 (errorResponses) lands with GDW-042 once the site ships a
-      // 404 page; until then a missing key returns the default CloudFront/S3
-      // error rather than pointing at a page that does not exist yet.
+      },
+      // The Astro build emits a custom 404 page (GDW-042). A private S3 REST
+      // origin behind OAC answers 403 (not 404) for missing keys because the
+      // OAC grant is GetObject-only, so both statuses map to the 404 page.
+      errorResponses: [403, 404].map((httpStatus) => ({
+        httpStatus,
+        responseHttpStatus: 404,
+        responsePagePath: "/404.html",
+        ttl: Duration.minutes(5)
+      }))
     });
   }
 
