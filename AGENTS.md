@@ -97,16 +97,15 @@ CMS_EMAIL/CMS_PASSWORD for weekly content-checks workflow.
   wordpressOriginalId.
 - `infra/cdk.context.json` stays committed.
 
-## State (2026-07-06, end of day)
+## State (2026-07-06 — LAUNCHED)
 
-GDW-001…042 merged + live on dev. GDW-043…049 deferred by ADR
-(docs/adr/2026-07-06-defer-growth-features-to-post-launch.md). GDW-050 done
-(docs/security/threat-model.md + edge security headers). GDW-051 repo side
-done: deploy-prod.yml (main → prod, protected env), rebuild-site.yml is
-env-aware by dispatch ref, SNS+Lambda-error alarms per env. Also fixed since
-the audit: worker 4xx retry, rebuild warm-up, Docker asset excludes,
-data-layer pagination, undici override. Remaining before cutover = manual
-items in docs/runbooks/launch-checklist.md (rulesets, prod-foundation first
-deploy, prod PAT, credential rotation, George's final pass), then
-develop→main. Post-launch: GDW-052. Details:
-`docs/state-of-play-2026-07-06.md`.
+**Production is live at georgedallas.com** (launched 2026-07-06: 13 posts +
+media, publish→rebuild pipeline verified end to end, unattended). The GDW
+backlog is COMPLETE: 001…042 shipped, 043…049 deferred by ADR
+(docs/adr/2026-07-06-defer-growth-features-to-post-launch.md), 050 threat
+model + security headers, 051 cutover done
+(docs/runbooks/launch-checklist.md is the record), 052 maintenance
+automation (docs/runbooks/maintenance.md — weekly Dependabot/content-checks/
+prod-smoke, monthly cost + `cdk gc`, quarterly restore drill/PAT rotation/
+a11y/perf/security cadences). Future feature work = revisit the deferral
+ADR. Historical snapshot: `docs/state-of-play-2026-07-06.md`.

@@ -1,0 +1,55 @@
+name: Prod Smoke
+
+# Weekly heartbeat for the live site (GDW-052). The CloudWatch alarms catch
+# Lambda errors, but nothing else would notice a broken CloudFront distro,
+# expired certificate, or a bad static publish between deploys. GitHub emails
+# the repo owner when a scheduled workflow fails, so a red run is the alert —
+# keep this workflow quiet and strictly read-only.
+
+on:
+  schedule:
+    - cron: "30 6 * * 1" # Mondays 06:30 UTC, after the content checks
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Production smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Public site endpoints
+        run: |
+          fail=0
+          for url in \
+            https://georgedallas.com/ \
+            https://www.georgedallas.com/ \
+            https://georgedallas.com/writing/ \
+            https://georgedallas.com/rss.xml \
+            https://georgedallas.com/sitemap.xml \
+            https://georgedallas.com/robots.txt; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url")
+            echo "$url -> $code"
+            if [ "$code" != "200" ]; then fail=1; fi
+          done
+          exit $fail
+
+      - name: Custom 404 still served
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://georgedallas.com/this-page-does-not-exist)
+          echo "unknown path -> $code"
+          [ "$code" = "404" ]
+
+      - name: CMS health (tolerates scale-to-zero cold start)
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --max-time 70 https://cms.georgedallas.com/api/health; then
+              echo "CMS healthy."
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed; retrying..."
+            sleep 20
+          done
+          echo "CMS health check failed after 5 attempts."
+          exit 1
