@@ -1,111 +1,63 @@
-# State of play — 2026-07-06
+# State of play — 2026-07-06 (end of day)
 
-Where the project stands against the GDW backlog, what is in flight, and what
-must happen before production launch. Companion docs:
-`docs/audit/2026-07-06-repo-audit.md` (code audit) and `docs/playbook.md`
-(architecture).
+Where the project stands against the GDW backlog and what remains before the
+production cutover. Companion docs: `docs/audit/2026-07-06-repo-audit.md`
+(code audit, written this morning), `docs/playbook.md` (architecture), and
+`docs/runbooks/launch-checklist.md` (the cutover procedure).
 
 ## Where we are
 
-**41 of 52 tickets done.** GDW-001 through GDW-041 are merged and deployed to
-dev. The dev environment is fully live:
+**Every pre-launch ticket is merged.** GDW-001…042 are implemented and live
+on dev; GDW-043…049 are explicitly deferred by ADR
+(`docs/adr/2026-07-06-defer-growth-features-to-post-launch.md`); GDW-050
+(threat model + hardening) and GDW-051's repo side (prod pipeline, env-aware
+rebuilds, alarms, launch checklist) are merged. Only GDW-052 (post-launch
+maintenance automation) remains after cutover.
 
-- Public site at https://dev.georgedallas.com — all MVP routes plus search,
-  bookshelf, timeline, contact form, RSS/sitemap/robots, redirects from the
-  old WordPress permalinks.
-- CMS at https://cms-dev.georgedallas.com/admin — dashboard, unified search,
-  SEO preview, draft preview links, revisions, scheduled publishing, contact
-  inbox, import review queue, audit log.
-- All 13 WordPress posts imported (media relinked to S3, inline links
-  preserved) and published.
-- Automation: merge-to-develop auto-deploy, publish-triggered static
-  rebuilds, one-shot scheduled publishing, weekly broken-link/content-quality
-  sweep, Dependabot + dependency review.
-- Quality gates: 271 unit tests (verified passing 2026-07-06), Playwright e2e
-  smoke suite, accessibility baseline checks, typecheck/lint/build on every PR.
+Merged today (PRs #92–#98):
 
-**In flight:** nothing — the timeline cedar restyle merged as PR #90 and
-`main` was synced with `develop` (PR #91) on 2026-07-05. Merging to `main`
-currently deploys nothing (no prod pipeline yet).
+- Audit/playbook/AGENTS/state-of-play docs + drift fixes (#92).
+- Audit findings: worker 4xx retry bug, rebuild warm-up, Docker asset
+  excludes (image no longer rebuilds on unrelated merges), data-layer
+  pagination (#93).
+- undici forced to 7.28.0 — clears all seven Dependabot advisories once it
+  reaches `main` (#94).
+- GDW-042: homepage content sections, `/colophon`, custom 404 (+ CloudFront
+  error responses), footer nav, print styles (#95) — verified live on dev.
+- GDW-043…049 deferral ADR (#96).
+- GDW-050: `docs/security/threat-model.md`, edge security headers on both
+  distributions, branch-protection runbook rewrite (#97).
+- GDW-051: `deploy-prod.yml`, environment-aware `rebuild-site.yml`,
+  SNS + Lambda-error alarms, `launch-checklist.md` (#98).
 
-**Prod:** all prod stacks are defined in CDK but deliberately not deployed.
-The prod deploy pipeline does not exist yet. Monthly cost today ≈ $4–5 (dev
-foundation); deploying prod roughly doubles that — still inside the $10 cap
-but with less headroom.
+Launch prep already executed: GitHub `production` environment variables set
+(deploy role ARN + region); dev Aurora PITR window verified (full 7-day
+span); a point-in-time restore drill to a scratch cluster was performed and
+the scratch cluster deleted.
 
-## Remaining backlog (GDW-042…052)
+## What remains before prod (see launch-checklist.md for detail)
 
-| Ticket | What | Comment |
-| --- | --- | --- |
-| GDW-042 | Homepage sections, colophon, custom 404, visual polish | 404 also unblocks the CloudFront errorResponses left pending in `site-hosting.mjs` |
-| GDW-043 | Optional Notes / Start Here / Resources / Uses | Explicitly deferrable — a docs note satisfies it |
-| GDW-044 | Newsletter (subscribers, sends, SES) or external provider | Biggest remaining feature; needs an ADR either way |
-| GDW-045 | GitHub project sync job | Optional automation |
-| GDW-046 | Bookshelf ISBN lookup helper | Optional automation |
-| GDW-047 | Webmentions moderation | Optional; new public endpoint = new attack surface |
-| GDW-048 | Privacy-friendly analytics | Decide native vs external first |
-| GDW-049 | Content calendar, writing stats, changelog | Admin quality-of-life |
-| GDW-050 | Threat model + hardening pass | **Launch gate** |
-| GDW-051 | Launch readiness + prod cutover | **Launch gate** |
-| GDW-052 | Post-launch maintenance automation | Post-launch |
+All remaining items are **George's** — they need account owner/human access:
 
-Realistic minimal path to launch: GDW-042 → GDW-050 → GDW-051, explicitly
-deferring 043–049 in docs (the tickets allow it). The 044–048 features are
-additive and can land post-launch without rework.
+1. Apply the develop/main branch-protection rulesets (commands in
+   `github-branch-protection.md`; nothing is protected today).
+2. Configure the `production` environment: required reviewer = George,
+   deployment branches = `main`.
+3. Run the one blocked command: `cd infra && npx cdk deploy prod-foundation
+   --require-approval never` (creates the prod deploy role the workflow
+   assumes; automation was correctly stopped from prod IAM creation).
+4. Create the prod fine-grained GitHub PAT and store it in
+   `/georgedallaswebsite/prod/github-token` (enables publish-triggered prod
+   rebuilds; deploys work without it).
+5. Rotate the two dev credentials exposed in chat transcripts in June (dev
+   CMS owner password, dev GitHub PAT).
+6. Enable MFA on GitHub and AWS; confirm the SNS alert subscription emails.
+7. Merge `develop` → `main` → `deploy-prod.yml` deploys everything
+   (~30–45 min first run), then create the prod CMS owner account
+   immediately, import/publish content, and do the final human pass.
 
-## Must address before production (launch blockers)
+## After launch
 
-Gaps that are not fully captured by the remaining tickets:
-
-1. **Production deploy pipeline.** No `deploy-prod.yml` exists. Needs: main
-   branch trigger, `production` GitHub environment with required approval,
-   prod stack deploys, pre-migration backup verification, smoke tests.
-2. **Parameterise the rebuild path for prod.** `rebuild-site.yml` hardcodes
-   the dev CMS URL, dev stack name, and `development` environment; the
-   publishing worker's `GITHUB_REF`/workflow target the dev setup. A prod
-   publish today could not rebuild the prod site.
-3. **Populate real secrets for prod.** All seven secrets are CDK-generated
-   placeholders until launch; `github-token` (fine-grained PAT,
-   actions:write) is a manual step and needs a documented renewal reminder.
-   `email-config` stays placeholder unless GDW-044 lands first.
-4. **Observability floor.** Zero CloudWatch alarms exist; the only alert is
-   the $10 account budget email. Before prod: alarms on CMS Lambda errors,
-   publish-worker errors/DLQ behaviour, and (cheap) a CloudFront 5xx alarm.
-   All fit in the free alarm tier or pennies.
-5. **Fix the two code findings from the audit** (worker 4xx retry bug;
-   rebuild-site cold-CMS warm-up) — both small, both affect publish
-   reliability, which is the product.
-6. **GDW-050 threat model** — including the deliberate accepted risks:
-   secrets in Lambda env vars, no WAF/rate-limit on the contact form and
-   future public endpoints, single-owner account blast radius.
-7. **Backup/restore drill.** The policy and runbook exist
-   (`database-backup-restore.md`); actually perform one restore test against
-   dev and record it before cutover (GDW-051 requires it).
-8. **DNS/www cutover plan.** Prod cert covers apex + www; confirm the
-   redirect behaviour (www→apex or vice versa) and document rollback.
-9. **Docs sweep.** README still describes the pre-implementation scaffold in
-   places; cost-controls secret count and cms-hosting stack list are stale
-   (details in the audit). Cheap, do it with GDW-051.
-
-## Worth doing soon (not blocking)
-
-- Extend the CDK Docker asset exclude list and schedule `cdk gc` — stops
-  needless CMS image rebuilds and silent ECR storage growth (audit finding 3).
-- Add pagination (or a loud >100-docs failure) to the site data layer before
-  content volume grows.
-- Decide the ESLint question once: adopt minimal `typescript-eslint`
-  (including checked `.mjs`) or record staying with the custom scripts as a
-  deliberate choice.
-- Set `CMS_EMAIL`/`CMS_PASSWORD` repo secrets so the weekly content checks
-  actually run (currently no-op).
-- Refresh or retire the untracked `SESSION_HANDOFF.md` (a month stale).
-
-## Suggested order from here
-
-1. Quick-fix PR: worker 4xx retry + rebuild warm-up + Docker asset excludes
-   + data-layer pagination (small, one PR).
-2. GDW-042 (homepage/404/colophon) — finishes the public-facing surface.
-3. GDW-050 threat model.
-4. GDW-051: prod pipeline + parameterised rebuild + real secrets + alarms +
-   restore drill + cutover checklist → launch.
-5. Post-launch: GDW-052, then cherry-pick 043–049 by appetite.
+GDW-052 (maintenance automation), then revisit the deferral ADR by appetite
+(newsletter first if an audience develops). Post-launch hardening notes live
+in the threat model (raise PR approvals to 1, CSP after testing).

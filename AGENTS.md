@@ -93,19 +93,20 @@ CMS_EMAIL/CMS_PASSWORD for weekly content-checks workflow.
 - `cdk deploy --outputs-file` keys = full stack names
   (`georgedallaswebsite-dev-site`).
 - Lambda Function URL caps bodies 6 MB → media upload limit.
-- Site data layer caps queries at limit=100, no pagination (fine at current
-  volume).
 - Imported WP posts stay draft+private; import idempotent by
   wordpressOriginalId.
 - `infra/cdk.context.json` stays committed.
 
-## State (2026-07-06)
+## State (2026-07-06, end of day)
 
-GDW-001…041 merged + live on dev (WP import done, 13 posts published;
-redirects, preview, revisions+scheduled publishing, search, link checker,
-SEO preview, contact inbox, bookshelf, timeline). Remaining:
-GDW-042…052 (homepage polish/404/colophon, optional sections, newsletter,
-GitHub sync, ISBN helper, webmentions, analytics, calendar/changelog, threat
-model, prod launch, maintenance automation). Prod pipeline + CloudWatch
-alarms do not exist yet; `rebuild-site.yml` and worker GITHUB_REF are
-dev-hardcoded. Details: `docs/state-of-play-2026-07-06.md`.
+GDW-001…042 merged + live on dev. GDW-043…049 deferred by ADR
+(docs/adr/2026-07-06-defer-growth-features-to-post-launch.md). GDW-050 done
+(docs/security/threat-model.md + edge security headers). GDW-051 repo side
+done: deploy-prod.yml (main → prod, protected env), rebuild-site.yml is
+env-aware by dispatch ref, SNS+Lambda-error alarms per env. Also fixed since
+the audit: worker 4xx retry, rebuild warm-up, Docker asset excludes,
+data-layer pagination, undici override. Remaining before cutover = manual
+items in docs/runbooks/launch-checklist.md (rulesets, prod-foundation first
+deploy, prod PAT, credential rotation, George's final pass), then
+develop→main. Post-launch: GDW-052. Details:
+`docs/state-of-play-2026-07-06.md`.
