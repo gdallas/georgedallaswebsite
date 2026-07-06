@@ -27,6 +27,7 @@ export class CmsService {
     this.functionUrl = this.function.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE
     });
+    this.responseHeadersPolicy = this.createResponseHeadersPolicy(scope);
     this.distribution = this.createDistribution(scope);
     this.createDnsRecords(scope);
     this.addOutputs(scope);
@@ -117,6 +118,34 @@ export class CmsService {
     });
   }
 
+  // Edge security headers for the admin/API (docs/security/threat-model.md).
+  // SAMEORIGIN (not DENY) so Payload admin views that frame same-origin
+  // content keep working; X-Robots-Tag keeps the admin and API out of search
+  // indexes. Payload manages CORS itself, so no CORS behavior is set here.
+  createResponseHeadersPolicy(scope) {
+    return new cloudfront.ResponseHeadersPolicy(scope, "CmsSecurityHeaders", {
+      responseHeadersPolicyName: buildResourceName(this.environment.id, "cms-headers"),
+      securityHeadersBehavior: {
+        strictTransportSecurity: {
+          accessControlMaxAge: Duration.days(365),
+          includeSubdomains: true,
+          override: true
+        },
+        contentTypeOptions: { override: true },
+        frameOptions: { frameOption: cloudfront.HeadersFrameOption.SAMEORIGIN, override: true },
+        referrerPolicy: {
+          referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
+          override: true
+        }
+      },
+      customHeadersBehavior: {
+        customHeaders: [
+          { header: "X-Robots-Tag", value: "noindex, nofollow", override: true }
+        ]
+      }
+    });
+  }
+
   createDistribution(scope) {
     return new cloudfront.Distribution(scope, "CmsDistribution", {
       comment: `Payload CMS admin/API for ${this.environment.id}.`,
@@ -134,6 +163,7 @@ export class CmsService {
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        responseHeadersPolicy: this.responseHeadersPolicy,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       }
     });
