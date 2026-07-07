@@ -26,6 +26,7 @@ import {
   unresolvedIssuesWhere
 } from "../dashboard/importReview.mjs";
 import styles from "./Dashboard.module.css";
+import { QuickCapture } from "./QuickCapture";
 
 type DashboardDoc = {
   id: number | string;
@@ -158,6 +159,15 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     : [];
   const awaitingReviewDocs = (awaitingReview?.docs ?? []) as ImportedItemDoc[];
 
+  // The Now capture card edits currentFocus in place, so it needs the
+  // current value rather than an empty field.
+  const nowPage = (await payload.findGlobal({
+    slug: "now-page",
+    depth: 0,
+    overrideAccess: false,
+    user
+  })) as { currentFocus?: string | null };
+
   const latestDraftPost = draftPosts.docs[0] as DashboardDoc | undefined;
   const quickActions = buildQuickActions(adminRoute, latestDraftPost);
   const attentionItems = buildAttentionItems(adminRoute, {
@@ -187,6 +197,17 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
 
   return (
     <main className={`gutter--left gutter--right ${styles.dashboard}`}>
+      <section className={styles.section} aria-labelledby="dashboard-capture">
+        <h2 id="dashboard-capture" className={styles.sectionTitle}>
+          Start something
+        </h2>
+        <QuickCapture
+          adminRoute={adminRoute}
+          apiRoute={payload.config.routes.api}
+          nowCurrentFocus={typeof nowPage?.currentFocus === "string" ? nowPage.currentFocus : ""}
+        />
+      </section>
+
       <section className={styles.section} aria-labelledby="dashboard-quick-actions">
         <h2 id="dashboard-quick-actions" className={styles.sectionTitle}>
           This week

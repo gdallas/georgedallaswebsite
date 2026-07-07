@@ -29,15 +29,13 @@ describe("admin dashboard data", () => {
     assert.equal(action.href, "/admin/collections/posts/create");
   });
 
-  it("puts exactly the four core-loop actions in the primary row", () => {
+  it("keeps only the destinations quick capture cannot replace in the primary row", () => {
     const { primary } = buildQuickActions("/admin", undefined);
 
     assert.deepEqual(
       primary.map((action) => [action.label, action.href]),
       [
         ["Continue latest draft", "/admin/collections/posts/create"],
-        ["Write a new post", "/admin/collections/posts/create"],
-        ["Update Now page", "/admin/globals/now-page"],
         [
           "Review inbox",
           "/admin/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean"
@@ -54,7 +52,6 @@ describe("admin dashboard data", () => {
       [
         "/admin/collections/links/create",
         "/admin/collections/projects/create",
-        "/admin/collections/books/create",
         "/admin/collections/timeline-entries/create",
         "/admin/collections/media/create"
       ]

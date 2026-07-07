@@ -2,23 +2,14 @@ import { needsReviewHref, unresolvedIssuesHref } from "./importReview.mjs";
 
 export const draftStatuses = ["draft", "in_review"];
 
-// The weekly loop gets the four primary cards; everything else is reachable
-// from a compact secondary row so the first screen answers "what do I do
-// next" instead of offering nine equal choices (GDW-056).
+// The quick-capture cards (GDW-063) own starting a post, a Now update, an
+// image, and a book, so this row keeps only the destinations capture cannot
+// replace: resuming work and reading the inbox, with the rest as pills
+// (GDW-056 shape).
 export function buildQuickActions(adminRoute, latestDraft) {
   return {
     primary: [
       continueLatestDraftAction(adminRoute, latestDraft),
-      {
-        label: "Write a new post",
-        description: "Start a fresh draft.",
-        href: `${adminRoute}/collections/posts/create`
-      },
-      {
-        label: "Update Now page",
-        description: "Refresh what you are focused on, reading, and listening to.",
-        href: `${adminRoute}/globals/now-page`
-      },
       {
         label: "Review inbox",
         description: "Read new contact messages.",
@@ -28,9 +19,8 @@ export function buildQuickActions(adminRoute, latestDraft) {
     secondary: [
       { label: "Add quick link", href: `${adminRoute}/collections/links/create` },
       { label: "Add project", href: `${adminRoute}/collections/projects/create` },
-      { label: "Add book note", href: `${adminRoute}/collections/books/create` },
       { label: "Add timeline entry", href: `${adminRoute}/collections/timeline-entries/create` },
-      { label: "Upload media", href: `${adminRoute}/collections/media/create` }
+      { label: "Bulk upload media", href: `${adminRoute}/collections/media/create` }
     ]
   };
 }

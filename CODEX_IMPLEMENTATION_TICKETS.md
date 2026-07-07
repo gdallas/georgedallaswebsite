@@ -128,6 +128,7 @@ A ticket is not done unless all relevant items below are satisfied:
 | 59 | GDW-059 | Admin chrome rebuild — navigation and header | Replaces stock Payload chrome with writer-first navigation |
 | 60 | GDW-060 | Focus writing view | A distraction-free writing surface that rivals Ghost/iA |
 | 61 | GDW-061 | Content-first list views | Posts read as a body of work, media as a visual library |
+| 63 | GDW-063 | Dashboard quick capture | Start a post, Now update, image, or book from the landing screen without navigating |
 
 ---
 
@@ -137,8 +138,8 @@ A ticket is not done unless all relevant items below are satisfied:
 |---|---|
 | Static-first public site | GDW-024, GDW-025, GDW-026, GDW-027 |
 | Database-backed CMS/admin | GDW-017 through GDW-023 |
-| Pleasant weekly update workflow | GDW-020, GDW-022, GDW-023, GDW-034, GDW-035, GDW-037, GDW-049, GDW-053, GDW-054, GDW-055, GDW-056, GDW-057 |
-| Writer-first admin experience | GDW-058, GDW-059, GDW-060, GDW-061 |
+| Pleasant weekly update workflow | GDW-020, GDW-022, GDW-023, GDW-034, GDW-035, GDW-037, GDW-049, GDW-053, GDW-054, GDW-055, GDW-056, GDW-057, GDW-063 |
+| Writer-first admin experience | GDW-058, GDW-059, GDW-060, GDW-061, GDW-063 |
 | Local development | GDW-002, GDW-003, GDW-004 |
 | Dev and prod AWS environments | GDW-008 through GDW-016 |
 | PR approval by George | GDW-005, GDW-006, GDW-015 |
@@ -2515,6 +2516,41 @@ The posts list should read like a body of work — big serif titles, status at a
 - [ ] Media renders as a grid with review-state badges; bulk upload and selection still work.
 - [ ] System collections are unchanged.
 - [ ] Narrow viewports degrade gracefully; `pnpm lint` / `typecheck` / `test` and the CMS build pass; runbook updated.
+
+---
+
+## GDW-063 — Dashboard quick capture
+
+**Phase:** 10 — Writer-first admin
+**Dependencies:** GDW-056
+**Recommended order:** 63
+**Type:** CMS / admin UX
+
+### Purpose
+
+Landing in the admin should mean the work has already started: a post title field, the Now focus field, an image drop target, and a book entry sit live on the dashboard, so starting any of the four does not require a navigation click (George's request, 2026-07-07).
+
+### Execution notes for Codex
+
+- Capture cards live on the custom dashboard view and write through Payload's REST API with the admin cookie session; created documents rely on collection defaults (status draft, visibility private) so nothing captured can go live by accident.
+- Post capture derives a slug client-side (matching `validateSlug`) and retries once with a suffixed slug on collision; images are gated client-side against the media type/size rules because the Lambda Function URL rejects oversized bodies before app code runs.
+- The Now card edits `currentFocus` in place (prefilled from the global) and leaves the other Now fields and publish status untouched.
+- Request-body/validation rules live in `src/dashboard/quickCapture.mjs` with unit tests; the quick-action row shrinks to the destinations capture cannot replace (continue draft, inbox).
+
+### Scope
+
+- Dashboard capture cards for posts, Now focus, images, and books; slimmed quick-action row.
+
+### Out of scope
+
+- The focus writing view itself (GDW-060); list views (GDW-061); new collection fields.
+
+### Acceptance criteria
+
+- [ ] The dashboard renders title/Now/image/book capture fields with no extra navigation; the post card lands in the editor for the new draft.
+- [ ] Captured posts and books are drafts with private visibility; captured images enter the alt-text queue; the Now update changes only `currentFocus`.
+- [ ] Oversized or non-image files get a friendly named message before any request is sent.
+- [ ] `pnpm lint` / `typecheck` / `test` and the CMS build pass; runbook updated.
 
 ---
 

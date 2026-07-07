@@ -168,3 +168,135 @@
   color: var(--theme-elevation-500);
   font-size: 0.9rem;
 }
+
+/* ---- Quick capture (GDW-063) ---- */
+
+.capture {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: var(--base);
+}
+
+.captureCard {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--base) * 0.5);
+  padding: var(--base);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-m);
+  background: var(--theme-elevation-50);
+}
+
+.captureKicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-600);
+}
+
+.captureInput {
+  width: 100%;
+  padding: calc(var(--base) * 0.4) calc(var(--base) * 0.5);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+  background: var(--theme-input-bg, var(--theme-elevation-0));
+  color: var(--theme-elevation-800);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+.captureInput::placeholder {
+  color: var(--theme-elevation-400);
+}
+
+.captureTitleInput {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 560;
+  letter-spacing: -0.015em;
+}
+
+.captureTextarea {
+  resize: vertical;
+  min-height: calc(var(--base) * 3.4);
+}
+
+.captureSubmit {
+  align-self: flex-start;
+  padding: calc(var(--base) * 0.3) calc(var(--base) * 0.8);
+  border: 0;
+  border-radius: var(--style-radius-s);
+  background: var(--gdw-capture-btn-bg);
+  color: var(--gdw-capture-btn-text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.captureSubmit:hover:not(:disabled),
+.captureSubmit:focus-visible {
+  background: var(--gdw-capture-btn-hover);
+}
+
+.captureSubmit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.captureNote {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-600);
+}
+
+.captureNote[data-tone="error"] {
+  color: var(--theme-error-500, #b3261e);
+}
+
+.captureDrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: calc(var(--base) * 4.6);
+  padding: calc(var(--base) * 0.75);
+  border: 1.5px dashed var(--theme-elevation-250);
+  border-radius: var(--style-radius-s);
+  color: var(--theme-elevation-500);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.captureDrop[data-active="true"],
+.captureDrop:hover {
+  border-color: var(--color-success-500);
+  color: var(--theme-elevation-800);
+}
+
+.captureCard:focus-within .captureDrop {
+  border-color: var(--color-success-500);
+}
+
+/* Keep the file input focusable for keyboard users without showing it. */
+.captureDropInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.captureList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-600);
+}
+
+.captureList li[data-tone="error"] {
+  color: var(--theme-error-500, #b3261e);
+}
