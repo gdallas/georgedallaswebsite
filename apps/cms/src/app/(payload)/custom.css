@@ -350,3 +350,142 @@ html[data-theme='dark'] .btn--style-primary:not(.btn--disabled) {
   width: 26px;
   height: auto;
 }
+
+/* ---- Nav chrome (GDW-059) ------------------------------------------------
+   The sidebar is a custom component (src/components/nav/) that keeps
+   Payload's stock `nav` class contract for the drawer mechanics and layers
+   the writer-first hierarchy on top: Write large and immediate, everything
+   else folded and quiet, System demoted to the foot. */
+
+/* Write tier: the reason the admin exists. Serif, display-size, no folding. */
+.gdw-nav__write {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: calc(var(--base) * 0.75);
+}
+
+.gdw-nav__write .nav__link {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 560;
+  letter-spacing: -0.015em;
+  line-height: 1.5;
+  padding-block: calc(var(--base) * 0.25);
+}
+
+/* The stock 16px active tick disappears next to display-size serif. */
+.gdw-nav__write .nav__link-indicator {
+  height: 1.05em;
+}
+
+/* Search speaks in the instrument register, ruled off from the groups. */
+.gdw-nav__search {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-600);
+  margin-bottom: calc(var(--base) * 1.25);
+}
+
+.gdw-nav__search:hover,
+.gdw-nav__search:focus-visible {
+  color: var(--theme-elevation-1000);
+}
+
+/* Folded groups read as an index, not a menu: smaller links, roomier rhythm. */
+.gdw-nav .nav-group {
+  margin-bottom: calc(var(--base) * 0.6);
+}
+
+.gdw-nav .nav-group .nav__link {
+  font-size: 0.95rem;
+  line-height: 1.9;
+}
+
+/* System plumbing sits behind a trace rule at the foot of the scroll. */
+.gdw-nav__foot {
+  width: 100%;
+  margin-top: auto;
+  padding-top: calc(var(--base) * 1.5);
+}
+
+.gdw-nav__divider {
+  border: 0;
+  height: 1px;
+  width: 100%;
+  background: var(--gdw-trace);
+  margin: 0 0 calc(var(--base) * 0.75);
+}
+
+/* Footer block: the mark, who is signed in, and the two session actions. */
+.gdw-nav .nav__controls {
+  margin-top: 0;
+  width: 100%;
+}
+
+.gdw-nav__identity {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--base) * 0.5);
+  min-width: 0;
+}
+
+.gdw-nav__mark {
+  width: 30px;
+  height: auto;
+  flex-shrink: 0;
+  color: var(--theme-text);
+}
+
+.gdw-nav__identity-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gdw-nav__site {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+}
+
+.gdw-nav__user {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--theme-elevation-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gdw-nav__session {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--base) * 0.75);
+}
+
+.gdw-nav__account {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--theme-elevation-600);
+}
+
+.gdw-nav__account:hover,
+.gdw-nav__account:focus-visible {
+  color: var(--theme-elevation-1000);
+  text-decoration: underline;
+}
+
+/* ---- Header chrome (GDW-059) ---------------------------------------------
+   The header stays stock Payload; it just picks up the drafting-table
+   ruling so the chrome reads as one instrument with the nav. */
+.app-header {
+  border-bottom: 1px solid var(--gdw-trace);
+}
