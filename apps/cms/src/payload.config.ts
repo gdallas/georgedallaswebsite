@@ -50,6 +50,10 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     components: {
+      graphics: {
+        Icon: "/components/BrandIcon#BrandIcon",
+        Logo: "/components/BrandLogo#BrandLogo"
+      },
       views: {
         dashboard: {
           Component: "/components/Dashboard#Dashboard"
@@ -63,7 +67,19 @@ export default buildConfig({
     },
     importMap: {
       baseDir: path.resolve(dirname)
-    }
+    },
+    meta: {
+      // Admin pages are noindex'd at the edge; the generated-OG-image
+      // endpoint would be dead weight in the Lambda, so keep it off.
+      defaultOGImageType: "off",
+      description: "Content studio for georgedallas.com.",
+      icons: [{ rel: "icon", type: "image/svg+xml", url: "/brand/favicon.svg" }],
+      titleSuffix: " · George Dallas CMS"
+    },
+    // "all" lets the account-menu preference and prefers-color-scheme pick
+    // light or dark; the Cedar & Circuitry ramp in app/(payload)/custom.css
+    // themes both.
+    theme: "all"
   },
   auth: {
     jwtOrder: ["cookie", "Bearer", "JWT"]
