@@ -128,6 +128,7 @@ A ticket is not done unless all relevant items below are satisfied:
 | 59 | GDW-059 | Admin chrome rebuild — navigation and header | Replaces stock Payload chrome with writer-first navigation |
 | 60 | GDW-060 | Focus writing view | A distraction-free writing surface that rivals Ghost/iA |
 | 61 | GDW-061 | Content-first list views | Posts read as a body of work, media as a visual library |
+| 62 | GDW-062 | Fix: drag-and-drop upload from the editor 500s | Makes in-editor media upload actually work, with real error messages instead of 500s |
 
 ---
 
@@ -139,6 +140,7 @@ A ticket is not done unless all relevant items below are satisfied:
 | Database-backed CMS/admin | GDW-017 through GDW-023 |
 | Pleasant weekly update workflow | GDW-020, GDW-022, GDW-023, GDW-034, GDW-035, GDW-037, GDW-049, GDW-053, GDW-054, GDW-055, GDW-056, GDW-057 |
 | Writer-first admin experience | GDW-058, GDW-059, GDW-060, GDW-061 |
+| Media-into-writing reliability | GDW-057, GDW-062 |
 | Local development | GDW-002, GDW-003, GDW-004 |
 | Dev and prod AWS environments | GDW-008 through GDW-016 |
 | PR approval by George | GDW-005, GDW-006, GDW-015 |
@@ -2515,6 +2517,43 @@ The posts list should read like a body of work — big serif titles, status at a
 - [ ] Media renders as a grid with review-state badges; bulk upload and selection still work.
 - [ ] System collections are unchanged.
 - [ ] Narrow viewports degrade gracefully; `pnpm lint` / `typecheck` / `test` and the CMS build pass; runbook updated.
+
+---
+
+## GDW-062 — Fix: drag-and-drop upload from the editor returns a 500
+
+**Phase:** 10 — Writer-first admin
+**Dependencies:** GDW-057
+**Recommended order:** 62 (bug — jumps the queue)
+**Type:** CMS / bug / editor workflow
+
+### Purpose
+
+Reported by George on cms-dev (2026-07-07): dragging an image into a new post's body opens the media drawer as designed (GDW-057), but saving it fails with a raw **500 server error** — in fact any upload path *other than* the dedicated Upload Media page fails. The in-editor flow is the whole point of GDW-057, so this is a workflow-blocking bug.
+
+### Diagnosis leads (verify before fixing)
+
+1. **Prime suspect — plain `Error` throws in the Media `beforeChange` hook.** `validateMediaFileMetadata` failures (`throw new Error(...)`) surface as HTTP 500 without the message; only Payload's error classes (`APIError` with a 4xx status) reach the admin UI as readable feedback. GDW-057 dropped the size cap from 10 MB to 4 MB, so a typical dragged photo now trips it — and what should say "resize or compress it" says "500". The Upload Media page may simply have been fed smaller files.
+2. Confirm from the Lambda's CloudWatch logs (`/aws/lambda/…cms…` in ca-central-1) what actually threw at the reported time — do not fix on theory alone. If the logs show a different failure (server-function body handling through the Lambda Web Adapter, S3 write path, sharp), chase that instead.
+3. Compare the two request paths (bulk-upload drawer vs. collection create form): payload shape, endpoint, and content length, through CloudFront → Function URL.
+
+### Scope
+
+- Convert Media validation failures (size, type, and the reviewStatus hook if it can throw) from plain `Error` to Payload `APIError`/`ValidationError` with 4xx status, so the drawer and forms show the actual message. Never let a predictable validation outcome surface as a 500.
+- Fix whatever the logs identify as the real 500 cause if it is not (or not only) the error-class issue.
+- Regression coverage: unit tests for the hook's error behavior; document the verified end-to-end flow in the media runbook.
+
+### Out of scope
+
+- Raising upload limits (GDW-057's 4 MB cap stands; presigned client uploads remain the documented follow-up if larger files are ever needed).
+
+### Acceptance criteria
+
+- [ ] Dragging an image (≤4 MB, allowed type) into a new post's body uploads and inserts successfully on cms-dev.
+- [ ] An oversized or wrong-type file dropped into the editor shows the friendly validation message inside the drawer — no 500, no opaque toast.
+- [ ] The Upload Media page and list-view bulk upload behave identically (same messages, same limits).
+- [ ] Root cause is stated in the PR with the CloudWatch evidence.
+- [ ] `pnpm lint` / `typecheck` / `test` and the CMS build pass.
 
 ---
 
