@@ -26,8 +26,8 @@ import { BrandIcon as BrandIcon_gdw055 } from '../../../components/BrandIcon'
 import { BrandLogo as BrandLogo_gdw055 } from '../../../components/BrandLogo'
 import { Dashboard as Dashboard_9a680279bc487e655cb510fd8d9dadff } from '../../../components/Dashboard'
 import { AdminSearch as AdminSearch_gdw036 } from '../../../components/AdminSearch'
-import { AdminSearchNavLink as AdminSearchNavLink_gdw036 } from '../../../components/AdminSearchNavLink'
 import { SeoPreview as SeoPreview_gdw038 } from '../../../components/SeoPreview'
+import { Nav as Nav_gdw059 } from '../../../components/nav/Nav'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -60,7 +60,7 @@ export const importMap = {
   "/components/BrandLogo#BrandLogo": BrandLogo_gdw055,
   "/components/Dashboard#Dashboard": Dashboard_9a680279bc487e655cb510fd8d9dadff,
   "/components/AdminSearch#AdminSearch": AdminSearch_gdw036,
-  "/components/AdminSearchNavLink#AdminSearchNavLink": AdminSearchNavLink_gdw036,
   "/components/SeoPreview#SeoPreview": SeoPreview_gdw038,
+  "/components/nav/Nav#Nav": Nav_gdw059,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

@@ -76,6 +76,37 @@ Moss secondary text lands at ~3.7:1 on the bone page (vs 3.94 on stock
 white); the test pins a 3.5 floor, and the description/label lifts are the
 compensation. Don't deepen the page surface further without rechecking.
 
+## Navigation chrome (GDW-059)
+
+The sidebar is a custom component (`admin.components.Nav` →
+`apps/cms/src/components/nav/Nav.tsx`), not the stock Payload nav:
+
+- **Grouping and tiers** come from `src/admin/navigation.mjs`
+  (`NAV_GROUP_TIERS` + `tieredNavGroups`); the navigation unit test keeps
+  every group tiered. Write renders as large serif links with no folding;
+  Library / Inbox / Site / Site health / WordPress import are collapsible
+  groups, folded by default until first opened; System sits behind a trace
+  rule at the foot. A new nav group must be added to both `NAV_GROUP_ORDER`
+  and `NAV_GROUP_TIERS` or the sidebar (and the test) will throw.
+- **Drawer mechanics are stock**: `NavShell.tsx` reuses Payload's `nav`
+  class contract (`nav--nav-open/animate/hydrated`, `nav__scroll`,
+  `nav__mobile-close`) and `useNav()`, so the narrow-viewport drawer,
+  transitions, and inert-when-closed keyboard behavior are unchanged.
+- **Collapse persistence is stock**: groups render through Payload's
+  `NavGroup`, which writes open state to `payload-preferences` under the
+  standard `nav` key; `Nav.tsx` reads it back the same way the stock
+  `getNavPrefs` does, so preferences survive the custom chrome.
+- **Search** is a native nav link to the GDW-036 search view. The old
+  `afterNavLinks` registration is gone and the custom Nav does not render
+  Payload's `beforeNav`/`afterNav`/`beforeNavLinks`/`afterNavLinks` slots —
+  add nav links in `NavClient.tsx` instead. `admin.components.logout.Button`
+  and `settingsMenu` overrides are likewise not consulted: the footer
+  renders the brand mark, the signed-in email, an Account link, and the
+  stock `Logout` button.
+- Visuals live in `custom.css` under "Nav chrome (GDW-059)" and "Header
+  chrome (GDW-059)"; the header itself stays stock Payload with a verdigris
+  hairline underneath.
+
 ## Theme detection notes
 
 Server-side, Payload resolves the first render's theme from the
@@ -111,3 +142,7 @@ checklist for theme changes, in both light and dark:
    Advanced tabs + publishing sidebar).
 3. A relationship picker drawer, the media upload dropzone, a version diff.
 4. Narrow the window below 768px: nothing clipped or overlapping.
+5. Sidebar: Write links large at the top, Search under them, groups fold and
+   stay folded/open across a reload (preferences), System behind the trace
+   rule, account/logout reachable in the footer; below 1024px the drawer
+   opens and closes from the hamburger, and Tab stays out of the closed nav.
