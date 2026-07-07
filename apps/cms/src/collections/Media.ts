@@ -2,13 +2,19 @@ import type { CollectionConfig } from "payload";
 import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadMedia } from "../access/payloadAccess";
-import { buildMediaStorageKey, validateMediaAltText, validateMediaFileMetadata } from "../validation/content.mjs";
+import {
+  buildMediaStorageKey,
+  initialMediaReviewStatus,
+  validateMediaAltText,
+  validateMediaFileMetadata
+} from "../validation/content.mjs";
 
 export const Media: CollectionConfig = {
   slug: "media",
   admin: {
     group: collectionNavGroup("media"),
-    description: "Images and files, stored in S3 and served through CloudFront.",
+    description:
+      "Images and files, stored in S3 and served through CloudFront. Files up to 4 MB; drag images straight into a post body to upload them.",
     defaultColumns: ["filename", "alt", "reviewStatus", "updatedAt"],
     listSearchableFields: ["alt", "filename", "caption"],
     useAsTitle: "filename"
@@ -99,7 +105,7 @@ export const Media: CollectionConfig = {
     afterChange: [auditCollectionChanges("media")],
     afterDelete: [auditCollectionDeletes("media")],
     beforeChange: [
-      ({ data }) => {
+      ({ data, operation }) => {
         const validation = validateMediaFileMetadata(data);
 
         if (validation !== true) {
@@ -108,6 +114,12 @@ export const Media: CollectionConfig = {
 
         if (data.filename) {
           data.storageKey = buildMediaStorageKey("uploads", data.prefix, data.filename);
+        }
+
+        // New images without alt text go straight into the needs-alt-text
+        // queue so the dashboard surfaces them right away (GDW-057).
+        if (operation === "create") {
+          data.reviewStatus = initialMediaReviewStatus(data);
         }
 
         return data;

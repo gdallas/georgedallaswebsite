@@ -4,6 +4,7 @@ import {
   buildMediaPublicUrl,
   buildMediaStorageKey,
   estimateReadingTime,
+  initialMediaReviewStatus,
   isNowPagePublic,
   isPublicBuildVisible,
   isPublicListingVisible,
@@ -52,11 +53,38 @@ describe("content validation", () => {
   it("validates media file metadata and public URLs", () => {
     assert.equal(validateMediaFileMetadata({ filesize: 1024, mimeType: "image/webp" }), true);
     assert.equal(validateMediaFileMetadata({ filesize: 1024, mimeType: "text/html" }), "Media file type is not allowed.");
-    assert.equal(validateMediaFileMetadata({ filesize: 11 * 1024 * 1024, mimeType: "image/png" }), "Media file exceeds the 10 MB upload limit.");
+    // The limit must stay under the ~4.5 MB binary ceiling of the deployed
+    // Lambda Function URL, so this message fires before the infra cap does.
+    assert.equal(validateMediaFileMetadata({ filesize: 4 * 1024 * 1024, mimeType: "image/png" }), true);
+    assert.equal(
+      validateMediaFileMetadata({ filesize: 4 * 1024 * 1024 + 1, mimeType: "image/png" }),
+      "Media file exceeds the 4 MB upload limit. Resize or compress it, then upload again."
+    );
     assert.equal(buildMediaStorageKey("uploads", undefined, "hello world.png"), "uploads/hello world.png");
     assert.equal(
       buildMediaPublicUrl("https://media.example.com/", "uploads", undefined, "hello world.png"),
       "https://media.example.com/uploads/hello%20world.png"
+    );
+  });
+
+  it("queues new images without alt text for alt-text review", () => {
+    assert.equal(initialMediaReviewStatus({ mimeType: "image/png" }), "needs_alt_text");
+    assert.equal(initialMediaReviewStatus({ mimeType: "image/png", reviewStatus: "draft" }), "needs_alt_text");
+    assert.equal(initialMediaReviewStatus({ mimeType: "image/png", alt: "  " }), "needs_alt_text");
+  });
+
+  it("leaves alt-complete, decorative, and non-image uploads alone", () => {
+    assert.equal(initialMediaReviewStatus({ mimeType: "image/png", alt: "A cedar" }), "draft");
+    assert.equal(initialMediaReviewStatus({ mimeType: "image/png", decorative: true }), "draft");
+    assert.equal(initialMediaReviewStatus({ mimeType: "application/pdf" }), "draft");
+    assert.equal(initialMediaReviewStatus({}), "draft");
+  });
+
+  it("respects an explicitly chosen non-draft review status", () => {
+    assert.equal(initialMediaReviewStatus({ mimeType: "image/png", reviewStatus: "private" }), "private");
+    assert.equal(
+      initialMediaReviewStatus({ mimeType: "image/png", alt: "Set by importer", reviewStatus: "needs_alt_text" }),
+      "needs_alt_text"
     );
   });
 
