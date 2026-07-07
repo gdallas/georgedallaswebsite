@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
 import { slugField } from "../fields/slug";
@@ -6,6 +7,8 @@ import { slugField } from "../fields/slug";
 export const Categories: CollectionConfig = {
   slug: "categories",
   admin: {
+    group: collectionNavGroup("categories"),
+    description: "Broad post groupings, mostly from the WordPress import.",
     defaultColumns: ["name", "slug", "updatedAt"],
     useAsTitle: "name"
   },

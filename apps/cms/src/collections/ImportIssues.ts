@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
 
 // The cleanup queue: one record per problem found while importing a post
@@ -9,7 +10,8 @@ export const ImportIssues: CollectionConfig = {
   slug: "import-issues",
   labels: { singular: "Import issue", plural: "Import issues" },
   admin: {
-    group: "WordPress import",
+    group: collectionNavGroup("import-issues"),
+    description: "Problems flagged during the WordPress import, with triage notes.",
     defaultColumns: ["kind", "severity", "wordpressId", "resolved", "detail", "createdAt"],
     listSearchableFields: ["detail", "notes", "kind", "wordpressId"],
     useAsTitle: "detail"

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadListing } from "../access/payloadAccess";
 import { listingStatusField, visibilityField } from "../fields/publishing";
@@ -8,6 +9,8 @@ import { validateLinkUrl } from "../validation/content.mjs";
 export const Links: CollectionConfig = {
   slug: "links",
   admin: {
+    group: collectionNavGroup("links"),
+    description: "The link hub shown on /links.",
     defaultColumns: ["title", "category", "status", "visibility", "featured", "sortOrder"],
     listSearchableFields: ["title", "url", "description"],
     useAsTitle: "title"

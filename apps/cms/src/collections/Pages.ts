@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadBuild } from "../access/payloadAccess";
 import { publishedAtField, publishingStatusField, visibilityField } from "../fields/publishing";
@@ -10,6 +11,8 @@ import { collectionPreview } from "../preview/collectionPreview";
 export const Pages: CollectionConfig = {
   slug: "pages",
   admin: {
+    group: collectionNavGroup("pages"),
+    description: "Standalone pages such as About, Contact, and Colophon.",
     defaultColumns: ["title", "template", "status", "visibility", "updatedAt"],
     listSearchableFields: ["title", "slug", "seoTitle", "seoDescription"],
     useAsTitle: "title",

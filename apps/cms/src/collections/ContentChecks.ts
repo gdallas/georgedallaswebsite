@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
 
 // One row per content-checks run (GDW-037), mirroring import-jobs: a record of
@@ -8,7 +9,8 @@ export const ContentChecks: CollectionConfig = {
   slug: "content-checks",
   labels: { singular: "Content check run", plural: "Content check runs" },
   admin: {
-    group: "Site health",
+    group: collectionNavGroup("content-checks"),
+    description: "History of automated content check runs.",
     defaultColumns: ["type", "status", "brokenLinks", "issuesOpen", "finishedAt"],
     useAsTitle: "type"
   },

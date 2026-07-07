@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
 import { slugField } from "../fields/slug";
@@ -6,6 +7,8 @@ import { slugField } from "../fields/slug";
 export const Tags: CollectionConfig = {
   slug: "tags",
   admin: {
+    group: collectionNavGroup("tags"),
+    description: "Topic labels for posts — they also colour the tag chips on the public site.",
     defaultColumns: ["name", "slug", "updatedAt"],
     useAsTitle: "name"
   },

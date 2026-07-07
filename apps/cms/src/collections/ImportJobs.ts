@@ -1,13 +1,15 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
 
 // One record per WordPress import run. Tracks source, lifecycle, and tallies so
 // a run is auditable and resumable. Admin-only (never part of public builds).
 export const ImportJobs: CollectionConfig = {
   slug: "import-jobs",
-  labels: { singular: "Import job", plural: "Import jobs" },
+  labels: { singular: "Import run", plural: "Import runs" },
   admin: {
-    group: "WordPress import",
+    group: collectionNavGroup("import-jobs"),
+    description: "History of WordPress import runs.",
     defaultColumns: ["source", "status", "imported", "needsReview", "failed", "startedAt"],
     useAsTitle: "source"
   },
