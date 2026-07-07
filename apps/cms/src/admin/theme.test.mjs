@@ -3,10 +3,10 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-// The Cedar & Circuitry admin palette lives in app/(payload)/custom.css as
-// redefinitions of Payload's --color-* ramps. These tests parse the shipped
-// CSS and verify the WCAG pairings the admin depends on, so a future hex
-// tweak can't silently regress contrast (GDW-055 acceptance criterion).
+// The Root System admin palette (GDW-058; mechanics established in GDW-055)
+// lives in app/(payload)/custom.css as redefinitions of Payload's --color-*
+// ramps. These tests parse the shipped CSS and verify the WCAG pairings the
+// admin depends on, so a future hex tweak can't silently regress contrast.
 //
 // Payload maps light-theme elevations onto the ramp directly and dark-theme
 // elevations onto the same ramp reversed (dark elevation-0 = base-900,
@@ -52,7 +52,7 @@ function assertContrast(fg, bg, min, label) {
   assert.ok(ratio >= min, `${label}: expected >= ${min}:1, got ${ratio.toFixed(2)}:1 (${fg} on ${bg})`);
 }
 
-describe("cedar & circuitry admin palette", () => {
+describe("root system admin palette", () => {
   it("defines all 21 neutral steps and 19 steps per status ramp", () => {
     assert.equal(Object.keys(ramps.base).length, 21);
     for (const ramp of ["success", "error", "warning"]) {
@@ -94,36 +94,38 @@ describe("cedar & circuitry admin palette", () => {
     assertContrast(base[500], base[900], 3.9, "dark secondary text");
   });
 
-  it("keeps text readable on the linen page and mist nav surfaces", () => {
+  it("keeps text readable on the bone-paper page and panel nav surfaces", () => {
     const { base } = ramps;
     const page = surfaces["page-bg-light"];
     const nav = surfaces["nav-bg-light"];
-    assertContrast(base[800], page, 4.5, "body text on linen page");
-    assertContrast(base[600], page, 4.5, "field descriptions on linen page");
-    // Granite secondary text steps down slightly on the deeper page surface
-    // (stock-white gave 3.94); descriptions were lifted to elevation-600 to
+    assertContrast(base[800], page, 4.5, "body text on bone paper");
+    assertContrast(base[600], page, 4.5, "field descriptions on bone paper");
+    // Moss secondary text steps down slightly on the deeper page surface
+    // (stock-white gives 3.94); descriptions are lifted to elevation-600 to
     // compensate, and this floor keeps the page from deepening further.
-    assertContrast(base[500], page, 3.5, "granite secondary text on linen page");
-    assertContrast(base[800], nav, 4.5, "nav links on mist");
+    assertContrast(base[500], page, 3.5, "moss secondary text on bone paper");
+    assertContrast(base[800], nav, 4.5, "nav links on bone nav");
     // Nav group labels: stock paints them elevation-400 (~2.8:1 on white);
     // the theme lifts them to elevation-600, which must beat stock's ratio.
-    assertContrast(base[600], nav, 4, "nav group labels on mist");
-    // Dark nav is burnt umber (= base-850), already covered by the ramp
-    // checks; re-assert against the declared surface to catch drift.
-    assertContrast(base[100], surfaces["nav-bg-dark"], 4.5, "dark nav text on burnt umber");
-    assertContrast(base[0], surfaces["page-bg-dark"], 4.5, "dark body text on deep cedar");
+    assertContrast(base[600], nav, 4, "nav group labels on bone nav");
+    assertContrast(base[100], surfaces["nav-bg-dark"], 4.5, "dark nav text on panel");
+    assertContrast(base[0], surfaces["page-bg-dark"], 4.5, "dark body text on spruce ink");
   });
 
-  it("keeps copper primary buttons at WCAG AA, including hover", () => {
-    assertContrast(surfaces["accent-text"], surfaces["accent"], 4.5, "copper button label");
+  it("keeps ember primary buttons at WCAG AA in both themes, including hover", () => {
+    // Dark theme: ink label on ember, hover lifts hotter (still ink label).
+    assertContrast(surfaces["accent-ink"], surfaces["accent"], 4.5, "ink on ember");
+    assertContrast(surfaces["accent-ink"], surfaces["accent-hover"], 4.5, "ink on ember hover");
+    // Light theme: paper label on deep ember, hover deepens.
+    assertContrast(surfaces["accent-day-text"], surfaces["accent-day"], 4.5, "paper on day ember");
     assertContrast(
-      surfaces["accent-text"],
-      surfaces["accent-hover"],
+      surfaces["accent-day-text"],
+      surfaces["accent-day-hover"],
       4.5,
-      "copper button label on hover"
+      "paper on day ember hover"
     );
-    // Button shape against both page backgrounds (non-text 3:1).
-    assertContrast(surfaces["accent"], surfaces["page-bg-light"], 3, "copper on linen page");
-    assertContrast(surfaces["accent"], surfaces["page-bg-dark"], 3, "copper on cedar page");
+    // Button shape against its page background (non-text 3:1).
+    assertContrast(surfaces["accent-day"], surfaces["page-bg-light"], 3, "day ember on bone paper");
+    assertContrast(surfaces["accent"], surfaces["page-bg-dark"], 3, "ember on spruce ink");
   });
 });
