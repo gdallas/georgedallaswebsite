@@ -9,6 +9,12 @@ const nextConfig = {
   // Standalone output keeps the Lambda container image small (see the CMS
   // Lambda hosting ADR). The tracing root makes standalone work in the
   // pnpm monorepo.
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["cms.georgedallas.com", "cms-dev.georgedallas.com"],
+      bodySizeLimit: "6mb"
+    }
+  },
   output: "standalone",
   outputFileTracingRoot: path.resolve(dirname, "..", ".."),
   experimental: {
