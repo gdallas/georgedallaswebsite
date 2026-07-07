@@ -36,5 +36,8 @@ ENV NODE_ENV=production \
 WORKDIR /app
 COPY --from=builder /repo/apps/cms/.next/standalone ./
 COPY --from=builder /repo/apps/cms/.next/static ./apps/cms/.next/static
+# Standalone output does not include the public dir; the standalone server
+# serves it from apps/cms/public when present (admin favicon lives there).
+COPY --from=builder /repo/apps/cms/public ./apps/cms/public
 EXPOSE 3000
 CMD ["node", "apps/cms/server.js"]
