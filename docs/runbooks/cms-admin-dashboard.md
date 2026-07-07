@@ -20,20 +20,22 @@ When adding a collection: add its slug to `navigation.mjs` (the unit test beside
 
 ## This week (quick actions)
 
-The top section gives one-click access to the weekly update workflow:
+The top section is the weekly core loop as four primary cards (GDW-056):
 
 - **Continue latest draft** — opens the most recently edited draft post, or the new-post form when no drafts exist.
+- **Write a new post** — opens the create form.
 - **Update Now page** — opens the `now-page` global.
-- **Write a new post**, **Add quick link**, **Add project**, **Upload media** — open the matching create forms.
+- **Review inbox** — opens contact messages filtered to new + clean.
 
-Every action is reachable in one click after login, satisfying the one-to-two-click requirement.
+Everything else (quick link, project, book note, timeline entry, media upload) sits in a compact secondary pill row below the cards — visually demoted but still one click.
 
 ## Content sections
 
 - **Recent drafts** — newest `draft`/`in_review` posts and pages by `updatedAt`.
 - **Recently published** — newest `published` posts and pages by `publishedAt`.
-- **Scheduled** — `scheduled` posts in publish order, with a placeholder note until scheduled publishing lands (GDW-035).
-- **Needs attention** — a live count of media with `reviewStatus = needs_alt_text` linking to the filtered media list, plus a placeholder for WordPress import review tasks until the import pipeline lands (GDW-030+).
+- **Scheduled** — `scheduled` posts in publish order.
+- **Needs attention** — one consolidated list built by `buildAttentionItems`: media missing alt text, unresolved import issues, imported items awaiting review, and new contact messages, each linking to the filtered list that resolves it. Zero-count entries are dropped; when everything is clear it says so.
+- **WordPress import** — renders only while unresolved migration work exists (`hasUnresolvedImportWork`: unresolved import issues or items not yet approved). Its detail queries are skipped entirely when hidden. Once the cleanup queue is emptied the panel disappears for good; the import runbook (`docs/runbooks/wordpress-import.md`) remains the way back in.
 
 ## RBAC and safety
 

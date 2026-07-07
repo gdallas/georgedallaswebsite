@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildAttentionItems,
   buildHealthTiles,
   buildQuickActions,
   contactInboxHref,
@@ -28,21 +29,36 @@ describe("admin dashboard data", () => {
     assert.equal(action.href, "/admin/collections/posts/create");
   });
 
-  it("builds the weekly quick actions with one-click admin destinations", () => {
-    const actions = buildQuickActions("/admin", undefined);
-    const hrefs = actions.map((action) => action.href);
+  it("puts exactly the four core-loop actions in the primary row", () => {
+    const { primary } = buildQuickActions("/admin", undefined);
 
-    assert.deepEqual(hrefs, [
-      "/admin/collections/posts/create",
-      "/admin/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean",
-      "/admin/globals/now-page",
-      "/admin/collections/posts/create",
-      "/admin/collections/links/create",
-      "/admin/collections/projects/create",
-      "/admin/collections/books/create",
-      "/admin/collections/timeline-entries/create",
-      "/admin/collections/media/create"
-    ]);
+    assert.deepEqual(
+      primary.map((action) => [action.label, action.href]),
+      [
+        ["Continue latest draft", "/admin/collections/posts/create"],
+        ["Write a new post", "/admin/collections/posts/create"],
+        ["Update Now page", "/admin/globals/now-page"],
+        [
+          "Review inbox",
+          "/admin/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean"
+        ]
+      ]
+    );
+  });
+
+  it("keeps the remaining shortcuts reachable in the secondary row", () => {
+    const { secondary } = buildQuickActions("/admin", undefined);
+
+    assert.deepEqual(
+      secondary.map((action) => action.href),
+      [
+        "/admin/collections/links/create",
+        "/admin/collections/projects/create",
+        "/admin/collections/books/create",
+        "/admin/collections/timeline-entries/create",
+        "/admin/collections/media/create"
+      ]
+    );
   });
 
   it("scopes dashboard queries to the right statuses", () => {
@@ -88,6 +104,44 @@ describe("admin dashboard data", () => {
 
   it("builds edit links for merged documents", () => {
     assert.equal(documentEditHref("/admin", "pages", 12), "/admin/collections/pages/12");
+  });
+});
+
+describe("needs attention", () => {
+  it("returns nothing when every count is zero", () => {
+    assert.deepEqual(buildAttentionItems("/admin", {}), []);
+    assert.deepEqual(
+      buildAttentionItems("/admin", {
+        mediaNeedingAltText: 0,
+        unresolvedImportIssues: 0,
+        importsAwaitingReview: 0,
+        newContactMessages: 0
+      }),
+      []
+    );
+  });
+
+  it("consolidates alt-text, import, and inbox items with actionable links", () => {
+    const items = buildAttentionItems("/admin", {
+      mediaNeedingAltText: 2,
+      unresolvedImportIssues: 1,
+      importsAwaitingReview: 3,
+      newContactMessages: 1
+    });
+
+    assert.deepEqual(
+      items.map((item) => item.label),
+      [
+        "2 media items are missing alt text",
+        "1 unresolved WordPress import issue",
+        "3 imported posts await review",
+        "1 new contact message"
+      ]
+    );
+    assert.equal(items[0].href, "/admin/collections/media?where[reviewStatus][equals]=needs_alt_text");
+    assert.equal(items[1].href, "/admin/collections/import-issues?where[resolved][equals]=false");
+    assert.equal(items[2].href, "/admin/collections/imported-items?where[reviewStatus][not_equals]=approved");
+    assert.equal(items[3].href, contactInboxHref("/admin"));
   });
 });
 

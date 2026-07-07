@@ -1,49 +1,38 @@
+import { needsReviewHref, unresolvedIssuesHref } from "./importReview.mjs";
+
 export const draftStatuses = ["draft", "in_review"];
 
+// The weekly loop gets the four primary cards; everything else is reachable
+// from a compact secondary row so the first screen answers "what do I do
+// next" instead of offering nine equal choices (GDW-056).
 export function buildQuickActions(adminRoute, latestDraft) {
-  return [
-    continueLatestDraftAction(adminRoute, latestDraft),
-    {
-      label: "Review inbox",
-      description: "Read new contact messages.",
-      href: `${adminRoute}/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean`
-    },
-    {
-      label: "Update Now page",
-      description: "Refresh what you are focused on, reading, and listening to.",
-      href: `${adminRoute}/globals/now-page`
-    },
-    {
-      label: "Write a new post",
-      description: "Start a fresh draft.",
-      href: `${adminRoute}/collections/posts/create`
-    },
-    {
-      label: "Add quick link",
-      description: "Add a link to the link hub.",
-      href: `${adminRoute}/collections/links/create`
-    },
-    {
-      label: "Add project",
-      description: "Showcase something you built.",
-      href: `${adminRoute}/collections/projects/create`
-    },
-    {
-      label: "Add book note",
-      description: "Log something you are reading or finished.",
-      href: `${adminRoute}/collections/books/create`
-    },
-    {
-      label: "Add timeline entry",
-      description: "Record a milestone, project, or site update.",
-      href: `${adminRoute}/collections/timeline-entries/create`
-    },
-    {
-      label: "Upload media",
-      description: "Add images with alt text.",
-      href: `${adminRoute}/collections/media/create`
-    }
-  ];
+  return {
+    primary: [
+      continueLatestDraftAction(adminRoute, latestDraft),
+      {
+        label: "Write a new post",
+        description: "Start a fresh draft.",
+        href: `${adminRoute}/collections/posts/create`
+      },
+      {
+        label: "Update Now page",
+        description: "Refresh what you are focused on, reading, and listening to.",
+        href: `${adminRoute}/globals/now-page`
+      },
+      {
+        label: "Review inbox",
+        description: "Read new contact messages.",
+        href: contactInboxHref(adminRoute)
+      }
+    ],
+    secondary: [
+      { label: "Add quick link", href: `${adminRoute}/collections/links/create` },
+      { label: "Add project", href: `${adminRoute}/collections/projects/create` },
+      { label: "Add book note", href: `${adminRoute}/collections/books/create` },
+      { label: "Add timeline entry", href: `${adminRoute}/collections/timeline-entries/create` },
+      { label: "Upload media", href: `${adminRoute}/collections/media/create` }
+    ]
+  };
 }
 
 export function continueLatestDraftAction(adminRoute, latestDraft) {
@@ -102,6 +91,48 @@ export function newCleanContactMessagesWhere() {
 
 export function contactInboxHref(adminRoute) {
   return `${adminRoute}/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean`;
+}
+
+// One consolidated "Needs attention" list: alt text, import cleanup, and the
+// inbox in a single place, each entry linking to the filtered list that
+// resolves it. Zero-count entries are dropped; an empty array means calm.
+export function buildAttentionItems(adminRoute, counts) {
+  const plural = (n, singular, pluralForm) => (n === 1 ? singular : pluralForm);
+  const items = [];
+
+  if ((counts.mediaNeedingAltText ?? 0) > 0) {
+    const n = counts.mediaNeedingAltText;
+    items.push({
+      label: `${n} media ${plural(n, "item is", "items are")} missing alt text`,
+      href: `${adminRoute}/collections/media?where[reviewStatus][equals]=needs_alt_text`
+    });
+  }
+
+  if ((counts.unresolvedImportIssues ?? 0) > 0) {
+    const n = counts.unresolvedImportIssues;
+    items.push({
+      label: `${n} unresolved WordPress import ${plural(n, "issue", "issues")}`,
+      href: unresolvedIssuesHref(adminRoute)
+    });
+  }
+
+  if ((counts.importsAwaitingReview ?? 0) > 0) {
+    const n = counts.importsAwaitingReview;
+    items.push({
+      label: `${n} imported ${plural(n, "post awaits", "posts await")} review`,
+      href: needsReviewHref(adminRoute)
+    });
+  }
+
+  if ((counts.newContactMessages ?? 0) > 0) {
+    const n = counts.newContactMessages;
+    items.push({
+      label: `${n} new contact ${plural(n, "message", "messages")}`,
+      href: contactInboxHref(adminRoute)
+    });
+  }
+
+  return items;
 }
 
 export function mergeRecentDocs(lists, dateField, limit) {
