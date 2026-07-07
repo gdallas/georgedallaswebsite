@@ -51,6 +51,17 @@ export const Posts: CollectionConfig = {
               type: "richText"
             },
             {
+              // Focus writing status line + toggle (GDW-060). UI field:
+              // renders under the body, stores nothing, no migration.
+              name: "writingFocus",
+              type: "ui",
+              admin: {
+                components: {
+                  Field: "/components/WritingFocus#WritingFocus"
+                }
+              }
+            },
+            {
               name: "featuredImage",
               type: "upload",
               relationTo: "media",

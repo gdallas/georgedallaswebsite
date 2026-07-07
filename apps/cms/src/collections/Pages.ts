@@ -43,6 +43,16 @@ export const Pages: CollectionConfig = {
               type: "richText"
             },
             {
+              // Focus writing status line + toggle (GDW-060); see Posts.
+              name: "writingFocus",
+              type: "ui",
+              admin: {
+                components: {
+                  Field: "/components/WritingFocus#WritingFocus"
+                }
+              }
+            },
+            {
               name: "template",
               type: "select",
               required: true,
