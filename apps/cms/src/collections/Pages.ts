@@ -28,7 +28,12 @@ export const Pages: CollectionConfig = {
     {
       name: "title",
       type: "text",
-      required: true
+      required: true,
+      admin: {
+        // The focus surface strips the field chrome (GDW-060), so the empty
+        // input needs the placeholder to stay discoverable.
+        placeholder: "Title"
+      }
     },
     slugField,
     {

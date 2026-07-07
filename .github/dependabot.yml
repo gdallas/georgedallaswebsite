@@ -6,6 +6,16 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      # Payload packages must move in lockstep: a solo bump of one of them
+      # (ui 3.85.1 -> 3.85.2, 2026-07-03) put two copies of @payloadcms/ui
+      # in the admin bundle, and its React contexts stopped reaching our
+      # custom components — every authenticated admin page crashed on
+      # hydration ("Cannot destructure property 'config'").
+      payload:
+        patterns:
+          - "payload"
+          - "@payloadcms/*"
   - package-ecosystem: github-actions
     directory: /
     target-branch: develop
