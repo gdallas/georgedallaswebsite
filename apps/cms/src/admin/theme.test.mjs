@@ -24,6 +24,13 @@ for (const [, ramp, step, hex] of css.matchAll(
   ramps[ramp][step] = hex;
 }
 
+// Named surface/accent decisions (--gdw-*), e.g. the linen page background
+// and the copper primary buttons.
+const surfaces = {};
+for (const [, name, hex] of css.matchAll(/--gdw-([a-z-]+):\s*(#[0-9a-fA-F]{6})/g)) {
+  surfaces[name] = hex;
+}
+
 function luminance(hex) {
   const channel = (c) => {
     const s = c / 255;
@@ -85,5 +92,38 @@ describe("cedar & circuitry admin palette", () => {
     const { base } = ramps;
     assertContrast(base[500], base[0], 3.9, "light secondary text");
     assertContrast(base[500], base[900], 3.9, "dark secondary text");
+  });
+
+  it("keeps text readable on the linen page and mist nav surfaces", () => {
+    const { base } = ramps;
+    const page = surfaces["page-bg-light"];
+    const nav = surfaces["nav-bg-light"];
+    assertContrast(base[800], page, 4.5, "body text on linen page");
+    assertContrast(base[600], page, 4.5, "field descriptions on linen page");
+    // Granite secondary text steps down slightly on the deeper page surface
+    // (stock-white gave 3.94); descriptions were lifted to elevation-600 to
+    // compensate, and this floor keeps the page from deepening further.
+    assertContrast(base[500], page, 3.5, "granite secondary text on linen page");
+    assertContrast(base[800], nav, 4.5, "nav links on mist");
+    // Nav group labels: stock paints them elevation-400 (~2.8:1 on white);
+    // the theme lifts them to elevation-600, which must beat stock's ratio.
+    assertContrast(base[600], nav, 4, "nav group labels on mist");
+    // Dark nav is burnt umber (= base-850), already covered by the ramp
+    // checks; re-assert against the declared surface to catch drift.
+    assertContrast(base[100], surfaces["nav-bg-dark"], 4.5, "dark nav text on burnt umber");
+    assertContrast(base[0], surfaces["page-bg-dark"], 4.5, "dark body text on deep cedar");
+  });
+
+  it("keeps copper primary buttons at WCAG AA, including hover", () => {
+    assertContrast(surfaces["accent-text"], surfaces["accent"], 4.5, "copper button label");
+    assertContrast(
+      surfaces["accent-text"],
+      surfaces["accent-hover"],
+      4.5,
+      "copper button label on hover"
+    );
+    // Button shape against both page backgrounds (non-text 3:1).
+    assertContrast(surfaces["accent"], surfaces["page-bg-light"], 3, "copper on linen page");
+    assertContrast(surfaces["accent"], surfaces["page-bg-dark"], 3, "copper on cedar page");
   });
 });

@@ -116,13 +116,83 @@
   --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
   --theme-overlay: rgb(24 18 14 / 0.55);
+
+  /* Surface and accent decisions, named so theme.test.mjs can parse and
+     contrast-check them. Values come from the public site's tokens. */
+  --gdw-page-bg-light: #f6ebdc; /* site --surface */
+  --gdw-nav-bg-light: #e7ded2; /* mist, the site's light background */
+  --gdw-page-bg-dark: #18120e; /* deep cedar (= base-900) */
+  --gdw-nav-bg-dark: #241b16; /* burnt umber (= base-850) */
+  --gdw-accent: #9d5730; /* copper dark enough to carry linen text at AA */
+  --gdw-accent-hover: #7f4325;
+  --gdw-accent-text: #fff4e4; /* soft linen */
 }
 
-/* Payload declares its own dark overlay inside the payload-default layer;
-   since this file is unlayered, the dark value must be restated here or the
-   :root value above would win in dark mode too. */
+/* ---- Surface steps ------------------------------------------------------
+   The site's identity is layered warmth (mist page -> linen surfaces ->
+   lighter raised mats), not a flat white canvas. Recreate the steps here:
+   mist nav, linen page, near-white cards/inputs in light mode; deep cedar
+   page with a burnt-umber nav in dark mode (the same pairing as the public
+   site's background/surface). */
+:root {
+  --theme-bg: var(--gdw-page-bg-light);
+}
+
+/* Payload declares dark values for these inside the payload-default layer;
+   since this file is unlayered, the dark values must be restated here or the
+   :root values above would win in dark mode too. */
 html[data-theme='dark'] {
+  --theme-bg: var(--gdw-page-bg-dark);
   --theme-overlay: rgb(9 6 5 / 0.75);
+}
+
+html[data-theme='light'] .nav {
+  background: var(--gdw-nav-bg-light);
+}
+
+html[data-theme='dark'] .nav {
+  background: var(--gdw-nav-bg-dark);
+}
+
+/* Dashboard/list cards read as raised linen mats on the darker page. Dark
+   mode keeps stock behavior (elevation-50 is already the burnt-umber step). */
+html[data-theme='light'] .card {
+  background: var(--theme-elevation-0);
+}
+
+/* ---- Copper primaries ---------------------------------------------------
+   Primary actions carry the site's accent. Only the color variables are
+   overridden, so sizing, focus and disabled states stay stock; the single
+   darker hover keeps linen text at AA in both themes. */
+.btn--style-primary:not(.btn--disabled) {
+  --bg-color: var(--gdw-accent);
+  --color: var(--gdw-accent-text);
+  --hover-bg: var(--gdw-accent-hover);
+  --hover-color: var(--gdw-accent-text);
+}
+
+/* ---- Muted-text legibility ---------------------------------------------
+   Stock Payload paints these in elevation-400 (~2.8:1). On the linen page
+   they would fade further, and GDW-054 leans on field descriptions to
+   explain the publishing rules -- lift them a couple of elevation steps
+   (which flips correctly in dark mode). The nav toggle's hover/focus color
+   is restated because Payload's own version lives in the layer this file
+   deliberately outranks. */
+.field-description {
+  color: var(--theme-elevation-600);
+}
+
+.table thead {
+  color: var(--theme-elevation-550);
+}
+
+.nav-group__toggle {
+  color: var(--theme-elevation-600);
+}
+
+.nav-group__toggle:hover,
+.nav-group__toggle:focus-visible {
+  color: var(--theme-elevation-1000);
 }
 
 /* Document titles echo the public site's display face. */

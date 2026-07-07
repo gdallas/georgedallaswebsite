@@ -43,6 +43,30 @@ themes, so it cannot reach 4.5:1 on both backgrounds by construction. Stock
 ships 3.94:1 (light) / 4.67:1 (dark); the granite step ships 4.05 / 4.44.
 The unit test pins a ≥3.9 floor on both.
 
+## Surface steps and copper accents
+
+Warm-tinting the stock ramps alone reads as "Payload with a filter", so the
+theme also recreates the site's layered surfaces (declared as `--gdw-*`
+custom properties in `custom.css`, which the unit test parses):
+
+- **Light**: mist nav (`#e7ded2`) → linen page (`#f6ebdc`, the site's
+  `--surface`) → near-white cards, inputs and odd table rows (elevation-0/50)
+  as raised mats.
+- **Dark**: deep cedar page with a burnt-umber nav — the public site's
+  background/surface pairing.
+- **Primary buttons** carry the site's copper accent (`#9d5730`, hover
+  `#7f4325`, soft-linen text ≥4.5:1 in both themes). Only the button color
+  variables are overridden, so sizing/disabled/focus stay stock.
+- **Muted text lifted**: field descriptions and table headers move from
+  stock's elevation-400 (~2.8:1) to 600/550, and nav group labels to 600 —
+  needed on the deeper page surface and better than stock everywhere. The
+  nav toggle's hover color is restated (layer-override side effect, see
+  above).
+
+Granite secondary text lands at ~3.5:1 on the linen page (vs 3.94 on stock
+white); the test pins that floor, and the description/label lifts are the
+compensation. Don't deepen the page surface further without rechecking.
+
 ## Theme detection notes
 
 Server-side, Payload resolves the first render's theme from the
