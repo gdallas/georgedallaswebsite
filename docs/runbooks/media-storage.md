@@ -2,6 +2,32 @@
 
 CMS media is stored in private S3 buckets and delivered through CloudFront.
 
+## Putting images into posts (GDW-057)
+
+Getting an image into a post body is native Payload behavior — no custom
+editor code:
+
+- **Drag a file into the post body** (or paste one): Lexical's upload feature
+  inserts a placeholder at the drop position and opens the bulk-upload drawer
+  prefilled with the file. Saving the drawer replaces the placeholder with a
+  real media reference; cancelling removes it. The same drawer serves the
+  toolbar's upload button and list-view bulk upload.
+- **Alt text is asked for up front**: the drawer shows the media form (alt
+  first, then decorative/caption/credit/source — all optional at this stage).
+  Any *image* saved without alt text and not marked decorative is created
+  with `reviewStatus = needs_alt_text` (`initialMediaReviewStatus`), which
+  puts it in the dashboard's Needs attention list immediately. Alt text
+  becomes a hard requirement when the media is flipped to **Approved
+  public** — which is also what the public site requires before it will
+  serve the file at all, so a forgotten alt can't leak into the public site.
+- **Failure messages**: unsupported types are rejected against the
+  collection's `mimeTypes` list; oversized files get "Media file exceeds the
+  4 MB upload limit…" from `validateMediaFileMetadata`. The 4 MB app cap is
+  deliberately below the Lambda Function URL's ~4.5 MB effective body
+  ceiling so that message — not an opaque network error — is the one that
+  fires (see `docs/runbooks/cms-hosting.md`). Larger files would need
+  presigned client uploads, a documented follow-up, not a raised cap.
+
 ## Resources
 
 Each environment has:

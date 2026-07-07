@@ -89,10 +89,10 @@ S3 marker -> publishing worker -> GitHub API (PAT) + EventBridge + CMS webhook
   reachable only through CloudFront OAC; CMS writes limited to approved
   prefixes; prod versioning on. Control-bucket markers expire after 1 day;
   worker validates marker shape before acting.
-- Uploads: CMS-authenticated users only; size-capped (~6 MB by Function URL,
-  10 MB app-level); Payload/sharp process images. Malicious-file risk is
-  bounded: objects are served from a cookieless media CDN domain
-  (`*.cloudfront.net`), not the site origin.
+- Uploads: CMS-authenticated users only; size-capped (4 MB app-level, under
+  the ~6 MB Function URL event cap); Payload/sharp process images.
+  Malicious-file risk is bounded: objects are served from a cookieless media
+  CDN domain (`*.cloudfront.net`), not the site origin.
 
 ### Network / origin protection
 

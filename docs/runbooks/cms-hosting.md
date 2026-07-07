@@ -59,4 +59,4 @@ CloudFormation rolls back automatically on failure, leaving the previous Lambda 
 
 ## Upload size limit
 
-Lambda Function URLs cap request bodies at 6 MB, so deployed media uploads are effectively limited to ~6 MB (the app-level cap is 10 MB and still applies locally). Enable the storage plugin's presigned client uploads in a future ticket if larger files are needed.
+Lambda Function URLs cap request bodies at 6 MB of base64-encoded event, which leaves roughly 4.5 MB for the binary file itself — anything larger dies at the infrastructure with an opaque network error before app code runs. The app-level cap (`maxMediaUploadBytes`, GDW-057) is therefore **4 MB**, deliberately under the ceiling, so the failure people actually see is the friendly validation message ("resize or compress it"). Don't raise the app cap; if larger files are ever needed, enable the storage plugin's presigned client uploads in a follow-up ticket so files go straight to S3 and skip the Lambda body limit entirely.
