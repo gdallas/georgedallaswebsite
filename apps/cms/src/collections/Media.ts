@@ -24,13 +24,24 @@ export const Media: CollectionConfig = {
       name: "alt",
       type: "text",
       admin: {
-        description: "Required before an image can be marked public."
+        description: "What the image shows, for screen readers and search. Required before an image can be marked public."
       },
       validate: validateMediaAltText
     },
     {
+      name: "decorative",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        description: "Use only for images that convey no content; skips the alt text requirement."
+      }
+    },
+    {
       name: "caption",
-      type: "textarea"
+      type: "textarea",
+      admin: {
+        description: "Optional text shown under the image on the public site."
+      }
     },
     {
       name: "credit",
@@ -39,19 +50,6 @@ export const Media: CollectionConfig = {
     {
       name: "source",
       type: "text"
-    },
-    {
-      name: "storageKey",
-      type: "text",
-      admin: {
-        description: "S3 object key generated from the configured media prefix and filename.",
-        readOnly: true
-      }
-    },
-    {
-      name: "importedFromWordPress",
-      type: "checkbox",
-      defaultValue: false
     },
     {
       name: "reviewStatus",
@@ -63,15 +61,38 @@ export const Media: CollectionConfig = {
         { label: "Needs alt text", value: "needs_alt_text" },
         { label: "Approved public", value: "public" },
         { label: "Private", value: "private" }
-      ]
+      ],
+      admin: {
+        position: "sidebar",
+        description:
+          "Approved public is required before the file can appear on the public site. The importer sets Needs alt text for images awaiting a description."
+      }
     },
     {
-      name: "decorative",
-      type: "checkbox",
-      defaultValue: false,
+      // System bookkeeping, kept out of the way of normal editing.
+      type: "collapsible",
+      label: "Storage and import details",
       admin: {
-        description: "Use only for images that convey no content."
-      }
+        initCollapsed: true
+      },
+      fields: [
+        {
+          name: "storageKey",
+          type: "text",
+          admin: {
+            description: "S3 object key generated from the configured media prefix and filename.",
+            readOnly: true
+          }
+        },
+        {
+          name: "importedFromWordPress",
+          type: "checkbox",
+          defaultValue: false,
+          admin: {
+            description: "Set by the WordPress importer."
+          }
+        }
+      ]
     }
   ],
   hooks: {

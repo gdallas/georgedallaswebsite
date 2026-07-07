@@ -2,6 +2,7 @@ import { handleServerFunctions, RootLayout } from "@payloadcms/next/layouts";
 import type { ServerFunctionClient } from "payload";
 import config from "../../payload.config";
 import "@payloadcms/next/css";
+import "./custom.css";
 import { importMap } from "./admin/importMap.js";
 
 type LayoutProps = {
