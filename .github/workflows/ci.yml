@@ -77,6 +77,13 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # The runner images ship Microsoft apt repos (azure-cli etc.) that
+      # Playwright's --with-deps apt-get update does not need but fails on
+      # whenever their signing breaks upstream (recurring incident; seen
+      # 2026-07-07 as "Clearsigned file isn't valid, got 'NOSPLIT'").
+      - name: Drop unneeded Microsoft apt repos
+        run: sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/azure-cli.list /etc/apt/sources.list.d/azure-cli.sources
+
       - name: Install Playwright browser
         run: pnpm --filter @georgedallas/site exec playwright install --with-deps chromium
 
