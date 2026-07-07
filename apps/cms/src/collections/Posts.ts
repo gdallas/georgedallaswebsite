@@ -2,7 +2,7 @@ import type { CollectionConfig } from "payload";
 import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadBuild } from "../access/payloadAccess";
-import { publishedAtField, publishingStatusField, visibilityField } from "../fields/publishing";
+import { datedPublishingSidebarFields } from "../fields/publishing";
 import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
 import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
@@ -32,97 +32,144 @@ export const Posts: CollectionConfig = {
     },
     slugField,
     {
-      name: "excerpt",
-      type: "textarea"
-    },
-    {
-      name: "body",
-      type: "richText"
-    },
-    publishingStatusField,
-    publishedAtField,
-    {
-      name: "author",
-      type: "relationship",
-      relationTo: "users"
-    },
-    {
-      name: "tags",
-      type: "relationship",
-      hasMany: true,
-      relationTo: "tags"
-    },
-    {
-      name: "category",
-      type: "relationship",
-      relationTo: "categories"
-    },
-    {
-      name: "featuredImage",
-      type: "upload",
-      relationTo: "media"
-    },
-    {
-      name: "seoTitle",
-      type: "text"
-    },
-    {
-      name: "seoDescription",
-      type: "textarea"
-    },
-    {
-      name: "seoPreview",
-      type: "ui",
-      admin: {
-        components: {
-          Field: "/components/SeoPreview#SeoPreview"
+      // Unnamed layout tabs: purely presentation, the data shape stays flat.
+      type: "tabs",
+      tabs: [
+        {
+          label: "Compose",
+          fields: [
+            {
+              name: "excerpt",
+              type: "textarea",
+              admin: {
+                description:
+                  "Short summary shown in post lists and used as the fallback SEO description. Required before publishing."
+              }
+            },
+            {
+              name: "body",
+              type: "richText"
+            },
+            {
+              name: "featuredImage",
+              type: "upload",
+              relationTo: "media",
+              admin: {
+                description: "Lead image for the post and the fallback social preview image."
+              }
+            },
+            {
+              name: "tags",
+              type: "relationship",
+              hasMany: true,
+              relationTo: "tags",
+              admin: {
+                description: "Shown as coloured topic chips on the public site."
+              }
+            },
+            {
+              name: "category",
+              type: "relationship",
+              relationTo: "categories"
+            }
+          ]
+        },
+        {
+          label: "SEO",
+          fields: [
+            {
+              name: "seoTitle",
+              type: "text",
+              admin: {
+                description:
+                  "Title for search results and link previews. The public page falls back to the post title when previews render. Required before publishing."
+              }
+            },
+            {
+              name: "seoDescription",
+              type: "textarea",
+              admin: {
+                description: "Description for search results and link previews. Required before publishing."
+              }
+            },
+            {
+              name: "seoPreview",
+              type: "ui",
+              admin: {
+                components: {
+                  Field: "/components/SeoPreview#SeoPreview"
+                }
+              }
+            },
+            {
+              name: "socialImage",
+              type: "upload",
+              relationTo: "media",
+              admin: {
+                description: "Image for social link previews. Falls back to the featured image."
+              }
+            }
+          ]
+        },
+        {
+          label: "Advanced",
+          fields: [
+            {
+              name: "author",
+              type: "relationship",
+              relationTo: "users"
+            },
+            {
+              name: "relatedPosts",
+              type: "relationship",
+              hasMany: true,
+              relationTo: "posts"
+            },
+            {
+              name: "canonicalUrl",
+              type: "text",
+              admin: {
+                description: "Only needed when this post originally appeared somewhere else."
+              }
+            },
+            {
+              name: "redirectFrom",
+              type: "relationship",
+              hasMany: true,
+              relationTo: "redirects",
+              admin: {
+                description: "Old URLs that should land on this post. Managed by the WordPress import."
+              }
+            },
+            {
+              name: "readingTime",
+              type: "number",
+              admin: {
+                description: "Estimated minutes, recalculated when content changes.",
+                readOnly: true
+              }
+            },
+            {
+              name: "wordpressOriginalId",
+              type: "text",
+              admin: {
+                description: "Set by the WordPress importer.",
+                readOnly: true
+              }
+            },
+            {
+              name: "wordpressOriginalUrl",
+              type: "text",
+              admin: {
+                description: "Set by the WordPress importer.",
+                readOnly: true
+              }
+            }
+          ]
         }
-      }
+      ]
     },
-    {
-      name: "socialImage",
-      type: "upload",
-      relationTo: "media"
-    },
-    {
-      name: "canonicalUrl",
-      type: "text"
-    },
-    {
-      name: "wordpressOriginalId",
-      type: "text",
-      admin: {
-        position: "sidebar"
-      }
-    },
-    {
-      name: "wordpressOriginalUrl",
-      type: "text",
-      admin: {
-        position: "sidebar"
-      }
-    },
-    {
-      name: "redirectFrom",
-      type: "relationship",
-      hasMany: true,
-      relationTo: "redirects"
-    },
-    {
-      name: "readingTime",
-      type: "number",
-      admin: {
-        description: "Estimated minutes, recalculated when content changes.",
-        readOnly: true
-      }
-    },
-    visibilityField,
-    {
-      name: "relatedPosts",
-      type: "relationship",
-      hasMany: true,
-      relationTo: "posts"
-    }
+    ...datedPublishingSidebarFields
   ],
   versions: {
     maxPerDoc: 25

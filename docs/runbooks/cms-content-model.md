@@ -32,3 +32,13 @@ Redirects require:
 - no redirects to local/private development hosts
 
 Media marked `public` requires alt text unless the item is explicitly marked decorative.
+
+## Edit-form layout (GDW-054)
+
+Posts, Pages, Media, and Site settings use layout-only grouping — **unnamed tabs and collapsible rows never change the stored data shape**, so no migration accompanies form re-organization. Field names, types, and the public API are unchanged.
+
+- **Posts / Pages**: title and slug sit above three tabs — Compose (excerpt, body, images, tags), SEO (seoTitle, seoDescription, preview, social image), Advanced (author, related posts, canonical URL, redirects, reading time, WordPress import fields). The publishing triad — `status`, `visibility`, `publishedAt` — lives in the sidebar next to the save button (shared definition: `apps/cms/src/fields/publishing.ts`, `datedPublishingSidebarFields`), each with a plain-language description of the live rule: **live = Published + Public + publish date passed** (`packages/shared/src/visibility.mjs`).
+- **Media**: alt text, decorative flag, caption, credit, and source lead; `reviewStatus` sits in the sidebar (it gates public exposure); `storageKey` and `importedFromWordPress` are in a collapsed "Storage and import details" section.
+- **Site settings**: tabs for Identity, SEO defaults, Navigation, and Footer.
+
+When adding a field, put it in the tab where an editor would look for it, give it a one-sentence `admin.description`, and keep operational/import fields out of Compose.

@@ -21,92 +21,127 @@ export const SiteSettings: GlobalConfig = {
   },
   fields: [
     {
-      name: "siteTitle",
-      type: "text",
-      required: true,
-      defaultValue: "George Dallas"
-    },
-    {
-      name: "ownerName",
-      type: "text",
-      required: true,
-      defaultValue: "George Dallas"
-    },
-    {
-      name: "defaultSeoTitle",
-      type: "text",
-      required: true,
-      defaultValue: "George Dallas"
-    },
-    {
-      name: "defaultDescription",
-      type: "textarea",
-      required: true
-    },
-    {
-      name: "defaultSocialImage",
-      type: "upload",
-      relationTo: "media"
-    },
-    {
-      name: "primaryLinks",
-      type: "array",
-      fields: [
+      // Unnamed layout tabs: purely presentation, the data shape stays flat.
+      type: "tabs",
+      tabs: [
         {
-          name: "label",
-          type: "text",
-          required: true
+          label: "Identity",
+          fields: [
+            {
+              name: "siteTitle",
+              type: "text",
+              required: true,
+              defaultValue: "George Dallas"
+            },
+            {
+              name: "ownerName",
+              type: "text",
+              required: true,
+              defaultValue: "George Dallas"
+            }
+          ]
         },
         {
-          name: "url",
-          type: "text",
-          required: true
-        }
-      ]
-    },
-    {
-      name: "navigation",
-      type: "array",
-      fields: [
-        {
-          name: "label",
-          type: "text",
-          required: true
+          label: "SEO defaults",
+          fields: [
+            {
+              name: "defaultSeoTitle",
+              type: "text",
+              required: true,
+              defaultValue: "George Dallas",
+              admin: {
+                description: "Used when a page has no SEO title of its own."
+              }
+            },
+            {
+              name: "defaultDescription",
+              type: "textarea",
+              required: true,
+              admin: {
+                description: "Used when a page has no SEO description of its own."
+              }
+            },
+            {
+              name: "defaultSocialImage",
+              type: "upload",
+              relationTo: "media",
+              admin: {
+                description: "Fallback image for social link previews."
+              }
+            }
+          ]
         },
         {
-          name: "path",
-          type: "text",
-          required: true
+          label: "Navigation",
+          fields: [
+            {
+              name: "primaryLinks",
+              type: "array",
+              fields: [
+                {
+                  name: "label",
+                  type: "text",
+                  required: true
+                },
+                {
+                  name: "url",
+                  type: "text",
+                  required: true
+                }
+              ]
+            },
+            {
+              name: "navigation",
+              type: "array",
+              fields: [
+                {
+                  name: "label",
+                  type: "text",
+                  required: true
+                },
+                {
+                  name: "path",
+                  type: "text",
+                  required: true
+                },
+                {
+                  name: "showInHeader",
+                  type: "checkbox",
+                  defaultValue: true
+                },
+                {
+                  name: "showInFooter",
+                  type: "checkbox",
+                  defaultValue: true
+                }
+              ]
+            }
+          ]
         },
         {
-          name: "showInHeader",
-          type: "checkbox",
-          defaultValue: true
-        },
-        {
-          name: "showInFooter",
-          type: "checkbox",
-          defaultValue: true
-        }
-      ]
-    },
-    {
-      name: "footerText",
-      type: "textarea"
-    },
-    {
-      name: "footerLinks",
-      type: "array",
-      fields: [
-        {
-          name: "label",
-          type: "text",
-          required: true
-        },
-        {
-          name: "url",
-          type: "text",
-          required: true
+          label: "Footer",
+          fields: [
+            {
+              name: "footerText",
+              type: "textarea"
+            },
+            {
+              name: "footerLinks",
+              type: "array",
+              fields: [
+                {
+                  name: "label",
+                  type: "text",
+                  required: true
+                },
+                {
+                  name: "url",
+                  type: "text",
+                  required: true
+                }
+              ]
+            }
+          ]
         }
       ]
     }
