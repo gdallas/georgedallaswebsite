@@ -2,7 +2,13 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const blockedLocalHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 
 export const allowedMediaMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml", "application/pdf"];
-export const maxMediaUploadBytes = 10 * 1024 * 1024;
+// Deployed uploads travel through a Lambda Function URL whose 6 MB event cap
+// (base64-encoded body, so ~4.5 MB of binary) rejects bigger files before any
+// app code runs, with an opaque network error. Keeping the app limit under
+// that ceiling means the friendly message in validateMediaFileMetadata is the
+// one people actually see. If larger files ever matter, the path is presigned
+// S3 uploads, not raising this number (GDW-057 execution note).
+export const maxMediaUploadBytes = 4 * 1024 * 1024;
 export const publishingStatuses = ["draft", "in_review", "scheduled", "published", "archived"];
 export const listingStatuses = ["draft", "published", "archived"];
 export const visibilityStates = ["public", "unlisted", "private"];
@@ -131,10 +137,33 @@ export function validateMediaFileMetadata(data = {}) {
   }
 
   if (typeof data.filesize === "number" && data.filesize > maxMediaUploadBytes) {
-    return "Media file exceeds the 10 MB upload limit.";
+    return "Media file exceeds the 4 MB upload limit. Resize or compress it, then upload again.";
   }
 
   return true;
+}
+
+// Review status for a media doc at creation time. Images dropped into the
+// editor (or uploaded any other way) without alt text land in the
+// needs-alt-text queue immediately, so the dashboard surfaces them instead of
+// a content check discovering the gap later. An explicitly chosen non-draft
+// status (e.g. the WordPress importer's) is always respected, and the
+// decorative flag is the intentional opt-out.
+export function initialMediaReviewStatus(data = {}) {
+  const provided = data.reviewStatus;
+
+  if (typeof provided === "string" && provided.length > 0 && provided !== "draft") {
+    return provided;
+  }
+
+  const isImage = typeof data.mimeType === "string" && data.mimeType.startsWith("image/");
+  const hasAlt = typeof data.alt === "string" && data.alt.trim().length > 0;
+
+  if (isImage && !hasAlt && data.decorative !== true) {
+    return "needs_alt_text";
+  }
+
+  return provided || "draft";
 }
 
 export function buildMediaStorageKey(collectionPrefix, docPrefix, filename) {
