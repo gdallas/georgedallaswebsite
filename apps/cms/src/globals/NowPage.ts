@@ -1,5 +1,6 @@
 import type { GlobalAfterReadHook, GlobalConfig } from "payload";
 import { isNowPagePublic } from "@georgedallas/shared/visibility";
+import { globalNavGroup } from "../admin/navigation.mjs";
 import { auditGlobalChanges } from "../audit/auditEvents";
 import { publishSignalsGlobalAfterChange } from "../hooks/publishSignals";
 import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
@@ -32,7 +33,7 @@ export const NowPage: GlobalConfig = {
   },
   admin: {
     description: "Quick personal status updates for the public /now page.",
-    group: "Content"
+    group: globalNavGroup("now-page")
   },
   fields: [
     {

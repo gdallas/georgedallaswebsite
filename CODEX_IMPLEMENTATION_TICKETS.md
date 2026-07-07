@@ -119,6 +119,11 @@ A ticket is not done unless all relevant items below are satisfied:
 | 50 | GDW-050 | Security threat model and hardening pass | Reviews the whole system before launch |
 | 51 | GDW-051 | Launch readiness and production cutover | Makes production launch controlled |
 | 52 | GDW-052 | Post-launch maintenance automation | Keeps dependencies, backups, and monitoring healthy |
+| 53 | GDW-053 | CMS admin navigation and information architecture | Puts writing first in the admin sidebar |
+| 54 | GDW-054 | CMS edit-form reorganization | Makes the post form explain itself and hides plumbing |
+| 55 | GDW-055 | Cedar & Circuitry admin theme and editor comfort | Brands the admin and makes long-form writing roomy |
+| 56 | GDW-056 | Admin dashboard refresh | Prioritizes real editorial actions over migration-era clutter |
+| 57 | GDW-057 | Media-into-writing ergonomics | Makes dropping images into posts effortless and safe |
 
 ---
 
@@ -128,7 +133,7 @@ A ticket is not done unless all relevant items below are satisfied:
 |---|---|
 | Static-first public site | GDW-024, GDW-025, GDW-026, GDW-027 |
 | Database-backed CMS/admin | GDW-017 through GDW-023 |
-| Pleasant weekly update workflow | GDW-020, GDW-022, GDW-023, GDW-034, GDW-035, GDW-037, GDW-049 |
+| Pleasant weekly update workflow | GDW-020, GDW-022, GDW-023, GDW-034, GDW-035, GDW-037, GDW-049, GDW-053, GDW-054, GDW-055, GDW-056, GDW-057 |
 | Local development | GDW-002, GDW-003, GDW-004 |
 | Dev and prod AWS environments | GDW-008 through GDW-016 |
 | PR approval by George | GDW-005, GDW-006, GDW-015 |
@@ -136,7 +141,7 @@ A ticket is not done unless all relevant items below are satisfied:
 | Deploy on accepted PR / branch merge | GDW-015 |
 | PostgreSQL database | GDW-010, GDW-011, GDW-017 |
 | Database backups / never lose data goal | GDW-011, GDW-048, GDW-052 |
-| S3 media storage | GDW-012, GDW-021, GDW-031 |
+| S3 media storage | GDW-012, GDW-021, GDW-031, GDW-057 |
 | Secrets outside repo | GDW-004, GDW-007, GDW-009 |
 | Secure CMS admin | GDW-018, GDW-050 |
 | Home page | GDW-026, GDW-042 |
@@ -161,7 +166,7 @@ A ticket is not done unless all relevant items below are satisfied:
 | Live preview / draft preview | GDW-034 |
 | Revisions | GDW-035 |
 | Scheduled publishing | GDW-035 |
-| Admin dashboard | GDW-023, GDW-037, GDW-049 |
+| Admin dashboard | GDW-023, GDW-037, GDW-049, GDW-056 |
 | Broken link checker | GDW-037 |
 | Content quality checks | GDW-037 |
 | Site search | GDW-036 |
@@ -2102,6 +2107,258 @@ Keep the site healthy after launch with dependency updates, backup verification,
 - [ ] Production incident checklist exists.
 - [ ] Maintenance tasks do not deploy directly to production without PR/approval.
 - [ ] README points to maintenance runbooks.
+
+---
+
+## GDW-053 — CMS admin navigation and information architecture
+
+**Phase:** 9 — Post-launch CMS polish
+**Dependencies:** GDW-020, GDW-023, GDW-052
+**Recommended order:** 53
+**Type:** CMS / admin UX
+
+### Purpose
+
+Make the admin sidebar reflect what the CMS is for: writing. Today only the migration-era collections are grouped; the other twelve collections render as one flat list in config order, so the sidebar leads with Users, Media, Tags, Categories, and Redirects before Posts appears sixth. System tables sit visually equal to everyday writing collections.
+
+### User experience goals
+
+- Opening the admin puts Posts and Pages at the top of the sidebar.
+- Plumbing (tags, categories, redirects) and system tables (users, audit events) are visible but clearly secondary.
+- Each collection's list view says in one plain sentence what the collection is for.
+
+### Execution notes for Codex
+
+- This is admin presentation only: `admin.group`, `admin.description`, labels, list columns, and the order of the `collections` array in `apps/cms/src/payload.config.ts`. No slugs, routes, fields, access rules, or data change.
+- Payload renders nav groups in the order they are first encountered in the config; collections and globals sharing a group name merge into one nav group.
+- Existing dashboard and e2e links target slugs and hrefs, not labels, and must keep working.
+
+### Scope
+
+- Assign every collection and global to an admin group.
+- Reorder the collections array so writing leads.
+- Add short plain-language `admin.description` text to each collection.
+- Sentence-case any awkward default labels.
+- Review default list columns for the everyday collections.
+
+### Out of scope
+
+- Form layout changes inside edit views (GDW-054).
+- Visual theming (GDW-055).
+- Dashboard changes (GDW-056).
+
+### Acceptance criteria
+
+- [ ] Every collection and global declares an `admin.group`; nothing renders in an ungrouped catch-all list.
+- [ ] Nav groups appear in this order: Write (Posts, Pages, Media, Now page), Library (Projects, Links, Books, Timeline entries), Inbox (Contact messages), Site (Site settings, Tags, Categories, Redirects), Site health (Content issues, Content checks), WordPress import (Import runs, Imported items, Import issues), System (Users, Audit events).
+- [ ] Posts is the first entry in the first group.
+- [ ] Each everyday collection has a one-sentence `admin.description` visible on its list view.
+- [ ] Default labels read as sentence case ("Timeline entries", "Audit events"); any renames are label-only.
+- [ ] Existing admin dashboard links, import review links, and e2e tests still pass unchanged.
+- [ ] RBAC visibility is unchanged for owner, editor, and read-only roles.
+- [ ] A unit test asserts every registered collection and global declares an admin group, so future collections cannot regress the nav.
+- [ ] `pnpm lint`, `pnpm typecheck`, and `pnpm test` pass.
+- [ ] `docs/runbooks/cms-admin-dashboard.md` (or the content-model runbook) documents the new navigation map.
+
+---
+
+## GDW-054 — CMS edit-form reorganization
+
+**Phase:** 9 — Post-launch CMS polish
+**Dependencies:** GDW-053
+**Recommended order:** 54
+**Type:** CMS / admin UX
+
+### Purpose
+
+Reorganize the Posts, Pages, Media, and Site settings forms so the writing path is obvious and the publishing rules explain themselves. Today Posts is 21 flat fields with exactly one description; `visibility` — one of the three fields that decide whether a post is live — sits ten fields below `status` with no explanation.
+
+### User experience goals
+
+- Opening a post shows title, body, and the few fields needed to write; everything else is a tab away.
+- The publishing controls sit together and say in plain language what makes a post live, scheduled, unlisted, or private.
+- Media editing leads with alt text, caption, and credit; storage keys and import flags stop pretending to be content.
+
+### Execution notes for Codex
+
+- Use Payload's unnamed layout tabs and sidebar positioning: fields keep their names, types, and data shape, so no migration is needed and the public API is unchanged.
+- The publishing invariant is `status=published` AND `visibility=public` AND `publishedAt<=now`; write field descriptions that state this directly.
+- The SEO preview UI field must remain functional inside its tab.
+- Preview, publish signals, content checks, and the metadata-required-on-publish hook must keep working; extend their tests where grouping logic gains helpers.
+
+### Scope
+
+- Posts: tabs equivalent to Compose / Publish / SEO / Advanced; publishing triad grouped in the sidebar with plain-language descriptions; WordPress fields, canonical URL, redirects, and reading time under Advanced.
+- Pages: the same treatment, with template selection in Compose.
+- Media: alt, caption, credit, source lead; storageKey, importedFromWordPress, reviewStatus, decorative demoted to a clearly-labeled system section with descriptions.
+- Site settings: sections for Identity, SEO defaults, Navigation, and Footer.
+- SEO title/description help text explains the fallback from title/excerpt.
+
+### Out of scope
+
+- New fields or removed fields.
+- Rich-text editor behavior and media insertion (GDW-057).
+- Visual theming (GDW-055).
+
+### Acceptance criteria
+
+- [ ] Posts edit view presents Compose / Publish / SEO / Advanced (or equivalent) with only writing fields in the default path.
+- [ ] Pages edit view gets the same treatment.
+- [ ] `status`, `visibility`, and `publishedAt` are adjacent, grouped with the publish actions, and each carries a plain-language description of the live/scheduled/unlisted/private rules.
+- [ ] WordPress import fields, canonical URL, redirect relationships, related posts, and reading time are out of the primary writing flow.
+- [ ] SEO preview renders inside the SEO tab and fallback behavior is documented in field descriptions.
+- [ ] Media form leads with content fields; system fields are demoted and described.
+- [ ] Site settings is sectioned into Identity, SEO defaults, Navigation, Footer.
+- [ ] No database migration is generated; field names and types are unchanged; the public site build passes against the dev CMS.
+- [ ] Preview, publish markers/rebuild signals, and required-metadata-on-publish still work, with tests.
+- [ ] `pnpm lint`, `pnpm typecheck`, and `pnpm test` pass; the content-model runbook is updated.
+
+---
+
+## GDW-055 — Cedar & Circuitry admin theme and editor comfort
+
+**Phase:** 9 — Post-launch CMS polish
+**Dependencies:** GDW-053
+**Recommended order:** 55
+**Type:** CMS / admin UX / visual design
+
+### Purpose
+
+The admin is bone-stock Payload: Payload logo on the login page, empty tab title, no favicon, cold grayscale everywhere, and it ignores the visitor's light/dark preference. Meanwhile the public site now has a proven warm token set designed to be shared with the admin. Brand the admin quietly and make the writing surface roomy.
+
+### User experience goals
+
+- The login page and browser tab say George Dallas, not Payload.
+- Admin colors feel like the public site's warm palette, in both light and dark, without fighting Payload's layout.
+- Writing a long post feels roomy: a wide editor column, comfortable type, calm borders.
+
+### Execution notes for Codex
+
+- Payload 3 supports custom admin CSS, `admin.meta` (title suffix, favicon, og), custom logo/icon graphic components, and `admin.theme`. Prefer these hooks over selector overrides of Payload internals.
+- Map Cedar & Circuitry tokens onto Payload's theme custom properties (`--theme-elevation-*`, `--theme-success/error/warning-*`) rather than restyling components one by one.
+- Respect `prefers-color-scheme`; keep WCAG 2.2 AA contrast and visible keyboard focus in both themes.
+- Test against Payload's built-in surfaces: list views, modals, relationship pickers, upload dropzones, auth screens, version diff view.
+
+### Scope
+
+- Admin branding: logo/icon components, `admin.meta` title and favicon, login screen identity.
+- Admin-wide palette mapped from the shared tokens, light and dark.
+- Editor comfort: materially wider Lexical writing column on desktop, improved line-height/typography, reduced nested borders on edit views.
+- Keep mobile/narrow admin usable.
+
+### Out of scope
+
+- Form/tab structure (GDW-054).
+- Dashboard content (GDW-056).
+- Media insertion behavior (GDW-057).
+
+### Acceptance criteria
+
+- [ ] Login page shows George Dallas branding; browser tab has a meaningful title and site favicon.
+- [ ] Admin follows the system light/dark preference and both themes use the Cedar & Circuitry palette.
+- [ ] Contrast meets WCAG 2.2 AA and keyboard focus is clearly visible in both themes.
+- [ ] The rich-text body column is materially wider on desktop with comfortable long-form typography.
+- [ ] The post edit view avoids nested cards and heavy borders around the writing surface.
+- [ ] List views, modals, relationship pickers, upload controls, auth screens, and version views render correctly (manual pass documented in the PR).
+- [ ] Admin remains usable on narrow viewports without clipped or overlapping controls.
+- [ ] `pnpm lint`, `pnpm typecheck`, and `pnpm test` pass; the admin runbook notes how the theme is wired.
+
+---
+
+## GDW-056 — Admin dashboard refresh
+
+**Phase:** 9 — Post-launch CMS polish
+**Dependencies:** GDW-053
+**Recommended order:** 56
+**Type:** CMS / admin UX
+
+### Purpose
+
+The dashboard still greets every session with nine equal quick-action cards, a permanent WordPress-import panel (its visibility condition is true forever after the migration), and copy claiming scheduled publishing "arrives with GDW-035" — a ticket that shipped. Refocus it on the actual weekly loop.
+
+### User experience goals
+
+- The first screen answers "what do I do next": continue the latest draft, write, update Now, read new messages.
+- Migration reporting appears only while there is unresolved migration work.
+- Health numbers stay one glance away without dominating.
+
+### Execution notes for Codex
+
+- The work is in `apps/cms/src/components/Dashboard.tsx` and `apps/cms/src/dashboard/dashboardData.mjs`, which already has unit tests — extend them for any new visibility/priority logic.
+- Import-panel visibility should key off unresolved work (unresolved import issues, items awaiting review), not lifetime import activity.
+
+### Scope
+
+- Reduce primary quick actions to the core loop (continue latest draft, write a new post, update Now page, review inbox); demote the rest to a compact secondary row.
+- Hide the WordPress import panel when there is no unresolved import work.
+- Remove stale GDW-035 copy and any other completed-backlog references.
+- Keep Needs attention and Site health actionable at a glance.
+
+### Out of scope
+
+- New data sources or checks (GDW-037/GDW-049 cover those).
+- Visual theming beyond what GDW-055 provides.
+
+### Acceptance criteria
+
+- [ ] Primary quick actions are the four core-loop actions; secondary actions are visually demoted but reachable.
+- [ ] The WordPress import panel renders only when unresolved import issues or items awaiting review exist.
+- [ ] No dashboard copy references unfinished backlog work that has shipped.
+- [ ] Needs attention consolidates alt-text, import, and inbox items and remains actionable.
+- [ ] Site health tiles keep their alert behavior.
+- [ ] Unit tests cover the quick-action priority and import-panel visibility logic.
+- [ ] `pnpm lint`, `pnpm typecheck`, and `pnpm test` pass; `docs/runbooks/cms-admin-dashboard.md` is updated.
+
+---
+
+## GDW-057 — Media-into-writing ergonomics
+
+**Phase:** 9 — Post-launch CMS polish
+**Dependencies:** GDW-021, GDW-035, GDW-054
+**Recommended order:** 57
+**Type:** CMS / editor workflow / media
+
+### Purpose
+
+Make putting an image into a post effortless and safe: drag it in, it uploads, it lands where intended, alt text is enforced before anything goes public, and delivery flows through the existing S3/CloudFront path.
+
+### User experience goals
+
+- George can drag an image file into the post body and keep writing.
+- Alt text is asked for at the right moment, not discovered later as a content-check failure.
+- Oversized or unsupported files fail immediately with a message that says what to do instead.
+
+### Execution notes for Codex
+
+- Prefer Payload's native Lexical upload feature before any custom admin code; if native behavior cannot satisfy drag-and-drop into the body, add the smallest custom component and document the tradeoff.
+- Deployed uploads are capped around 6 MB by the Lambda Function URL; do not silently raise app limits. If larger uploads matter, document a presigned-upload follow-up ticket instead.
+- Preserve all visibility invariants: media referenced by public posts must itself be approved public with alt text (or intentionally decorative).
+
+### Scope
+
+- Drag/drop (or equivalently low-friction) image insertion into the rich-text body at the intended position.
+- Alt-text enforcement before public exposure, with an intentional decorative path.
+- Caption, credit, and source available without blocking the writing flow.
+- Clear failure messages for unsupported types and over-limit files.
+- Bulk media upload keeps working.
+
+### Out of scope
+
+- Presigned/large-file upload infrastructure (document as follow-up if needed).
+- Image editing, cropping, or focal points.
+- Any always-on media processing service.
+
+### Acceptance criteria
+
+- [ ] Dragging an image into the post body uploads it to the media library or invokes a clear native upload flow.
+- [ ] Inserted media lands at the intended position and persists through save, reload, preview, and publish.
+- [ ] Inserted media renders correctly on the public site after rebuild, via the existing S3/CloudFront path.
+- [ ] Images require useful alt text before becoming public unless intentionally marked decorative.
+- [ ] Caption, credit, and source are available without forcing them into the main writing path.
+- [ ] Unsupported types and files over the deployed limit fail with a clear admin-facing message.
+- [ ] Bulk upload still works.
+- [ ] E2E or integration coverage: edit a post, insert media, and render it through the public build path.
+- [ ] `pnpm lint`, `pnpm typecheck`, and relevant tests pass; the media runbook documents the workflow and any residual Payload limitations.
 
 ---
 

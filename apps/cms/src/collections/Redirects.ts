@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import type { RedirectRecord } from "@georgedallas/shared/redirects";
 import { detectRedirectLoops, normalizeRedirectPath } from "@georgedallas/shared/redirects";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import {
   requireContentMutation,
@@ -11,6 +12,8 @@ import { validateRedirectDestination, validateRedirectSource } from "../validati
 export const Redirects: CollectionConfig = {
   slug: "redirects",
   admin: {
+    group: collectionNavGroup("redirects"),
+    description: "URL redirects that keep old WordPress links working.",
     defaultColumns: ["sourcePath", "destination", "statusCode", "status", "enabled", "updatedAt"],
     useAsTitle: "sourcePath"
   },

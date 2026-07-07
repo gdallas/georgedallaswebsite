@@ -2,6 +2,22 @@
 
 GDW-023 replaces the default Payload dashboard with a calm, task-oriented homepage at `/admin`, implemented as a server component in `apps/cms/src/components/Dashboard.tsx` and registered through `admin.components.views.dashboard`.
 
+## Sidebar navigation map (GDW-053)
+
+Every collection and global declares an `admin.group`; the single source of truth is `apps/cms/src/admin/navigation.mjs`, and `payload.config.ts` fails the build if a collection ships ungrouped. Groups appear in the sidebar in this order (set by the order of the `collections` array in `payload.config.ts`):
+
+| Group | Contents |
+|---|---|
+| Write | Posts, Pages, Media, Now page |
+| Library | Projects, Links, Books, Timeline entries |
+| Inbox | Contact messages |
+| Site | Site settings, Tags, Categories, Redirects |
+| Site health | Content issues, Content check runs |
+| WordPress import | Import runs, Imported items, Import issues |
+| System | Users, Audit events |
+
+When adding a collection: add its slug to `navigation.mjs` (the unit test beside it enforces coverage), set `admin.group: collectionNavGroup("<slug>")`, give it a one-sentence `admin.description`, and insert it into the config array within its group's block.
+
 ## This week (quick actions)
 
 The top section gives one-click access to the weekly update workflow:

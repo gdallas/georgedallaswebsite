@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadListing } from "../access/payloadAccess";
 import { listingStatusField, visibilityField } from "../fields/publishing";
@@ -16,6 +17,8 @@ export const bookReadingStatuses = [
 export const Books: CollectionConfig = {
   slug: "books",
   admin: {
+    group: collectionNavGroup("books"),
+    description: "The reading log behind /bookshelf.",
     defaultColumns: ["title", "author", "readingStatus", "status", "visibility", "sortOrder"],
     listSearchableFields: ["title", "author", "isbn", "notes"],
     useAsTitle: "title"

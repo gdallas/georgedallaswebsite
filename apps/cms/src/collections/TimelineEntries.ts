@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadListing } from "../access/payloadAccess";
 import { listingStatusField, visibilityField } from "../fields/publishing";
@@ -18,6 +19,8 @@ export const TimelineEntries: CollectionConfig = {
   slug: "timeline-entries",
   labels: { singular: "Timeline entry", plural: "Timeline entries" },
   admin: {
+    group: collectionNavGroup("timeline-entries"),
+    description: "Milestones drawn as the cedar tree on /timeline.",
     defaultColumns: ["title", "type", "eventDate", "status", "visibility", "sortOrder"],
     listSearchableFields: ["title", "summary", "type"],
     useAsTitle: "title"

@@ -1,9 +1,13 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { denyAccess, readAuditLog, requireOwnerAdmin } from "../access/payloadAccess";
 
 export const AuditEvents: CollectionConfig = {
   slug: "audit-events",
+  labels: { singular: "Audit event", plural: "Audit events" },
   admin: {
+    group: collectionNavGroup("audit-events"),
+    description: "Read-only log of who changed what, and when.",
     defaultColumns: ["action", "collection", "documentId", "actorEmail", "createdAt"],
     useAsTitle: "action"
   },

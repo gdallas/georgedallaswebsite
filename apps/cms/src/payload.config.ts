@@ -34,6 +34,18 @@ const config = loadCmsConfig();
 const secureCookies = config.appEnv === "production";
 const Users = createUsersCollection({ secureCookies });
 
+// Fails the build (and any local boot) if a collection ships without a nav
+// group, so nothing can silently land back in an ungrouped sidebar list.
+function assertNavGrouped<T extends { slug: string; admin?: { group?: unknown } }>(items: T[]): T[] {
+  for (const item of items) {
+    if (!item.admin?.group) {
+      throw new Error(`Collection "${item.slug}" has no admin nav group. Add it to src/admin/navigation.mjs.`);
+    }
+  }
+
+  return items;
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -61,26 +73,29 @@ export default buildConfig({
       fileSize: maxMediaUploadBytes
     }
   },
-  collections: [
-    Users,
-    Media,
-    Tags,
-    Categories,
-    Redirects,
+  // Ordered to match the admin sidebar: Payload renders nav groups in the
+  // order they first appear here (see src/admin/navigation.mjs), so writing
+  // stays at the top and system tables at the bottom.
+  collections: assertNavGrouped([
     Posts,
     Pages,
+    Media,
     Projects,
     Links,
     Books,
     TimelineEntries,
-    AuditEvents,
+    ContactMessages,
+    Tags,
+    Categories,
+    Redirects,
+    ContentIssues,
+    ContentChecks,
     ImportJobs,
     ImportedItems,
     ImportIssues,
-    ContactMessages,
-    ContentIssues,
-    ContentChecks
-  ],
+    Users,
+    AuditEvents
+  ]),
   cookiePrefix: `gdw-${config.appEnv}`,
   cors: [config.cmsPublicUrl, config.publicSiteUrl],
   csrf: [config.cmsPublicUrl],

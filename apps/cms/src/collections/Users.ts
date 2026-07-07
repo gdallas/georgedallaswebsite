@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import {
   auditAuthErrors,
   auditAuthRefresh,
@@ -30,6 +31,8 @@ export function createUsersCollection({ secureCookies }: UsersOptions): Collecti
       useSessions: true
     },
     admin: {
+      group: collectionNavGroup("users"),
+      description: "CMS accounts and their roles.",
       defaultColumns: ["email", "role", "updatedAt"],
       useAsTitle: "email"
     },

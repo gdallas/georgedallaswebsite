@@ -1,4 +1,5 @@
 import type { GlobalConfig } from "payload";
+import { globalNavGroup } from "../admin/navigation.mjs";
 import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
 import { publishSignalsGlobalAfterChange } from "../hooks/publishSignals";
 
@@ -12,7 +13,8 @@ export const SiteSettings: GlobalConfig = {
     update: requireContentMutation
   },
   admin: {
-    group: "Content"
+    description: "Site-wide identity, default SEO, navigation, and footer.",
+    group: globalNavGroup("site-settings")
   },
   hooks: {
     afterChange: [publishSignalsGlobalAfterChange("site-settings")]
