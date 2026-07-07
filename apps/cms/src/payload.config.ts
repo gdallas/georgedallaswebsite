@@ -63,7 +63,10 @@ export default buildConfig({
           path: "/search"
         }
       },
-      afterNavLinks: ["/components/AdminSearchNavLink#AdminSearchNavLink"]
+      // Writer-first sidebar (GDW-059): tiers driven by admin/navigation.mjs,
+      // search built in (so no afterNavLinks entry; the custom Nav does not
+      // render Payload's before/afterNavLinks slots).
+      Nav: "/components/nav/Nav#Nav"
     },
     importMap: {
       baseDir: path.resolve(dirname)

@@ -40,6 +40,40 @@ export const GLOBAL_NAV_GROUPS = {
   "site-settings": "Site"
 };
 
+// Presentation tiers for the custom sidebar (GDW-059). "primary" renders as
+// large immediate links (no collapse), "quiet" as collapsible groups, and
+// "system" as a demoted collapsible group behind the divider at the foot.
+export const NAV_GROUP_TIERS = {
+  Write: "primary",
+  Library: "quiet",
+  Inbox: "quiet",
+  Site: "quiet",
+  "Site health": "quiet",
+  "WordPress import": "quiet",
+  System: "system"
+};
+
+export function navGroupTier(group) {
+  const tier = NAV_GROUP_TIERS[group];
+
+  if (!tier) {
+    throw new Error(`Nav group "${group}" has no tier. Add it to src/admin/navigation.mjs.`);
+  }
+
+  return tier;
+}
+
+// Shapes Payload's groupNavItems() output for the custom Nav component:
+// drops empty groups, orders by NAV_GROUP_ORDER, and attaches each group's
+// presentation tier. Throws on a group this file doesn't know about, so the
+// sidebar cannot silently render an unmapped group.
+export function tieredNavGroups(groups) {
+  return groups
+    .filter((group) => group.entities.length > 0)
+    .map((group) => ({ ...group, tier: navGroupTier(group.label) }))
+    .sort((a, b) => NAV_GROUP_ORDER.indexOf(a.label) - NAV_GROUP_ORDER.indexOf(b.label));
+}
+
 export function collectionNavGroup(slug) {
   const group = COLLECTION_NAV_GROUPS[slug];
 

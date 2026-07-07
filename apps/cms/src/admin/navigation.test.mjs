@@ -4,8 +4,11 @@ import {
   COLLECTION_NAV_GROUPS,
   GLOBAL_NAV_GROUPS,
   NAV_GROUP_ORDER,
+  NAV_GROUP_TIERS,
   collectionNavGroup,
-  globalNavGroup
+  globalNavGroup,
+  navGroupTier,
+  tieredNavGroups
 } from "./navigation.mjs";
 
 // The registered slugs the CMS ships with. If a collection or global is added
@@ -63,5 +66,45 @@ describe("admin navigation groups", () => {
   it("throws for unmapped slugs so new collections cannot ship ungrouped", () => {
     assert.throws(() => collectionNavGroup("mystery"), /no admin nav group/);
     assert.throws(() => globalNavGroup("mystery"), /no admin nav group/);
+  });
+});
+
+describe("admin navigation tiers (GDW-059)", () => {
+  it("assigns a tier to every group in the canonical order, and nothing else", () => {
+    assert.deepEqual(Object.keys(NAV_GROUP_TIERS).sort(), [...NAV_GROUP_ORDER].sort());
+  });
+
+  it("makes Write the only primary tier and System the only system tier", () => {
+    const byTier = (wanted) =>
+      Object.entries(NAV_GROUP_TIERS)
+        .filter(([, tier]) => tier === wanted)
+        .map(([group]) => group);
+    assert.deepEqual(byTier("primary"), ["Write"]);
+    assert.deepEqual(byTier("system"), ["System"]);
+  });
+
+  it("orders, tiers, and prunes groups for the sidebar", () => {
+    const shaped = tieredNavGroups([
+      { label: "System", entities: [{ slug: "users" }] },
+      { label: "Library", entities: [] },
+      { label: "Site", entities: [{ slug: "tags" }] },
+      { label: "Write", entities: [{ slug: "posts" }, { slug: "pages" }] }
+    ]);
+    assert.deepEqual(
+      shaped.map(({ label, tier }) => ({ label, tier })),
+      [
+        { label: "Write", tier: "primary" },
+        { label: "Site", tier: "quiet" },
+        { label: "System", tier: "system" }
+      ]
+    );
+  });
+
+  it("throws for a group without a tier so the sidebar cannot drift from this file", () => {
+    assert.throws(() => navGroupTier("Mystery"), /no tier/);
+    assert.throws(
+      () => tieredNavGroups([{ label: "Mystery", entities: [{ slug: "x" }] }]),
+      /no tier/
+    );
   });
 });
