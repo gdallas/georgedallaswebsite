@@ -5,6 +5,7 @@ import {
   assertReviewTransition,
   awaitingReviewWhere,
   collectionListHref,
+  hasUnresolvedImportWork,
   isValidReviewTransition,
   issuesByKindHref,
   needsReviewHref,
@@ -74,6 +75,19 @@ describe("import review query filters", () => {
 
   it("scopes unresolved issues to resolved=false", () => {
     assert.deepEqual(unresolvedIssuesWhere(), { resolved: { equals: false } });
+  });
+});
+
+describe("import panel visibility", () => {
+  it("shows only while unresolved issues or unreviewed items exist", () => {
+    assert.equal(hasUnresolvedImportWork({ unresolvedIssues: 0, awaitingReview: 0 }), false);
+    assert.equal(hasUnresolvedImportWork({ unresolvedIssues: 2, awaitingReview: 0 }), true);
+    assert.equal(hasUnresolvedImportWork({ unresolvedIssues: 0, awaitingReview: 5 }), true);
+  });
+
+  it("treats missing counts as no work, not as lifetime activity", () => {
+    assert.equal(hasUnresolvedImportWork(), false);
+    assert.equal(hasUnresolvedImportWork({}), false);
   });
 });
 

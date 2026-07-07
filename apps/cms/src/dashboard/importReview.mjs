@@ -66,6 +66,13 @@ export function unresolvedIssuesWhere() {
   return { resolved: { equals: false } };
 }
 
+// The dashboard import panel keys off unresolved work, not lifetime import
+// activity: once every issue is resolved and every item approved, the
+// migration is done and the panel disappears (GDW-056).
+export function hasUnresolvedImportWork({ unresolvedIssues = 0, awaitingReview = 0 } = {}) {
+  return unresolvedIssues > 0 || awaitingReview > 0;
+}
+
 // --- Admin list links ---
 
 // Build an admin collection-list URL with `where[field][operator]=value`

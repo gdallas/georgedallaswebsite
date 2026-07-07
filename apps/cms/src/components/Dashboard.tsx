@@ -1,5 +1,6 @@
 import type { AdminViewServerProps, CollectionSlug, Where } from "payload";
 import {
+  buildAttentionItems,
   buildHealthTiles,
   buildQuickActions,
   contactInboxHref,
@@ -17,6 +18,7 @@ import {
 import {
   approvedWhere,
   awaitingReviewWhere,
+  hasUnresolvedImportWork,
   needsReviewHref,
   readyToPublishHref,
   reviewedWhere,
@@ -93,22 +95,17 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     ]);
 
   const [
-    latestImportJob,
-    importedTotal,
-    reviewedCount,
-    readyToPublishCount,
     unresolvedIssueCount,
-    awaitingReview
+    awaitingReviewCount,
+    brokenLinks,
+    missingMetadata,
+    missingAlt,
+    staleNow,
+    latestCheck,
+    newContactMessages
   ] = await Promise.all([
-    find("import-jobs", {}, "-startedAt", 1),
-    count("imported-items"),
-    count("imported-items", reviewedWhere()),
-    count("imported-items", approvedWhere()),
     count("import-issues", unresolvedIssuesWhere()),
-    find("imported-items", awaitingReviewWhere(), "-updatedAt", 6)
-  ]);
-
-  const [brokenLinks, missingMetadata, missingAlt, staleNow, latestCheck, newContactMessages] = await Promise.all([
+    count("imported-items", awaitingReviewWhere()),
     count("content-issues", openContentIssuesByKindsWhere(["broken_link"])),
     count("content-issues", openContentIssuesByKindsWhere(metadataIssueKinds)),
     count("content-issues", openContentIssuesByKindsWhere(["media_missing_alt"])),
@@ -116,6 +113,22 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     find("content-checks", {}, "-finishedAt", 1),
     count("contact-messages", newCleanContactMessagesWhere())
   ]);
+
+  // The migration panel only exists while there is migration work left, so
+  // its detail queries only run when it will render.
+  const showImportPanel = hasUnresolvedImportWork({
+    unresolvedIssues: unresolvedIssueCount.totalDocs,
+    awaitingReview: awaitingReviewCount.totalDocs
+  });
+  const [latestImportJob, importedTotal, reviewedCount, readyToPublishCount, awaitingReview] = showImportPanel
+    ? await Promise.all([
+        find("import-jobs", {}, "-startedAt", 1),
+        count("imported-items"),
+        count("imported-items", reviewedWhere()),
+        count("imported-items", approvedWhere()),
+        find("imported-items", awaitingReviewWhere(), "-updatedAt", 6)
+      ])
+    : [];
   const healthTiles = buildHealthTiles(adminRoute, {
     brokenLinks: brokenLinks.totalDocs,
     missingMetadata: missingMetadata.totalDocs,
@@ -125,23 +138,34 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
   const lastCheck = latestCheck.docs[0] as { finishedAt?: string } | undefined;
   const healthTotal = healthTiles.reduce((sum, tile) => sum + tile.value, 0);
 
-  const job = latestImportJob.docs[0] as ImportJobDoc | undefined;
-  const hasImportActivity = importedTotal.totalDocs > 0 || latestImportJob.totalDocs > 0;
-  const importStats: ImportStat[] = [
-    { label: "Imported", value: importedTotal.totalDocs, href: `${adminRoute}/collections/imported-items` },
-    { label: "Reviewed", value: reviewedCount.totalDocs, href: needsReviewHref(adminRoute) },
-    { label: "Ready to publish", value: readyToPublishCount.totalDocs, href: readyToPublishHref(adminRoute) },
-    {
-      label: "Unresolved issues",
-      value: unresolvedIssueCount.totalDocs,
-      href: unresolvedIssuesHref(adminRoute),
-      alert: unresolvedIssueCount.totalDocs > 0
-    }
-  ];
-  const awaitingReviewDocs = awaitingReview.docs as ImportedItemDoc[];
+  const job = latestImportJob?.docs[0] as ImportJobDoc | undefined;
+  const importStats: ImportStat[] = showImportPanel
+    ? [
+        { label: "Imported", value: importedTotal?.totalDocs ?? 0, href: `${adminRoute}/collections/imported-items` },
+        { label: "Reviewed", value: reviewedCount?.totalDocs ?? 0, href: needsReviewHref(adminRoute) },
+        {
+          label: "Ready to publish",
+          value: readyToPublishCount?.totalDocs ?? 0,
+          href: readyToPublishHref(adminRoute)
+        },
+        {
+          label: "Unresolved issues",
+          value: unresolvedIssueCount.totalDocs,
+          href: unresolvedIssuesHref(adminRoute),
+          alert: unresolvedIssueCount.totalDocs > 0
+        }
+      ]
+    : [];
+  const awaitingReviewDocs = (awaitingReview?.docs ?? []) as ImportedItemDoc[];
 
   const latestDraftPost = draftPosts.docs[0] as DashboardDoc | undefined;
   const quickActions = buildQuickActions(adminRoute, latestDraftPost);
+  const attentionItems = buildAttentionItems(adminRoute, {
+    mediaNeedingAltText: mediaNeedingAltText.totalDocs,
+    unresolvedImportIssues: unresolvedIssueCount.totalDocs,
+    importsAwaitingReview: awaitingReviewCount.totalDocs,
+    newContactMessages: newContactMessages.totalDocs
+  });
 
   const recentDrafts = mergeRecentDocs(
     [
@@ -168,11 +192,20 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
           This week
         </h2>
         <ul className={styles.actions}>
-          {quickActions.map((action) => (
+          {quickActions.primary.map((action) => (
             <li key={action.label}>
               <a className={styles.actionCard} href={action.href}>
                 <span className={styles.actionLabel}>{action.label}</span>
                 <span className={styles.actionDescription}>{action.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <ul className={styles.secondaryActions} aria-label="More shortcuts">
+          {quickActions.secondary.map((action) => (
+            <li key={action.label}>
+              <a className={styles.secondaryAction} href={action.href}>
+                {action.label}
               </a>
             </li>
           ))}
@@ -207,7 +240,7 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
             adminRoute={adminRoute}
             dateField="publishedAt"
             docs={(scheduledPosts.docs as DashboardDoc[]).map((doc) => ({ ...doc, collection: "posts" }))}
-            emptyText="No scheduled posts. Scheduled publishing arrives with GDW-035."
+            emptyText="No scheduled posts. Give a draft the Scheduled status and a future publish date to queue it."
           />
         </section>
 
@@ -215,44 +248,19 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
           <h2 id="dashboard-attention" className={styles.sectionTitle}>
             Needs attention
           </h2>
-          {mediaNeedingAltText.totalDocs > 0 ? (
+          {attentionItems.length > 0 ? (
             <ul className={styles.docList}>
-              <li>
-                <a href={`${adminRoute}/collections/media?where[reviewStatus][equals]=needs_alt_text`}>
-                  <span>
-                    {mediaNeedingAltText.totalDocs} media item{mediaNeedingAltText.totalDocs === 1 ? "" : "s"} missing
-                    alt text
-                  </span>
-                </a>
-              </li>
+              {attentionItems.map((item) => (
+                <li key={item.href}>
+                  <a href={item.href}>
+                    <span>{item.label}</span>
+                  </a>
+                </li>
+              ))}
             </ul>
           ) : (
-            <p className={styles.empty}>No media is waiting on alt text.</p>
+            <p className={styles.empty}>Nothing needs attention right now.</p>
           )}
-          {unresolvedIssueCount.totalDocs > 0 ? (
-            <ul className={styles.docList}>
-              <li>
-                <a href={unresolvedIssuesHref(adminRoute)}>
-                  <span>
-                    {unresolvedIssueCount.totalDocs} unresolved WordPress import issue
-                    {unresolvedIssueCount.totalDocs === 1 ? "" : "s"}
-                  </span>
-                </a>
-              </li>
-            </ul>
-          ) : null}
-          {newContactMessages.totalDocs > 0 ? (
-            <ul className={styles.docList}>
-              <li>
-                <a href={contactInboxHref(adminRoute)}>
-                  <span>
-                    {newContactMessages.totalDocs} new contact message
-                    {newContactMessages.totalDocs === 1 ? "" : "s"}
-                  </span>
-                </a>
-              </li>
-            </ul>
-          ) : null}
         </section>
       </div>
 
@@ -291,60 +299,53 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
         </p>
       </section>
 
-      <section className={styles.section} aria-labelledby="dashboard-import">
-        <h2 id="dashboard-import" className={styles.sectionTitle}>
-          WordPress import
-        </h2>
-        {hasImportActivity ? (
-          <>
-            {job ? (
-              <p className={styles.jobMeta}>
-                Last run{job.source ? ` from ${job.source}` : ""}: <strong>{job.status ?? "unknown"}</strong>
-                {job.startedAt ? ` · ${formatDate(job.startedAt)}` : ""} · {job.imported ?? 0} imported,{" "}
-                {job.needsReview ?? 0} flagged for review, {job.failed ?? 0} failed.
-              </p>
-            ) : null}
-            <ul className={styles.stats}>
-              {importStats.map((stat) => (
-                <li key={stat.label}>
-                  <a className={styles.statCard} href={stat.href} data-alert={stat.alert ? "true" : "false"}>
-                    <span className={styles.statValue}>{stat.value}</span>
-                    <span className={styles.statLabel}>{stat.label}</span>
+      {showImportPanel ? (
+        <section className={styles.section} aria-labelledby="dashboard-import">
+          <h2 id="dashboard-import" className={styles.sectionTitle}>
+            WordPress import
+          </h2>
+          {job ? (
+            <p className={styles.jobMeta}>
+              Last run{job.source ? ` from ${job.source}` : ""}: <strong>{job.status ?? "unknown"}</strong>
+              {job.startedAt ? ` · ${formatDate(job.startedAt)}` : ""} · {job.imported ?? 0} imported,{" "}
+              {job.needsReview ?? 0} flagged for review, {job.failed ?? 0} failed.
+            </p>
+          ) : null}
+          <ul className={styles.stats}>
+            {importStats.map((stat) => (
+              <li key={stat.label}>
+                <a className={styles.statCard} href={stat.href} data-alert={stat.alert ? "true" : "false"}>
+                  <span className={styles.statValue}>{stat.value}</span>
+                  <span className={styles.statLabel}>{stat.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <h3 className={styles.sectionTitle}>Needs review</h3>
+          {awaitingReviewDocs.length > 0 ? (
+            <ul className={styles.docList}>
+              {awaitingReviewDocs.map((doc) => (
+                <li key={doc.id}>
+                  <a
+                    href={
+                      doc.post != null
+                        ? documentEditHref(adminRoute, "posts", doc.post)
+                        : documentEditHref(adminRoute, "imported-items", doc.id)
+                    }
+                  >
+                    <span>{doc.title || doc.wordpressUrl || "Untitled import"}</span>
+                    <span className={styles.docMeta}>
+                      {doc.reviewStatus === "in_review" ? "In review" : "Pending review"}
+                    </span>
                   </a>
                 </li>
               ))}
             </ul>
-            <h3 className={styles.sectionTitle}>Needs review</h3>
-            {awaitingReviewDocs.length > 0 ? (
-              <ul className={styles.docList}>
-                {awaitingReviewDocs.map((doc) => (
-                  <li key={doc.id}>
-                    <a
-                      href={
-                        doc.post != null
-                          ? documentEditHref(adminRoute, "posts", doc.post)
-                          : documentEditHref(adminRoute, "imported-items", doc.id)
-                      }
-                    >
-                      <span>{doc.title || doc.wordpressUrl || "Untitled import"}</span>
-                      <span className={styles.docMeta}>
-                        {doc.reviewStatus === "in_review" ? "In review" : "Pending review"}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className={styles.empty}>Every imported post has been approved. Publish them from each post.</p>
-            )}
-          </>
-        ) : (
-          <p className={styles.empty}>
-            No WordPress import has run yet. Run <code>pnpm --filter @georgedallas/cms import:wordpress</code> to bring
-            posts in for review.
-          </p>
-        )}
-      </section>
+          ) : (
+            <p className={styles.empty}>Every imported post has been approved. Publish them from each post.</p>
+          )}
+        </section>
+      ) : null}
     </main>
   );
 }
