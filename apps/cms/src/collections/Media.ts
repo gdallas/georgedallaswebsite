@@ -1,13 +1,9 @@
-import type { CollectionConfig } from "payload";
+import { APIError, type CollectionConfig } from "payload";
 import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadMedia } from "../access/payloadAccess";
-import {
-  buildMediaStorageKey,
-  initialMediaReviewStatus,
-  validateMediaAltText,
-  validateMediaFileMetadata
-} from "../validation/content.mjs";
+import { validateMediaAltText } from "../validation/content.mjs";
+import { createMediaBeforeChangeHook } from "../validation/mediaHooks.mjs";
 
 export const Media: CollectionConfig = {
   slug: "media",
@@ -104,27 +100,7 @@ export const Media: CollectionConfig = {
   hooks: {
     afterChange: [auditCollectionChanges("media")],
     afterDelete: [auditCollectionDeletes("media")],
-    beforeChange: [
-      ({ data, operation }) => {
-        const validation = validateMediaFileMetadata(data);
-
-        if (validation !== true) {
-          throw new Error(validation);
-        }
-
-        if (data.filename) {
-          data.storageKey = buildMediaStorageKey("uploads", data.prefix, data.filename);
-        }
-
-        // New images without alt text go straight into the needs-alt-text
-        // queue so the dashboard surfaces them right away (GDW-057).
-        if (operation === "create") {
-          data.reviewStatus = initialMediaReviewStatus(data);
-        }
-
-        return data;
-      }
-    ]
+    beforeChange: [createMediaBeforeChangeHook({ APIError })]
   },
   upload: {
     bulkUpload: true,
