@@ -124,6 +124,10 @@ A ticket is not done unless all relevant items below are satisfied:
 | 55 | GDW-055 | Cedar & Circuitry admin theme and editor comfort | Brands the admin and makes long-form writing roomy |
 | 56 | GDW-056 | Admin dashboard refresh | Prioritizes real editorial actions over migration-era clutter |
 | 57 | GDW-057 | Media-into-writing ergonomics | Makes dropping images into posts effortless and safe |
+| 58 | GDW-058 | Admin design language v2 — Root System foundation | Gives the admin its own bold identity: real fonts, committed palette, humane scale |
+| 59 | GDW-059 | Admin chrome rebuild — navigation and header | Replaces stock Payload chrome with writer-first navigation |
+| 60 | GDW-060 | Focus writing view | A distraction-free writing surface that rivals Ghost/iA |
+| 61 | GDW-061 | Content-first list views | Posts read as a body of work, media as a visual library |
 
 ---
 
@@ -134,6 +138,7 @@ A ticket is not done unless all relevant items below are satisfied:
 | Static-first public site | GDW-024, GDW-025, GDW-026, GDW-027 |
 | Database-backed CMS/admin | GDW-017 through GDW-023 |
 | Pleasant weekly update workflow | GDW-020, GDW-022, GDW-023, GDW-034, GDW-035, GDW-037, GDW-049, GDW-053, GDW-054, GDW-055, GDW-056, GDW-057 |
+| Writer-first admin experience | GDW-058, GDW-059, GDW-060, GDW-061 |
 | Local development | GDW-002, GDW-003, GDW-004 |
 | Dev and prod AWS environments | GDW-008 through GDW-016 |
 | PR approval by George | GDW-005, GDW-006, GDW-015 |
@@ -2359,6 +2364,157 @@ Make putting an image into a post effortless and safe: drag it in, it uploads, i
 - [ ] Bulk upload still works.
 - [ ] E2E or integration coverage: edit a post, insert media, and render it through the public build path.
 - [ ] `pnpm lint`, `pnpm typecheck`, and relevant tests pass; the media runbook documents the workflow and any residual Payload limitations.
+
+---
+
+## GDW-058 — Admin design language v2: Root System foundation
+
+**Phase:** 10 — Writer-first admin
+**Dependencies:** GDW-055
+**Recommended order:** 58
+**Type:** CMS / admin UX / visual design
+
+### Purpose
+
+Two reskin passes (GDW-055, #110/#113) proved that recoloring Payload's variables has a ceiling: the admin still reads as stock Payload no matter the tint. George's verdict is explicit — typography is generic, density is oppressive, color is timid, chrome is recognizably Payload — with creative license granted to depart from the public style guide. This ticket establishes an admin-specific design language and ships its foundation.
+
+The concept, **Root System**: the public site is the cedar above ground; the admin is the root network below — the mark's own circuit-root iconography expanded into a full language. Darker, more instrumental, unmistakably its own place. The public site remains Cedar & Circuitry and is untouched by this arc.
+
+### User experience goals
+
+- Opening the admin feels like entering a designed writing instrument, not a database console.
+- Type is generous and characterful; nothing important is set below ~13px, UI body runs larger than stock Payload's 13px root.
+- The palette commits: no one mistakes it for default Payload in either theme.
+
+### Execution notes for Codex
+
+- **Design sign-off gates implementation.** Produce a visual concept (mock screens + palette + type specimens) and get George's explicit approval before shipping code. Iterate on the concept, not on deployed CSS.
+- Self-host fonts via @fontsource packages imported in the (payload) layout — latin subsets, woff2 only; mind Lambda image weight. No font CDNs.
+- Direction to start from (concept may evolve): Fraunces at display sizes for titles; IBM Plex Sans ≥15px for UI; IBM Plex Mono uppercase-tracked for labels/meta/status — the "instrument" register. Ground: deep green-black spruce-ink rather than the site's brown-black; hairline verdigris "trace" rules as structural dividers; ember/amber for primary actions; node-dot motifs from the brand mark. Light theme is the daylight-workbench equivalent, designed with equal care.
+- Keep the GDW-055 contrast-test approach: every ramp/surface/accent decision lands in custom properties parsed and pinned by `theme.test.mjs` (AA text, 3:1 non-text).
+- Density: loosen spacing via Payload's CSS variables (`--base` multipliers, gutters) where reachable without forking components; structural density fixes belong to GDW-059/060/061.
+
+### Scope
+
+- Concept preview and sign-off, then: self-hosted webfonts, global type scale, the committed Root System palette in both themes, spacing pass, login screen as the arc's first full brand moment.
+- Update the admin theme runbook and the contrast regression tests.
+
+### Out of scope
+
+- Replacing nav/header components (GDW-059), the writing view (GDW-060), list views (GDW-061).
+- Any change to the public site's Cedar & Circuitry language.
+
+### Acceptance criteria
+
+- [ ] George approves the visual concept before implementation lands.
+- [ ] Fraunces / IBM Plex Sans / IBM Plex Mono actually load in the admin (self-hosted, no CDN), with sane fallbacks.
+- [ ] Admin UI body type is at least 15px-equivalent; document titles render in the display face.
+- [ ] Both themes ship the committed palette; WCAG 2.2 AA pairs are pinned by extended unit tests.
+- [ ] The login screen is fully art-directed (not just a logo swap).
+- [ ] Narrow viewports remain usable; `pnpm lint` / `typecheck` / `test` and the CMS build pass.
+
+---
+
+## GDW-059 — Admin chrome rebuild: navigation and header
+
+**Phase:** 10 — Writer-first admin
+**Dependencies:** GDW-058
+**Recommended order:** 59
+**Type:** CMS / admin UX
+
+### Purpose
+
+The sidebar and header are the most recognizably-Payload surfaces left. Replace them with chrome designed for one writer: writing dominant, library and site tools quiet, system plumbing tucked away.
+
+### Execution notes for Codex
+
+- Use Payload's component slots (`admin.components.Nav`, header slots) rather than CSS overrides; keep `src/admin/navigation.mjs` as the single source of truth for grouping (its unit test must keep enforcing coverage).
+- Nav hierarchy: Write actions large and immediate; Library/Site collapsed groups with verdigris trace rules; System behind a divider at the foot. Cedar mark and account/logout in a considered footer block.
+- Preserve keyboard navigation, focus visibility, the admin search entry point (GDW-036), and the mobile/narrow drawer behavior.
+
+### Scope
+
+- Custom Nav component (grouping, styling, active states, collapse persistence), header/actions restyle, account area.
+
+### Out of scope
+
+- Dashboard content (done in GDW-056), list views (GDW-061), edit views (GDW-060).
+
+### Acceptance criteria
+
+- [ ] The sidebar is a custom component driven by `navigation.mjs`; the coverage test still passes.
+- [ ] Write group is visually primary; System collections are present but demoted.
+- [ ] Search remains reachable from the nav; keyboard and screen-reader navigation work; focus states meet the theme's contrast floors.
+- [ ] Narrow-viewport nav (drawer/overlay) works without clipped controls.
+- [ ] `pnpm lint` / `typecheck` / `test` and the CMS build pass; runbook updated.
+
+---
+
+## GDW-060 — Focus writing view
+
+**Phase:** 10 — Writer-first admin
+**Dependencies:** GDW-058
+**Recommended order:** 60
+**Type:** CMS / admin UX / editor
+
+### Purpose
+
+Writing a post should feel like Ghost or iA Writer: a centered column of beautiful type and nothing else, with publishing mechanics one deliberate gesture away — not a form with an editor embedded in it.
+
+### Execution notes for Codex
+
+- Prefer composing Payload's existing field components inside a custom edit view over forking the form: autosave, versions, validation, and the publishing triad (GDW-054) must keep working exactly as they do today.
+- The benchmark interaction: title as a large serif input flowing into the body editor; a quiet status line (saved state, word count); publish/SEO/meta in a slide-over panel; an escape hatch to the standard full form.
+- This is the riskiest ticket of the arc — if the custom view fights Payload's document lifecycle, fall back to maximal restyling of the stock edit view and document the tradeoff.
+
+### Scope
+
+- Posts first (pages if trivial); focus surface, slide-over publish panel, full-form escape hatch.
+
+### Out of scope
+
+- New editor features or blocks; media behavior (GDW-057 shipped it).
+
+### Acceptance criteria
+
+- [ ] Opening a post lands in the focus surface: title + body + status line, nothing else visible.
+- [ ] Autosave, versions, preview, scheduled publishing, and the publishing triad behave identically to the stock form.
+- [ ] Publish/SEO/advanced fields are reachable in one gesture and match GDW-054's organization.
+- [ ] The stock full form remains reachable per document.
+- [ ] Keyboard-only writing and publishing is possible; `pnpm lint` / `typecheck` / `test` and the CMS build pass.
+
+---
+
+## GDW-061 — Content-first list views
+
+**Phase:** 10 — Writer-first admin
+**Dependencies:** GDW-058
+**Recommended order:** 61
+**Type:** CMS / admin UX
+
+### Purpose
+
+The posts list should read like a body of work — big serif titles, status at a glance, quiet dates — and the media library like a visual library, not database tables with thumbnails squeezed in.
+
+### Execution notes for Codex
+
+- Use Payload's per-collection list-view component slots; keep filters, search, sort, pagination, and bulk operations functional (bulk upload and bulk edit came with earlier tickets).
+- Posts/pages: content rows (serif title, status chip in the mono register, updated/published dates). Media: thumbnail grid with alt/review state badges. System collections keep stock tables.
+
+### Scope
+
+- Posts, pages, and media list views; everything else stays stock.
+
+### Out of scope
+
+- Query/filter capability changes; new columns or data.
+
+### Acceptance criteria
+
+- [ ] Posts and pages render as content rows with title, status, and dates; sorting/filtering/search/pagination still work.
+- [ ] Media renders as a grid with review-state badges; bulk upload and selection still work.
+- [ ] System collections are unchanged.
+- [ ] Narrow viewports degrade gracefully; `pnpm lint` / `typecheck` / `test` and the CMS build pass; runbook updated.
 
 ---
 
