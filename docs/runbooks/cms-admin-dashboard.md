@@ -18,16 +18,25 @@ Every collection and global declares an `admin.group`; the single source of trut
 
 When adding a collection: add its slug to `navigation.mjs` (the unit test beside it enforces coverage), set `admin.group: collectionNavGroup("<slug>")`, give it a one-sentence `admin.description`, and insert it into the config array within its group's block.
 
+## Start something (quick capture, GDW-063)
+
+The first section is four live capture cards (`apps/cms/src/components/QuickCapture.tsx`, a client component rendered by the dashboard), so the week's four ways of starting need no navigation click:
+
+- **New post** — a serif title field (autofocused on landing). Submitting creates the post through `POST /api/posts` with a client-derived slug (retries once with a suffix on a slug collision) and lands in its editor. Status/visibility come from collection defaults, so captures are always draft + private.
+- **Now** — the `currentFocus` textarea, prefilled from the global; saving posts a partial update that touches nothing else on the Now page.
+- **Images** — a drop target (also keyboard/browse accessible) that uploads straight to Media. Files are gated client-side against the image mime list and the 4 MB cap (the Lambda Function URL kills oversized bodies before app code, so the friendly message must fire in the browser); new images enter the alt-text queue (GDW-057) and each upload links to its edit view.
+- **Bookshelf** — title + author; created with the collection defaults (want-to-read, draft, private) and linked for detail-filling.
+
+All requests go through Payload's REST API with the admin's cookie session — access control is the collections' own. The request-body and validation rules live in `apps/cms/src/dashboard/quickCapture.mjs` with unit tests beside them.
+
 ## This week (quick actions)
 
-The top section is the weekly core loop as four primary cards (GDW-056):
+With capture owning the four starts, the card row keeps only the destinations capture cannot replace (GDW-056 shape, slimmed by GDW-063):
 
 - **Continue latest draft** — opens the most recently edited draft post, or the new-post form when no drafts exist.
-- **Write a new post** — opens the create form.
-- **Update Now page** — opens the `now-page` global.
 - **Review inbox** — opens contact messages filtered to new + clean.
 
-Everything else (quick link, project, book note, timeline entry, media upload) sits in a compact secondary pill row below the cards — visually demoted but still one click.
+The secondary pill row holds quick link, project, timeline entry, and bulk media upload.
 
 ## Content sections
 

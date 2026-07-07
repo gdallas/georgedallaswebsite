@@ -489,3 +489,18 @@ html[data-theme='dark'] .btn--style-primary:not(.btn--disabled) {
 .app-header {
   border-bottom: 1px solid var(--gdw-trace);
 }
+
+/* ---- Quick capture (GDW-063) ---------------------------------------------
+   The dashboard capture buttons reuse the ember primary decision. These
+   resolve per theme so the CSS module can consume one variable set. */
+:root {
+  --gdw-capture-btn-bg: var(--gdw-accent-day);
+  --gdw-capture-btn-text: var(--gdw-accent-day-text);
+  --gdw-capture-btn-hover: var(--gdw-accent-day-hover);
+}
+
+html[data-theme='dark'] {
+  --gdw-capture-btn-bg: var(--gdw-accent);
+  --gdw-capture-btn-text: var(--gdw-accent-ink);
+  --gdw-capture-btn-hover: var(--gdw-accent-hover);
+}
