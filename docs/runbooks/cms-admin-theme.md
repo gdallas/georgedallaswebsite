@@ -130,6 +130,37 @@ makes the choice sticky.
   background so content slides under it while sticky.
 - Below Payload's 1024px breakpoint the stock stacked layout is untouched.
 
+## Focus writing view (GDW-060)
+
+GDW-060 ships as the ticket's sanctioned **fallback path**: a maximal restyle
+of the stock edit view plus one composed component — not a custom edit view.
+(Chosen deliberately: with no local CMS boot on this machine, a forked
+document view could not be exercised against saves/versions/validation
+before merge; a restyle cannot break the form lifecycle by construction.)
+
+- **Manuscript title**: the posts/pages `#field-title` input renders as
+  display-size Fraunces with no field chrome; its visible label is hidden
+  (kept for screen readers); focus shows a verdigris baseline.
+- **Status line** (`apps/cms/src/components/WritingFocus.tsx`, a UI field
+  under the body on Posts and Pages — stores nothing, no migration): live
+  word count from the Lexical state (`src/editor/writingStats.mjs`, unit
+  tested) plus saved/unsaved from `useFormModified`, in the instrument
+  register, aligned to the 46em writing column.
+- **Focus mode**: the component stamps `data-gdw-focus` on `<html>`;
+  `custom.css` then hides the app header, the Compose/SEO/Advanced tab bar,
+  the document meta, the publishing sidebar, and the slug field — all
+  verified stock class hooks, scoped to the posts/pages edit surfaces so
+  other collections and drawers are unaffected. The doc-controls bar stays,
+  so **Save is always reachable**. Exit focus (the toggle in the status
+  line) restores everything; the choice persists per device in
+  `localStorage` (`gdw-writing-focus`, default **on** — opening a post lands
+  in the focus surface).
+- **Documented tradeoffs**: publish/SEO/meta live one gesture away behind
+  Exit focus rather than in a slide-over panel (deferred until the view can
+  be exercised locally); toggling focus while on the SEO/Advanced tab hides
+  the tab bar but keeps that tab's content until you exit; Compose-tab
+  companions (excerpt, featured image, tags) remain below the body editor.
+
 ## Verifying changes
 
 No local CMS boot (needs Docker/Postgres), so: `pnpm --filter
@@ -146,3 +177,7 @@ checklist for theme changes, in both light and dark:
    stay folded/open across a reload (preferences), System behind the trace
    rule, account/logout reachable in the footer; below 1024px the drawer
    opens and closes from the hamburger, and Tab stays out of the closed nav.
+6. Focus writing: opening a post lands in focus (big serif title, body,
+   status line; header/tabs/sidebar gone; Save still visible); word count
+   ticks while typing; Exit focus restores the full form and the choice
+   sticks across a reload; the slug field reappears outside focus.

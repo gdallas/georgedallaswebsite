@@ -28,6 +28,7 @@ import { Dashboard as Dashboard_9a680279bc487e655cb510fd8d9dadff } from '../../.
 import { AdminSearch as AdminSearch_gdw036 } from '../../../components/AdminSearch'
 import { SeoPreview as SeoPreview_gdw038 } from '../../../components/SeoPreview'
 import { Nav as Nav_gdw059 } from '../../../components/nav/Nav'
+import { WritingFocus as WritingFocus_gdw060 } from '../../../components/WritingFocus'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -62,5 +63,6 @@ export const importMap = {
   "/components/AdminSearch#AdminSearch": AdminSearch_gdw036,
   "/components/SeoPreview#SeoPreview": SeoPreview_gdw038,
   "/components/nav/Nav#Nav": Nav_gdw059,
+  "/components/WritingFocus#WritingFocus": WritingFocus_gdw060,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
