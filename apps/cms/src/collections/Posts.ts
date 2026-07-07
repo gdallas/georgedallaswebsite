@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadBuild } from "../access/payloadAccess";
 import { publishedAtField, publishingStatusField, visibilityField } from "../fields/publishing";
@@ -10,6 +11,8 @@ import { collectionPreview } from "../preview/collectionPreview";
 export const Posts: CollectionConfig = {
   slug: "posts",
   admin: {
+    group: collectionNavGroup("posts"),
+    description: "Long-form writing published at /writing.",
     defaultColumns: ["title", "status", "visibility", "publishedAt", "updatedAt"],
     listSearchableFields: ["title", "excerpt", "slug", "seoTitle", "seoDescription"],
     useAsTitle: "title",

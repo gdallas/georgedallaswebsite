@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadListing } from "../access/payloadAccess";
 import { listingStatusField, visibilityField } from "../fields/publishing";
@@ -9,6 +10,8 @@ import { validateOptionalExternalUrl } from "../validation/content.mjs";
 export const Projects: CollectionConfig = {
   slug: "projects",
   admin: {
+    group: collectionNavGroup("projects"),
+    description: "Software and systems work shown on /projects.",
     defaultColumns: ["title", "status", "visibility", "featured", "sortOrder", "updatedAt"],
     listSearchableFields: ["title", "summary", "slug"],
     useAsTitle: "title"

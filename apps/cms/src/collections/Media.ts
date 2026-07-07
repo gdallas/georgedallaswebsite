@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadMedia } from "../access/payloadAccess";
 import { buildMediaStorageKey, validateMediaAltText, validateMediaFileMetadata } from "../validation/content.mjs";
@@ -6,6 +7,8 @@ import { buildMediaStorageKey, validateMediaAltText, validateMediaFileMetadata }
 export const Media: CollectionConfig = {
   slug: "media",
   admin: {
+    group: collectionNavGroup("media"),
+    description: "Images and files, stored in S3 and served through CloudFront.",
     defaultColumns: ["filename", "alt", "reviewStatus", "updatedAt"],
     listSearchableFields: ["alt", "filename", "caption"],
     useAsTitle: "filename"

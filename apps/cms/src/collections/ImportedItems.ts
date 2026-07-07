@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
 import { assertReviewTransition } from "../dashboard/importReview.mjs";
 
@@ -8,7 +9,8 @@ export const ImportedItems: CollectionConfig = {
   slug: "imported-items",
   labels: { singular: "Imported item", plural: "Imported items" },
   admin: {
-    group: "WordPress import",
+    group: collectionNavGroup("imported-items"),
+    description: "Tracking rows linking WordPress originals to CMS posts.",
     defaultColumns: ["wordpressId", "title", "status", "reviewStatus", "post", "updatedAt"],
     useAsTitle: "title"
   },

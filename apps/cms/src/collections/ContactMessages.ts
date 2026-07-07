@@ -1,11 +1,13 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { requireContentMutation, requireContentRead, denyAccess } from "../access/payloadAccess";
 
 export const ContactMessages: CollectionConfig = {
   slug: "contact-messages",
   labels: { singular: "Contact message", plural: "Contact messages" },
   admin: {
-    group: "Inbox",
+    group: collectionNavGroup("contact-messages"),
+    description: "Messages submitted through the public contact form.",
     defaultColumns: ["name", "email", "subject", "status", "spamStatus", "createdAt"],
     listSearchableFields: ["name", "email", "subject", "message", "notes"],
     useAsTitle: "subject"

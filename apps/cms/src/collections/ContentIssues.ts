@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { collectionNavGroup } from "../admin/navigation.mjs";
 import { requireContentMutation, requireContentRead } from "../access/payloadAccess";
 
 // One row per content-health finding (broken link, missing metadata/alt text,
@@ -8,7 +9,8 @@ export const ContentIssues: CollectionConfig = {
   slug: "content-issues",
   labels: { singular: "Content issue", plural: "Content issues" },
   admin: {
-    group: "Site health",
+    group: collectionNavGroup("content-issues"),
+    description: "Findings from the automated content quality checks.",
     defaultColumns: ["kind", "severity", "status", "collection", "url", "checkedAt"],
     listSearchableFields: ["detail", "url", "collection", "kind"],
     useAsTitle: "detail"
