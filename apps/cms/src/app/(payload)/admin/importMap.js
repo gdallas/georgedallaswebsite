@@ -29,6 +29,8 @@ import { BrandLogo as BrandLogo_8cc48bfb0097012b84282a716ad46c70 } from '../../.
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { Dashboard as Dashboard_9a680279bc487e655cb510fd8d9dadff } from '../../../components/Dashboard'
 import { AdminSearch as AdminSearch_5fc55325e014945c86c95f4e024630ad } from '../../../components/AdminSearch'
+import { PasteImageUploadFeatureClient as PasteImageUploadFeatureClient_a1c0f3e2b4d5061728394a5b6c7d8e90 } from '../../../editor/PasteImageUploadFeatureClient'
+import { IsbnLookupField as IsbnLookupField_b7e0d2c1f3a4958607d1e2f3a4b5c6d7 } from '../../../components/IsbnLookupField'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -64,5 +66,7 @@ export const importMap = {
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/components/Dashboard#Dashboard": Dashboard_9a680279bc487e655cb510fd8d9dadff,
   "/components/AdminSearch#AdminSearch": AdminSearch_5fc55325e014945c86c95f4e024630ad,
+  "/editor/PasteImageUploadFeatureClient#PasteImageUploadFeatureClient": PasteImageUploadFeatureClient_a1c0f3e2b4d5061728394a5b6c7d8e90,
+  "/components/IsbnLookupField#IsbnLookupField": IsbnLookupField_b7e0d2c1f3a4958607d1e2f3a4b5c6d7,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

@@ -185,6 +185,32 @@ export function buildMediaPublicUrl(publicBaseUrl, collectionPrefix, docPrefix, 
   return `${publicBaseUrl.replace(/\/+$/g, "")}/${key.split("/").map(encodeURIComponent).join("/")}`;
 }
 
+// Friendly names for the fields a save can be missing, so the error names them
+// the way they read on the form rather than by their internal keys.
+const publishFieldLabels = {
+  publishedAt: "a publish date",
+  excerpt: "an excerpt",
+  seoTitle: "an SEO title",
+  seoDescription: "an SEO description"
+};
+
+// "a" -> "a"; "a, b" -> "a and b"; "a, b, c" -> "a, b, and c".
+function joinWithAnd(items) {
+  if (items.length <= 1) {
+    return items[0] ?? "";
+  }
+  if (items.length === 2) {
+    return `${items[0]} and ${items[1]}`;
+  }
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+function missingMetadataFields(data, requiredMetadata) {
+  return requiredMetadata.filter(
+    (field) => typeof data[field] !== "string" || data[field].trim().length === 0
+  );
+}
+
 export function validatePublishingState(data, options = {}) {
   const status = data?.status;
   const now = options.now ? new Date(options.now) : new Date();
@@ -198,40 +224,37 @@ export function validatePublishingState(data, options = {}) {
     return "Visibility is invalid.";
   }
 
+  // List every unfilled field in one message so a save names all of them at
+  // once, not just the first one the writer would hit.
   if (status === "published") {
+    const missing = [];
     if (!data.publishedAt) {
-      return "Published content requires a publishedAt date.";
+      missing.push(publishFieldLabels.publishedAt);
     }
-
-    const missing = firstMissingMetadata(data, requiredMetadata);
-    if (missing) {
-      return `Published content requires ${missing}.`;
+    for (const field of missingMetadataFields(data, requiredMetadata)) {
+      missing.push(publishFieldLabels[field] ?? field);
+    }
+    if (missing.length > 0) {
+      return `To publish, fill in ${joinWithAnd(missing)}.`;
     }
   }
 
   if (status === "scheduled") {
-    if (!data.publishedAt || new Date(data.publishedAt) <= now) {
-      return "Scheduled content requires a future publishedAt date.";
-    }
-
     // Scheduled content must already satisfy the publish requirements so the
     // worker can flip it to published unattended without tripping validation.
-    const missing = firstMissingMetadata(data, requiredMetadata);
-    if (missing) {
-      return `Scheduled content requires ${missing} so it can publish automatically.`;
+    const missing = [];
+    if (!data.publishedAt || new Date(data.publishedAt) <= now) {
+      missing.push("a future publish date");
+    }
+    for (const field of missingMetadataFields(data, requiredMetadata)) {
+      missing.push(publishFieldLabels[field] ?? field);
+    }
+    if (missing.length > 0) {
+      return `To schedule this, fill in ${joinWithAnd(missing)} so it can publish automatically.`;
     }
   }
 
   return true;
-}
-
-function firstMissingMetadata(data, requiredMetadata) {
-  for (const field of requiredMetadata) {
-    if (typeof data[field] !== "string" || data[field].trim().length === 0) {
-      return field;
-    }
-  }
-  return null;
 }
 
 // Public visibility predicates and query filters now live in the shared

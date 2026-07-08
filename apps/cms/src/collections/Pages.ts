@@ -1,10 +1,10 @@
-import type { CollectionConfig } from "payload";
+import { APIError, type CollectionConfig } from "payload";
 import { collectionNavGroup } from "../admin/navigation.mjs";
 import { auditCollectionChanges, auditCollectionDeletes } from "../audit/auditEvents";
 import { requireContentMutation, requirePublicOrContentReadBuild } from "../access/payloadAccess";
 import { datedPublishingSidebarFields } from "../fields/publishing";
 import { slugField } from "../fields/slug";
-import { createPublishingBeforeChangeHook } from "../hooks/publishing";
+import { createPublishingBeforeChangeHook } from "../hooks/publishing.mjs";
 import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
 import { collectionPreview } from "../preview/collectionPreview";
 import { createResolvePastedUploadsHook } from "../validation/richTextUploads.mjs";
@@ -132,6 +132,6 @@ export const Pages: CollectionConfig = {
     afterDelete: [auditCollectionDeletes("pages"), publishSignalsAfterDelete("pages", "dated")],
     // See Posts: resolve pasted-image pending nodes before validation.
     beforeValidate: [createResolvePastedUploadsHook()],
-    beforeChange: [createPublishingBeforeChangeHook()]
+    beforeChange: [createPublishingBeforeChangeHook({ APIError })]
   }
 };

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { useIsbnLookup } from "../books/useIsbnLookup";
 import { documentEditHref } from "../dashboard/dashboardData.mjs";
 import {
   buildBookBody,
@@ -179,15 +180,36 @@ function NowCapture({ adminRoute, apiRoute, initialFocus }: CardProps & { initia
   );
 }
 
+const isbnStatusText: Record<string, string> = {
+  looking: "Looking up…",
+  notfound: "No match — enter the details by hand.",
+  error: "Lookup unavailable — enter the details by hand."
+};
+
 function BookCapture({ adminRoute, apiRoute }: CardProps) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
+  const [isbn, setIsbn] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<Note | null>(null);
+  const lookup = useIsbnLookup(isbn);
+
+  // Responsive prefill: a found match fills empty title/author but never
+  // clobbers what has been typed, so the fields stay editable.
+  useEffect(() => {
+    if (lookup.status !== "found" || !lookup.book) {
+      return;
+    }
+    const found = lookup.book;
+    setTitle((prev) => (prev.trim() === "" ? found.title : prev));
+    if (found.author) {
+      setAuthor((prev) => (prev.trim() === "" ? found.author ?? "" : prev));
+    }
+  }, [lookup.status, lookup.book]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const body = buildBookBody(title, author);
+    const body = buildBookBody(title, author, isbn);
 
     if (!body || busy) {
       return;
@@ -203,6 +225,7 @@ function BookCapture({ adminRoute, apiRoute }: CardProps) {
     if (result.ok && id != null) {
       setTitle("");
       setAuthor("");
+      setIsbn("");
       setNote({
         tone: "ok",
         text: `“${body.title}” is on the shelf.`,
@@ -222,6 +245,20 @@ function BookCapture({ adminRoute, apiRoute }: CardProps) {
     <form className={styles.captureCard} onSubmit={submit}>
       <span className={styles.captureKicker}>Bookshelf</span>
       <div className={styles.captureFields}>
+        <input
+          aria-label="Book ISBN"
+          className={styles.captureInput}
+          inputMode="numeric"
+          onChange={(event) => setIsbn(event.target.value)}
+          placeholder="ISBN (fills the details)…"
+          type="text"
+          value={isbn}
+        />
+        {isbnStatusText[lookup.status] ? (
+          <p className={styles.captureNote} data-tone="ok">
+            {isbnStatusText[lookup.status]}
+          </p>
+        ) : null}
         <input
           aria-label="Book title"
           className={styles.captureInput}
