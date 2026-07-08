@@ -52,6 +52,19 @@ describe("quick capture: book and Now bodies", () => {
     assert.equal(buildBookBody("", "R. Powers"), null);
   });
 
+  it("attaches only a checksum-valid ISBN, ignoring junk and partial input", () => {
+    assert.deepEqual(buildBookBody("Overstory", "R. Powers", "978-0-393-63552-2"), {
+      title: "Overstory",
+      author: "R. Powers",
+      isbn: "9780393635522"
+    });
+    // Half-typed / invalid ISBN is dropped rather than stored.
+    assert.deepEqual(buildBookBody("Overstory", "R. Powers", "97803936"), {
+      title: "Overstory",
+      author: "R. Powers"
+    });
+  });
+
   it("builds a partial Now update touching only currentFocus", () => {
     assert.deepEqual(buildNowUpdateBody("  Shipping the admin refresh  "), {
       currentFocus: "Shipping the admin refresh"
