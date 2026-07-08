@@ -4,6 +4,7 @@
 // rules (slug shape, required fields, image limits) stay unit-testable.
 
 import { allowedMediaMimeTypes, maxMediaUploadBytes } from "../validation/content.mjs";
+import { isValidIsbn, normalizeIsbn } from "../books/isbnLookup.mjs";
 
 // Mirrors the slug rules validateSlug enforces (lowercase alphanumerics with
 // single hyphens), so a capture-created draft never bounces on its slug.
@@ -37,7 +38,7 @@ export function buildDraftPostBody(title) {
   return { title: trimmed, slug: slugifyTitle(trimmed) };
 }
 
-export function buildBookBody(title, author) {
+export function buildBookBody(title, author, isbn) {
   const trimmedTitle = String(title ?? "").trim();
   const trimmedAuthor = String(author ?? "").trim();
 
@@ -46,7 +47,16 @@ export function buildBookBody(title, author) {
   }
 
   // readingStatus, status, visibility, and sortOrder all have safe defaults.
-  return { title: trimmedTitle, author: trimmedAuthor };
+  const body = { title: trimmedTitle, author: trimmedAuthor };
+
+  // Only store the ISBN when it is a real, checksum-valid one, so a half-typed
+  // number never lands on the record.
+  const normalizedIsbn = normalizeIsbn(isbn);
+  if (normalizedIsbn && isValidIsbn(normalizedIsbn)) {
+    body.isbn = normalizedIsbn;
+  }
+
+  return body;
 }
 
 export function buildNowUpdateBody(currentFocus) {
