@@ -1,25 +1,24 @@
 "use client";
 
-import { useConfig, useField, useFormFields } from "@payloadcms/ui";
-import { useState } from "react";
+import { useField, useFormFields } from "@payloadcms/ui";
 import { useIsbnLookup } from "../books/useIsbnLookup";
 import styles from "./IsbnLookupField.module.css";
 
 // Books edit-form helper (GDW-046): watches the ISBN field and, as soon as a
 // valid ISBN is typed or pasted, offers the looked-up title, author, and cover
 // to apply. Lookup runs in the browser (the CMS Lambda has no egress); a miss
-// or an error never blocks manual entry.
+// or an error never blocks manual entry. "Use these details" fills the title,
+// author, and cover URL in one click (George feedback, 2026-07-08): the cover
+// URL is stored directly, so a book gets a cover with no upload step.
 export function IsbnLookupField() {
   const isbn = useFormFields(([fields]) => {
     const value = fields?.isbn?.value;
     return typeof value === "string" ? value : "";
   });
-  const { config } = useConfig();
   const titleField = useField<string>({ path: "title" });
   const authorField = useField<string>({ path: "author" });
-  const coverField = useField<unknown>({ path: "coverImage" });
+  const coverUrlField = useField<string>({ path: "coverUrl" });
   const { status, book } = useIsbnLookup(isbn);
-  const [cover, setCover] = useState<{ busy: boolean; note: string | null }>({ busy: false, note: null });
 
   const applyDetails = () => {
     if (book?.title) {
@@ -28,40 +27,8 @@ export function IsbnLookupField() {
     if (book?.author) {
       authorField.setValue(book.author);
     }
-  };
-
-  // Covers from Open Library / Google Books are CORS-open, so the browser can
-  // fetch the bytes and upload them through the admin session. If a given host
-  // blocks it, we say so rather than failing the form.
-  const useCover = async () => {
-    if (!book?.coverUrl) {
-      return;
-    }
-    setCover({ busy: true, note: null });
-    try {
-      const res = await fetch(book.coverUrl);
-      if (!res.ok) {
-        throw new Error("cover fetch failed");
-      }
-      const blob = await res.blob();
-      const file = new File([blob], `isbn-${book.isbn}.jpg`, { type: blob.type || "image/jpeg" });
-      const data = new FormData();
-      data.append("file", file);
-      const upload = await fetch(`${config.routes.api}/media`, {
-        method: "POST",
-        body: data,
-        credentials: "same-origin"
-      });
-      const json = (await upload.json().catch(() => null)) as { doc?: { id?: number | string } } | null;
-      const id = json?.doc?.id;
-      if (upload.ok && id != null) {
-        coverField.setValue(id);
-        setCover({ busy: false, note: "Cover added to the media library — add alt text before it goes public." });
-      } else {
-        setCover({ busy: false, note: "Could not save that cover automatically. Add it under Cover image if you want it." });
-      }
-    } catch {
-      setCover({ busy: false, note: "Could not fetch that cover automatically. Add it under Cover image if you want it." });
+    if (book?.coverUrl) {
+      coverUrlField.setValue(book.coverUrl);
     }
   };
 
@@ -89,15 +56,9 @@ export function IsbnLookupField() {
             </p>
             <div className={styles.actions}>
               <button type="button" className={styles.apply} onClick={applyDetails}>
-                Use title &amp; author
+                {book.coverUrl ? "Use these details" : "Use title & author"}
               </button>
-              {book.coverUrl ? (
-                <button type="button" className={styles.secondary} onClick={useCover} disabled={cover.busy}>
-                  {cover.busy ? "Saving cover…" : "Use this cover"}
-                </button>
-              ) : null}
             </div>
-            {cover.note ? <p className={styles.note}>{cover.note}</p> : null}
           </div>
         </div>
       )}

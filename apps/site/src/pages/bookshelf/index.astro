@@ -47,13 +47,13 @@ function formatDate(value: string | null | undefined): string {
             {group.items.map((book) => (
               <li>
                 <article class="book-card">
-                  {book.coverImage?.url && (
+                  {(book.coverImage?.url || book.coverUrl) && (
                     <img
-                      src={book.coverImage.url}
-                      alt={book.coverImage.alt || `Cover of ${book.title}`}
+                      src={book.coverImage?.url || book.coverUrl}
+                      alt={book.coverImage?.alt || `Cover of ${book.title}`}
                       loading="lazy"
-                      width={book.coverImage.width || 160}
-                      height={book.coverImage.height || 240}
+                      width={book.coverImage?.width || 160}
+                      height={book.coverImage?.height || 240}
                     />
                   )}
                   <div>

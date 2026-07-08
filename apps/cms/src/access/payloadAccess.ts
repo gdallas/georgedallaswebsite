@@ -44,7 +44,13 @@ export const requirePublicOrContentReadMedia: Access = ({ req }) => {
     return true;
   }
 
-  return { reviewStatus: { equals: "public" } } as unknown as Where;
+  // "Show now, nudge alt later" (George, 2026-07-08): images pasted or embedded
+  // into a post are saved to the needs-alt-text queue, not "public". The public
+  // build reads anonymously, so restricting it to "public" silently dropped
+  // those images from published posts. needs_alt_text now renders publicly too
+  // (it still shows in the dashboard alt queue as the nudge); only draft and
+  // private stay hidden.
+  return { reviewStatus: { in: ["public", "needs_alt_text"] } } as unknown as Where;
 };
 
 // Open read for non-sensitive public data with no draft/visibility concept:

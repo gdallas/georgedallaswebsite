@@ -859,3 +859,18 @@ html[data-theme='dark'] .gdw-media-card__name:hover {
   font-style: italic;
   color: var(--theme-elevation-450);
 }
+
+/* ---- Book cover in the Books list (George feedback, 2026-07-08) ---------- */
+.gdw-book-cover {
+  display: block;
+  width: 2.4rem;
+  height: 3.4rem;
+  object-fit: cover;
+  border-radius: 3px;
+  background: var(--theme-elevation-100);
+  border: 1px solid var(--theme-elevation-150);
+}
+
+.gdw-book-cover--empty {
+  opacity: 0.45;
+}

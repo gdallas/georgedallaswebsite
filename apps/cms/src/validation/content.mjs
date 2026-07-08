@@ -2,13 +2,13 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const blockedLocalHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 
 export const allowedMediaMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml", "application/pdf"];
-// Deployed uploads travel through a Lambda Function URL whose 6 MB event cap
-// (base64-encoded body, so ~4.5 MB of binary) rejects bigger files before any
-// app code runs, with an opaque network error. Keeping the app limit under
-// that ceiling means the friendly message in validateMediaFileMetadata is the
-// one people actually see. If larger files ever matter, the path is presigned
-// S3 uploads, not raising this number (GDW-057 execution note).
-export const maxMediaUploadBytes = 4 * 1024 * 1024;
+// 10 MB (George, 2026-07-08). This exceeds the Lambda Function URL's ~6 MB event
+// cap, so media now uploads straight from the browser to S3 with a presigned URL
+// (storage/s3.ts clientUploads:true) — the file bytes never pass through the
+// Lambda, so the old ceiling no longer applies. The metadata create still runs
+// server-side, so this limit is enforced in validateMediaFileMetadata.
+export const maxMediaUploadBytes = 10 * 1024 * 1024;
+export const maxMediaUploadMb = Math.floor(maxMediaUploadBytes / (1024 * 1024));
 export const publishingStatuses = ["draft", "in_review", "scheduled", "published", "archived"];
 export const listingStatuses = ["draft", "published", "archived"];
 export const visibilityStates = ["public", "unlisted", "private"];
@@ -137,7 +137,7 @@ export function validateMediaFileMetadata(data = {}) {
   }
 
   if (typeof data.filesize === "number" && data.filesize > maxMediaUploadBytes) {
-    return "Media file exceeds the 4 MB upload limit. Resize or compress it, then upload again.";
+    return `Media file exceeds the ${maxMediaUploadMb} MB upload limit. Resize or compress it, then upload again.`;
   }
 
   return true;

@@ -19,11 +19,11 @@ export const Books: CollectionConfig = {
   admin: {
     group: collectionNavGroup("books"),
     description: "The reading log behind /bookshelf.",
-    defaultColumns: ["title", "author", "readingStatus", "status", "visibility", "sortOrder"],
+    defaultColumns: ["coverUrl", "title", "author", "readingStatus", "status", "visibility"],
     listSearchableFields: ["title", "author", "isbn", "notes"],
     useAsTitle: "title"
   },
-  defaultSort: "sortOrder",
+  defaultSort: "-updatedAt",
   access: {
     create: requireContentMutation,
     delete: requireContentMutation,
@@ -52,10 +52,25 @@ export const Books: CollectionConfig = {
       }
     },
     {
+      name: "coverUrl",
+      type: "text",
+      label: "Cover",
+      validate: validateOptionalExternalUrl,
+      admin: {
+        // Auto-filled by the ISBN lookup (GDW-046 → George feedback 2026-07-08).
+        // The bookshelf and the list column show this directly, so a book gets a
+        // cover with no upload step. A manually uploaded Cover image still wins.
+        description: "Cover image URL, auto-filled by the ISBN lookup. Shown on the bookshelf and in the list.",
+        components: {
+          Cell: "/components/BookCoverCell#BookCoverCell"
+        }
+      }
+    },
+    {
       name: "coverImage",
       type: "upload",
       relationTo: "media",
-      admin: { description: "Use a public media item with alt text for public books." }
+      admin: { description: "Optional: upload a cover into the media library. Overrides the cover URL above." }
     },
     {
       name: "readingStatus",
@@ -92,13 +107,16 @@ export const Books: CollectionConfig = {
     },
     listingStatusField,
     {
+      // Retired (George, 2026-07-08): manual ordering is gone — the bookshelf
+      // sorts automatically by most-recently-updated within each reading-status
+      // group. Kept hidden (not removed) so no column-drop migration is needed;
+      // the default 0 keeps every row valid.
       name: "sortOrder",
       type: "number",
       required: true,
       defaultValue: 0,
       admin: {
-        description: "Lower numbers appear first within a reading-status group.",
-        position: "sidebar"
+        hidden: true
       }
     },
     visibilityField

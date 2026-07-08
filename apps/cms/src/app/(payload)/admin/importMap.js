@@ -26,6 +26,7 @@ import { WritingFocus as WritingFocus_da51363a641da4e31eb344e1be3479a6 } from '.
 import { SeoPreview as SeoPreview_99dd45f841ac5abaab172f3665586e3d } from '../../../components/SeoPreview'
 import { MediaListView as MediaListView_40a995f834bc1723e4ac29daa4926a15 } from '../../../components/MediaListView'
 import { IsbnLookupField as IsbnLookupField_acc868949dd5fbadc5c81616f6079fa7 } from '../../../components/IsbnLookupField'
+import { BookCoverCell as BookCoverCell_4d7f51443b7ff0933784e52dcc7e394e } from '../../../components/BookCoverCell'
 import { Nav as Nav_2bbd50066e558bff01afc6b2e7fff4f6 } from '../../../components/nav/Nav'
 import { BrandIcon as BrandIcon_bcf0168c1c533fd8da12434f629d95d0 } from '../../../components/BrandIcon'
 import { BrandLogo as BrandLogo_8cc48bfb0097012b84282a716ad46c70 } from '../../../components/BrandLogo'
@@ -64,6 +65,7 @@ export const importMap = {
   "/components/SeoPreview#SeoPreview": SeoPreview_99dd45f841ac5abaab172f3665586e3d,
   "/components/MediaListView#MediaListView": MediaListView_40a995f834bc1723e4ac29daa4926a15,
   "/components/IsbnLookupField#IsbnLookupField": IsbnLookupField_acc868949dd5fbadc5c81616f6079fa7,
+  "/components/BookCoverCell#BookCoverCell": BookCoverCell_4d7f51443b7ff0933784e52dcc7e394e,
   "/components/nav/Nav#Nav": Nav_2bbd50066e558bff01afc6b2e7fff4f6,
   "/components/BrandIcon#BrandIcon": BrandIcon_bcf0168c1c533fd8da12434f629d95d0,
   "/components/BrandLogo#BrandLogo": BrandLogo_8cc48bfb0097012b84282a716ad46c70,
