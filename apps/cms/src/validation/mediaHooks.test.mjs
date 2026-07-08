@@ -17,7 +17,7 @@ const hook = createMediaBeforeChangeHook({ APIError: FakeAPIError });
 
 describe("media beforeChange hook", () => {
   it("rejects invalid files with a public 400, never a raw 500", () => {
-    const oversized = { filesize: 5 * 1024 * 1024, mimeType: "image/png" };
+    const oversized = { filesize: 11 * 1024 * 1024, mimeType: "image/png" };
     const wrongType = { filesize: 1024, mimeType: "text/html" };
 
     for (const data of [oversized, wrongType]) {
@@ -36,8 +36,8 @@ describe("media beforeChange hook", () => {
 
   it("names the actual problem in the rejection message", () => {
     assert.throws(
-      () => hook({ data: { filesize: 5 * 1024 * 1024, mimeType: "image/png" }, operation: "create" }),
-      /4 MB upload limit/
+      () => hook({ data: { filesize: 11 * 1024 * 1024, mimeType: "image/png" }, operation: "create" }),
+      /10 MB upload limit/
     );
     assert.throws(
       () => hook({ data: { filesize: 10, mimeType: "text/html" }, operation: "create" }),

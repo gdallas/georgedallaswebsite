@@ -82,6 +82,7 @@ export type PublicBook = {
   author: string;
   isbn?: string | null;
   coverImage?: MediaRef | null;
+  coverUrl?: string | null;
   readingStatus?: BookReadingStatus | null;
   rating?: number | null;
   dateStarted?: string | null;

@@ -16,7 +16,12 @@ export function createMediaStoragePlugin(config: CmsConfig) {
   return s3Storage({
     acl: "private",
     bucket: config.s3.bucket,
-    clientUploads: false,
+    // Browser uploads straight to S3 with a presigned URL so files up to the
+    // 10 MB cap never hit the Lambda Function URL's ~6 MB event limit (George,
+    // 2026-07-08). The media bucket CORS must allow PUT from the admin origin
+    // (infra/src/media-foundation.mjs). Only the file bytes bypass the app; the
+    // media doc + validation still run server-side.
+    clientUploads: true,
     collections: {
       media: {
         generateFileURL: ({ filename, prefix }) => {

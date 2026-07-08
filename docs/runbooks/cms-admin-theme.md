@@ -161,6 +161,45 @@ before merge; a restyle cannot break the form lifecycle by construction.)
   the tab bar but keeps that tab's content until you exit; Compose-tab
   companions (excerpt, featured image, tags) remain below the body editor.
 
+## Content-first list views (GDW-061)
+
+The three content collections drop the spreadsheet look; system collections
+keep the stock table. All of it is scoped by the `collection-list--<slug>`
+modifier Payload puts on the list wrapper, and every colour references an
+existing `--color-*`/`--theme-elevation-*` ramp step so the contrast test's
+step counts stay intact.
+
+- **Posts and pages** are a pure `custom.css` restyle of the stock list (no
+  component fork, so search/sort/filter/pagination/columns/bulk keep running
+  untouched). The `.cell-title` link becomes reading-size Fraunces; the
+  `.cell-status`/`.cell-visibility` select cells become quiet mono chips whose
+  leading dot carries the state colour (`.selected--<value>::before` keyed to
+  the success/warning ramps, neutral elevation otherwise) so the label text
+  stays high-contrast; `.cell-publishedAt`/`.cell-updatedAt` recede into small
+  mono. Rows gain vertical air. Pages also chip their `.cell-template`.
+- **Media** is a real thumbnail grid, not a table with a preview column. It is
+  the ticket's one component: `admin.components.views.list.Component` on the
+  Media collection points at `components/MediaListView.tsx`, a client component
+  that renders Payload's own `DefaultListView` and swaps only its `Table` slot
+  for a card grid (`MediaGrid`). Because the grid is rendered inside
+  DefaultListView's providers, it reads the current page from `useListQuery`
+  and selection from `useSelection`, so search, filters, pagination, the Bulk
+  Upload drawer, per-card selection, "Select all", and the Edit/Delete bulk
+  toolbar all continue to work through Payload. Each card shows the thumbnail
+  (Payload's `Thumbnail`, which falls back to a file-type icon for non-images),
+  a review-state badge (`gdw-media-card__badge--<reviewStatus>`), the filename,
+  and alt text (italic "No alt text" when empty). Card + grid styling lives in
+  the "Media: a visual library" block of `custom.css`.
+- **Documented tradeoff**: the media grid has no per-column sort headers (a
+  visual library sorts by the list controls, and the ticket only requires sort
+  on posts/pages, which keep the stock table). `MediaListView` imports
+  `@payloadcms/ui` directly, so it must stay pinned to Payload's exact version
+  like the other in-app UI consumers (the #128 dual-copy rule).
+
+Verified on a local CMS boot (Docker + Playwright headless probe) in both
+themes and down to a 420px viewport with no horizontal overflow; selection
+surfaced the "N selected / Edit / Delete" toolbar and search narrowed the grid.
+
 ## Verifying changes
 
 No local CMS boot (needs Docker/Postgres), so: `pnpm --filter

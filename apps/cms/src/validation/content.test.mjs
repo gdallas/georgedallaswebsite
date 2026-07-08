@@ -53,12 +53,12 @@ describe("content validation", () => {
   it("validates media file metadata and public URLs", () => {
     assert.equal(validateMediaFileMetadata({ filesize: 1024, mimeType: "image/webp" }), true);
     assert.equal(validateMediaFileMetadata({ filesize: 1024, mimeType: "text/html" }), "Media file type is not allowed.");
-    // The limit must stay under the ~4.5 MB binary ceiling of the deployed
-    // Lambda Function URL, so this message fires before the infra cap does.
-    assert.equal(validateMediaFileMetadata({ filesize: 4 * 1024 * 1024, mimeType: "image/png" }), true);
+    // Client uploads (presigned S3) bypass the Lambda event cap, so the app
+    // limit is the 10 MB media cap enforced here.
+    assert.equal(validateMediaFileMetadata({ filesize: 10 * 1024 * 1024, mimeType: "image/png" }), true);
     assert.equal(
-      validateMediaFileMetadata({ filesize: 4 * 1024 * 1024 + 1, mimeType: "image/png" }),
-      "Media file exceeds the 4 MB upload limit. Resize or compress it, then upload again."
+      validateMediaFileMetadata({ filesize: 10 * 1024 * 1024 + 1, mimeType: "image/png" }),
+      "Media file exceeds the 10 MB upload limit. Resize or compress it, then upload again."
     );
     assert.equal(buildMediaStorageKey("uploads", undefined, "hello world.png"), "uploads/hello world.png");
     assert.equal(

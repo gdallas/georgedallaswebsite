@@ -13,10 +13,13 @@ class FakeAPIError extends Error {
   }
 }
 
+// SEO title/description are no longer required to publish (George, 2026-07-08):
+// the public site falls back to the title/excerpt and the SEO preview shows the
+// suggested value, so a post only needs an excerpt + publish date.
 const postHook = createPublishingBeforeChangeHook({
   APIError: FakeAPIError,
   computeReadingTime: true,
-  requiredMetadata: ["excerpt", "seoTitle", "seoDescription"]
+  requiredMetadata: ["excerpt"]
 });
 
 describe("publishing beforeChange hook", () => {
@@ -36,11 +39,9 @@ describe("publishing beforeChange hook", () => {
     assert.ok(thrown instanceof FakeAPIError, "expected an APIError, got a plain throw");
     assert.equal(thrown.status, 400);
     assert.equal(thrown.isPublic, true, "the reason must reach the admin UI");
-    // Every unfilled field is named, not just the first.
+    // Every unfilled required field is named, not just the first.
     assert.match(thrown.message, /a publish date/);
     assert.match(thrown.message, /an excerpt/);
-    assert.match(thrown.message, /an SEO title/);
-    assert.match(thrown.message, /an SEO description/);
   });
 
   it("names the missing metadata a post needs before publishing", () => {
@@ -50,8 +51,23 @@ describe("publishing beforeChange hook", () => {
           data: { status: "published", visibility: "public", publishedAt: "2026-01-01T00:00:00.000Z" },
           originalDoc: { status: "draft", visibility: "private" }
         }),
-      /To publish, fill in an excerpt, an SEO title, and an SEO description\./
+      /To publish, fill in an excerpt\./
     );
+  });
+
+  it("publishes without an SEO title or description (they fall back to title/excerpt)", () => {
+    const result = postHook({
+      data: { status: "published", visibility: "public" },
+      originalDoc: {
+        status: "draft",
+        visibility: "private",
+        publishedAt: "2026-01-01T00:00:00.000Z",
+        excerpt: "A short summary.",
+        title: "A note"
+      }
+    });
+
+    assert.equal(result.status, "published");
   });
 
   it("merges originalDoc so a partial save is judged on the whole document", () => {

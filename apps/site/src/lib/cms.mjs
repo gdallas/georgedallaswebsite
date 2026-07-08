@@ -161,7 +161,9 @@ export async function getPublicLinks(config = {}) {
 }
 
 export async function getPublicBooks(config = {}) {
-  const docs = await fetchDocs("books", publicListingWhere(), config, "&sort=sortOrder");
+  // Manual ordering was retired (George, 2026-07-08); the bookshelf groups by
+  // reading status and shows the most-recently-updated books first within each.
+  const docs = await fetchDocs("books", publicListingWhere(), config, "&sort=-updatedAt");
   return docs.filter(isPublicListingVisible);
 }
 

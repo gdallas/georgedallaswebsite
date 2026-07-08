@@ -71,7 +71,7 @@ describe("uploadPastedImage", () => {
   it("rejects an oversized image before any request is sent", async () => {
     let called = false;
     const result = await uploadPastedImage({
-      file: fakeFile({ size: 6 * 1024 * 1024 }),
+      file: fakeFile({ size: 11 * 1024 * 1024 }),
       mediaEndpoint: endpoint,
       fetchImpl: async () => {
         called = true;

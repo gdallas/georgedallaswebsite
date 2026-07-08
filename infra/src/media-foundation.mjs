@@ -29,9 +29,13 @@ export class MediaFoundation {
       autoDeleteObjects: false,
       cors: [
         {
-          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.HEAD],
+          // PUT is required for browser->S3 presigned client uploads (Payload
+          // s3Storage clientUploads); GET/HEAD serve media. Origins are the
+          // admin/site hosts in allowedOrigins().
+          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.HEAD, s3.HttpMethods.PUT],
           allowedOrigins: this.allowedOrigins(),
-          allowedHeaders: ["Authorization", "Content-Type"],
+          allowedHeaders: ["*"],
+          exposedHeaders: ["ETag"],
           maxAge: 3600
         }
       ],

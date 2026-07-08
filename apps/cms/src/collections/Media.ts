@@ -10,10 +10,20 @@ export const Media: CollectionConfig = {
   admin: {
     group: collectionNavGroup("media"),
     description:
-      "Images and files, stored in S3 and served through CloudFront. Files up to 4 MB; drag images straight into a post body to upload them.",
+      "Images and files, stored in S3 and served through CloudFront. Files up to 10 MB; drag images straight into a post body to upload them.",
     defaultColumns: ["filename", "alt", "reviewStatus", "updatedAt"],
     listSearchableFields: ["alt", "filename", "caption"],
-    useAsTitle: "filename"
+    useAsTitle: "filename",
+    components: {
+      views: {
+        // GDW-061: render the media list as a thumbnail grid (review-state
+        // badges, selection, bulk upload preserved) by swapping only the list
+        // table. See components/MediaListView.tsx.
+        list: {
+          Component: "/components/MediaListView#MediaListView"
+        }
+      }
+    }
   },
   access: {
     create: requireContentMutation,
@@ -67,7 +77,7 @@ export const Media: CollectionConfig = {
       admin: {
         position: "sidebar",
         description:
-          "Approved public is required before the file can appear on the public site. The importer sets Needs alt text for images awaiting a description."
+          "Draft and Private stay off the public site. Needs alt text and Approved public both appear publicly — Needs alt text just keeps the image in the dashboard queue as a reminder to add a description."
       }
     },
     {
