@@ -26,6 +26,7 @@ import { NowPage } from "./globals/NowPage";
 import { migrations } from "./migrations";
 import { SiteSettings } from "./globals/SiteSettings";
 import { createMediaStoragePlugin } from "./storage/s3";
+import { pasteImageUploadFeature } from "./editor/pasteImageUploadFeature";
 import { maxMediaUploadBytes } from "./validation/content.mjs";
 
 const filename = fileURLToPath(import.meta.url);
@@ -126,7 +127,11 @@ export default buildConfig({
     // environments (Lambda cold start); a no-op check when none are pending.
     prodMigrations: migrations
   }),
-  editor: lexicalEditor(),
+  editor: lexicalEditor({
+    // Adds the paste-image handler (editor/pasteImageUploadFeature) alongside
+    // every default feature — nothing is dropped, one behaviour is appended.
+    features: ({ defaultFeatures }) => [...defaultFeatures, pasteImageUploadFeature()]
+  }),
   globals: [SiteSettings, NowPage],
   plugins: [createMediaStoragePlugin(config)],
   secret: config.payloadSecret,
