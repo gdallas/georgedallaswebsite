@@ -31,9 +31,23 @@ const featuredProjects = [...projects]
   .slice(0, 3);
 const hasTimeline = timelineEntries.length > 0;
 
+// The Now panel leads with the current focus; the remaining facets fill in
+// underneath, but only the ones George has actually filled in.
+const nowFacets = nowPage
+  ? ([
+      ["Working on", nowPage.work],
+      ["Reading", nowPage.reading],
+      ["Listening", nowPage.listening],
+      ["Watching", nowPage.watching],
+      ["Personal", nowPage.personal]
+    ] as const).filter(([, value]) => value)
+  : [];
+
 function formatDate(value: string | null | undefined) {
   return value ? new Date(value).toLocaleDateString("en-CA", { dateStyle: "long" }) : "";
 }
+
+const nowUpdated = formatDate(nowPage?.updatedAt);
 ---
 
 <BaseLayout title="George Dallas - AI engineer, therapist, systems thinker" description={description} jsonLd={jsonLd} searchable={false}>
@@ -74,6 +88,36 @@ function formatDate(value: string | null | undefined) {
 
   <hr class="cc-divider" />
 
+  <section aria-labelledby="now-heading">
+    <div class="section-head">
+      <h2 id="now-heading" class="cc-heading cc-heading--section">Now</h2>
+      <a class="section-link" href="/now">The full update</a>
+    </div>
+    {
+      nowPage?.currentFocus ? (
+        <div class="now-panel">
+          <p class="cc-eyebrow now-panel__eyebrow">Currently focused on</p>
+          <p class="now-panel__focus">{nowPage.currentFocus}</p>
+          {nowFacets.length > 0 && (
+            <dl class="now-panel__facets">
+              {nowFacets.map(([label, value]) => (
+                <div class="now-panel__facet">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {nowUpdated && <p class="now-panel__meta">Updated {nowUpdated}</p>}
+        </div>
+      ) : (
+        <p class="cc-muted">A living snapshot of what I'm focused on - the next update lands on the Now page.</p>
+      )
+    }
+  </section>
+
+  <hr class="cc-divider" />
+
   <section aria-labelledby="writing-heading">
     <div class="section-head">
       <h2 id="writing-heading" class="cc-heading cc-heading--section">Recent writing</h2>
@@ -100,22 +144,6 @@ function formatDate(value: string | null | undefined) {
         </ul>
       ) : (
         <p class="cc-muted">The first essays are on their way - the writing page will fill up soon.</p>
-      )
-    }
-  </section>
-
-  <hr class="cc-divider" />
-
-  <section aria-labelledby="now-heading">
-    <div class="section-head">
-      <h2 id="now-heading" class="cc-heading cc-heading--section">Now</h2>
-      <a class="section-link" href="/now">The full update</a>
-    </div>
-    {
-      nowPage?.currentFocus ? (
-        <p class="now-focus">{nowPage.currentFocus}</p>
-      ) : (
-        <p class="cc-muted">A living snapshot of what I'm focused on - the next update lands on the Now page.</p>
       )
     }
   </section>
@@ -315,11 +343,65 @@ function formatDate(value: string | null | undefined) {
     margin-block-end: 0.5rem;
   }
 
-  .now-focus {
-    margin: 1.25rem 0 0;
-    padding-inline-start: 1rem;
+  .now-panel {
+    margin-block-start: 1.25rem;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    border: 1px solid var(--border);
     border-inline-start: 3px solid var(--accent);
-    font-size: 1.1rem;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--surface-raised) 42%, var(--surface)),
+      var(--surface)
+    );
+    box-shadow: var(--shadow-card);
+  }
+
+  .now-panel__eyebrow {
+    margin: 0 0 0.65rem;
+  }
+
+  .now-panel__focus {
+    margin: 0;
+    max-width: 42rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 1rem + 1.6vw, 1.95rem);
+    line-height: 1.35;
     color: var(--text-strong);
+    text-wrap: balance;
+  }
+
+  .now-panel__facets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1.1rem 1.75rem;
+    margin: 1.75rem 0 0;
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid var(--border);
+  }
+
+  .now-panel__facet dt {
+    margin-block-end: 0.35rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .now-panel__facet dd {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+    white-space: pre-line;
+  }
+
+  .now-panel__meta {
+    margin: 1.5rem 0 0;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.05em;
   }
 </style>
