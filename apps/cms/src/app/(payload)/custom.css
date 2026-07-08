@@ -614,3 +614,248 @@ html[data-theme='dark'] {
   --gdw-capture-btn-text: var(--gdw-accent-ink);
   --gdw-capture-btn-hover: var(--gdw-accent-hover);
 }
+
+/* ---- Content-first list views (GDW-061) ----------------------------------
+   Posts and pages read as a body of work: the title is the one line that
+   matters (display serif), status and visibility drop into the instrument
+   register as quiet dotted chips, and the dates recede into mono. Media
+   becomes a visual library — a responsive thumbnail grid rendered by the
+   MediaListView component (see components/MediaListView.tsx); its card styling
+   lives at the foot of this block. All three are scoped by the collection
+   modifier so system tables stay stock. Colours reference Payload's own ramps
+   so the theme-contrast test's step counts are untouched. */
+
+/* Roomier rows: the contents page breathes, it is not a spreadsheet. */
+.collection-list--posts .table td,
+.collection-list--pages .table td {
+  padding-top: calc(var(--base) * 0.7);
+  padding-bottom: calc(var(--base) * 0.7);
+  vertical-align: middle;
+}
+
+/* The title is the anchor: reading-size serif, not an underlined link. */
+.collection-list--posts .cell-title a,
+.collection-list--pages .cell-title a {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 540;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--theme-elevation-800);
+  text-decoration: none;
+}
+
+.collection-list--posts .cell-title a:hover,
+.collection-list--pages .cell-title a:hover {
+  color: var(--gdw-accent-day);
+  text-decoration: none;
+}
+
+html[data-theme='dark'] .collection-list--posts .cell-title a:hover,
+html[data-theme='dark'] .collection-list--pages .cell-title a:hover {
+  color: var(--gdw-accent);
+}
+
+/* Status, visibility, and (pages) template read as quiet instrument chips. */
+.collection-list--posts .cell-status > span,
+.collection-list--posts .cell-visibility > span,
+.collection-list--pages .cell-status > span,
+.collection-list--pages .cell-visibility > span,
+.collection-list--pages .cell-template > span {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--base) * 0.35);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0.2em 0.6em;
+  border-radius: 999px;
+  border: 1px solid var(--theme-elevation-200);
+  background: var(--theme-elevation-50);
+  color: var(--theme-elevation-650);
+}
+
+/* A leading dot carries the colour so the label text stays high-contrast. */
+.collection-list--posts .cell-status > span::before,
+.collection-list--posts .cell-visibility > span::before,
+.collection-list--pages .cell-status > span::before,
+.collection-list--pages .cell-visibility > span::before {
+  content: '';
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--theme-elevation-400);
+}
+
+.cell-status .selected--published::before {
+  background: var(--color-success-500);
+}
+.cell-status .selected--scheduled::before {
+  background: var(--color-warning-500);
+}
+.cell-status .selected--in_review::before {
+  background: var(--color-warning-400);
+}
+.cell-status .selected--archived::before {
+  background: var(--theme-elevation-350);
+}
+.cell-visibility .selected--public::before {
+  background: var(--color-success-500);
+}
+.cell-visibility .selected--unlisted::before {
+  background: var(--color-warning-400);
+}
+
+/* Dates recede: mono, small, secondary. */
+.collection-list--posts .cell-publishedAt,
+.collection-list--posts .cell-updatedAt,
+.collection-list--pages .cell-updatedAt {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--theme-elevation-500);
+}
+
+/* ---- Media: a visual library (GDW-061) ---------------------------------- */
+.gdw-media-grid {
+  list-style: none;
+  margin: 0;
+  padding: calc(var(--base) * 0.25) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(9rem, 22vw, 12rem), 1fr));
+  gap: calc(var(--base) * 1.15);
+}
+
+.gdw-media-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--base) * 0.35);
+  min-width: 0;
+}
+
+.gdw-media-card__thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 7px;
+  background: var(--theme-elevation-100);
+  border: 1px solid var(--theme-elevation-150);
+  transition: border-color 0.15s ease;
+}
+
+.gdw-media-card__thumb:hover {
+  border-color: var(--theme-elevation-300);
+}
+
+/* Payload's Thumbnail renders a .thumbnail wrapper (img for images, an svg
+   file icon otherwise); either way, fill the frame. */
+.gdw-media-card__thumb .thumbnail,
+.gdw-media-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+.gdw-media-card__thumb .thumbnail svg {
+  width: 40%;
+  height: 40%;
+  margin: auto;
+}
+
+/* Review state as a corner badge over the thumbnail. */
+.gdw-media-card__badge {
+  position: absolute;
+  top: calc(var(--base) * 0.4);
+  left: calc(var(--base) * 0.4);
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2em 0.5em;
+  border-radius: 4px;
+  background: var(--theme-elevation-0);
+  color: var(--theme-elevation-700);
+  border: 1px solid var(--theme-elevation-200);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+
+.gdw-media-card__badge--public {
+  background: var(--color-success-500);
+  color: var(--color-success-50);
+  border-color: transparent;
+}
+.gdw-media-card__badge--needs_alt_text {
+  background: var(--color-warning-500);
+  color: var(--color-warning-50);
+  border-color: transparent;
+}
+.gdw-media-card__badge--private {
+  background: var(--theme-elevation-700);
+  color: var(--theme-elevation-0);
+  border-color: transparent;
+}
+
+/* Selection checkbox, top-right, legible over any thumbnail. */
+.gdw-media-card__select {
+  position: absolute;
+  top: calc(var(--base) * 0.4);
+  right: calc(var(--base) * 0.4);
+  z-index: 2;
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.35rem;
+  cursor: pointer;
+  border-radius: 4px;
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-elevation-300);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+
+.gdw-media-card__select input {
+  margin: auto;
+  cursor: pointer;
+}
+
+.gdw-media-card[data-selected='true'] .gdw-media-card__thumb {
+  border-color: var(--color-success-500);
+  box-shadow: 0 0 0 2px var(--color-success-500);
+}
+
+.gdw-media-card__name {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--theme-elevation-800);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gdw-media-card__name:hover {
+  color: var(--gdw-accent-day);
+}
+
+html[data-theme='dark'] .gdw-media-card__name:hover {
+  color: var(--gdw-accent);
+}
+
+.gdw-media-card__alt {
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--theme-elevation-500);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.gdw-media-card__alt--empty {
+  font-style: italic;
+  color: var(--theme-elevation-450);
+}
