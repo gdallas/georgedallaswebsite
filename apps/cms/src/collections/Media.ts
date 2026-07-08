@@ -13,7 +13,17 @@ export const Media: CollectionConfig = {
       "Images and files, stored in S3 and served through CloudFront. Files up to 4 MB; drag images straight into a post body to upload them.",
     defaultColumns: ["filename", "alt", "reviewStatus", "updatedAt"],
     listSearchableFields: ["alt", "filename", "caption"],
-    useAsTitle: "filename"
+    useAsTitle: "filename",
+    components: {
+      views: {
+        // GDW-061: render the media list as a thumbnail grid (review-state
+        // badges, selection, bulk upload preserved) by swapping only the list
+        // table. See components/MediaListView.tsx.
+        list: {
+          Component: "/components/MediaListView#MediaListView"
+        }
+      }
+    }
   },
   access: {
     create: requireContentMutation,
