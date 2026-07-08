@@ -27,6 +27,20 @@ editor code:
   ceiling so that message — not an opaque network error — is the one that
   fires (see `docs/runbooks/cms-hosting.md`). Larger files would need
   presigned client uploads, a documented follow-up, not a raised cap.
+- **Pasting an image copied from the web** (GDW-064): when the clipboard
+  carries `text/html` (copying from a browser or most apps does), Lexical
+  bails on the file path, imports the `<img>` as a *pending* upload node,
+  and the browser cannot download the remote image (CORS) — historically the
+  node stayed pending and the save died with "not a valid upload ID". A
+  `beforeValidate` hook on posts/pages
+  (`src/validation/richTextUploads.mjs`) now downloads the image
+  server-side (image mime types only, 4 MB cap, 8 s timeout, private hosts
+  blocked outside local dev), creates the media document (altless → the
+  needs-alt-text queue), and rewrites the node into a real reference.
+  Anything unresolvable is stripped so a draft can always save; the pasted
+  image just disappears rather than wedging the document. This is the same
+  trust decision as the WordPress importer's media download; the media
+  form's `pasteURL` stays disabled.
 
 ## Resources
 

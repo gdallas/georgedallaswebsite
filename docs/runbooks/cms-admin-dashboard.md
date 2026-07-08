@@ -40,10 +40,11 @@ The secondary pill row holds quick link, project, timeline entry, and bulk media
 
 ## Content sections
 
-- **Recent drafts** — newest `draft`/`in_review` posts and pages by `updatedAt`.
-- **Recently published** — newest `published` posts and pages by `publishedAt`.
-- **Scheduled** — `scheduled` posts in publish order.
+- **Recent drafts** — the four newest `draft`/`in_review` posts and pages by `updatedAt` (capped per GDW-064 feedback: short list, not a column).
+- **Recently published / Scheduled** — no longer dashboard sections (GDW-064); they live as secondary pills linking to the filtered posts list.
 - **Needs attention** — one consolidated list built by `buildAttentionItems`: media missing alt text, unresolved import issues, imported items awaiting review, and new contact messages, each linking to the filtered list that resolves it. Zero-count entries are dropped; when everything is clear it says so.
+
+**Filter links must percent-encode their brackets** (build them with `collectionListHref`): Lambda Function URLs reject raw `where[...]` query strings with a bare 400 `{"message":null}`, which looks like a broken page while working fine locally (GDW-064).
 - **WordPress import** — renders only while unresolved migration work exists (`hasUnresolvedImportWork`: unresolved import issues or items not yet approved). Its detail queries are skipped entirely when hidden. Once the cleanup queue is emptied the panel disappears for good; the import runbook (`docs/runbooks/wordpress-import.md`) remains the way back in.
 
 ## RBAC and safety

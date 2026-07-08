@@ -129,6 +129,7 @@ A ticket is not done unless all relevant items below are satisfied:
 | 60 | GDW-060 | Focus writing view | A distraction-free writing surface that rivals Ghost/iA |
 | 61 | GDW-061 | Content-first list views | Posts read as a body of work, media as a visual library |
 | 63 | GDW-063 | Dashboard quick capture | Start a post, Now update, image, or book from the landing screen without navigating |
+| 64 | GDW-064 | Dashboard and editor feedback round | Full-width capture rows, slimmer dashboard, filter-link 400s fixed, pasted web images resolve server-side |
 
 ---
 

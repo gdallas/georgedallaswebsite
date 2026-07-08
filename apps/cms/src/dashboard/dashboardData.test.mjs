@@ -38,7 +38,7 @@ describe("admin dashboard data", () => {
         ["Continue latest draft", "/admin/collections/posts/create"],
         [
           "Review inbox",
-          "/admin/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean"
+          "/admin/collections/contact-messages?where%5Bstatus%5D%5Bequals%5D=new&where%5BspamStatus%5D%5Bequals%5D=clean"
         ]
       ]
     );
@@ -53,9 +53,22 @@ describe("admin dashboard data", () => {
         "/admin/collections/links/create",
         "/admin/collections/projects/create",
         "/admin/collections/timeline-entries/create",
-        "/admin/collections/media/create"
+        "/admin/collections/media/create",
+        "/admin/collections/posts?where%5Bstatus%5D%5Bequals%5D=published",
+        "/admin/collections/posts?where%5Bstatus%5D%5Bequals%5D=scheduled"
       ]
     );
+  });
+
+  it("percent-encodes filter brackets so links survive the Lambda Function URL", () => {
+    // Raw `where[...]` in a hard link 400s at the Function URL with a bare
+    // {"message":null}; every generated filter href must be pre-encoded.
+    const { primary, secondary } = buildQuickActions("/admin", undefined);
+    const all = [...primary, ...secondary].map((action) => action.href);
+    for (const href of all) {
+      assert.ok(!href.includes("["), `unencoded bracket in ${href}`);
+      assert.ok(!href.includes("]"), `unencoded bracket in ${href}`);
+    }
   });
 
   it("scopes dashboard queries to the right statuses", () => {
@@ -135,9 +148,18 @@ describe("needs attention", () => {
         "1 new contact message"
       ]
     );
-    assert.equal(items[0].href, "/admin/collections/media?where[reviewStatus][equals]=needs_alt_text");
-    assert.equal(items[1].href, "/admin/collections/import-issues?where[resolved][equals]=false");
-    assert.equal(items[2].href, "/admin/collections/imported-items?where[reviewStatus][not_equals]=approved");
+    assert.equal(
+      items[0].href,
+      "/admin/collections/media?where%5BreviewStatus%5D%5Bequals%5D=needs_alt_text"
+    );
+    assert.equal(
+      items[1].href,
+      "/admin/collections/import-issues?where%5Bresolved%5D%5Bequals%5D=false"
+    );
+    assert.equal(
+      items[2].href,
+      "/admin/collections/imported-items?where%5BreviewStatus%5D%5Bnot_equals%5D=approved"
+    );
     assert.equal(items[3].href, contactInboxHref("/admin"));
   });
 });
@@ -146,7 +168,7 @@ describe("contact inbox helpers", () => {
   it("links to new clean messages", () => {
     assert.equal(
       contactInboxHref("/admin"),
-      "/admin/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean"
+      "/admin/collections/contact-messages?where%5Bstatus%5D%5Bequals%5D=new&where%5BspamStatus%5D%5Bequals%5D=clean"
     );
   });
 });
@@ -161,11 +183,11 @@ describe("site health helpers", () => {
   it("builds filtered content-issues list links", () => {
     assert.equal(
       contentIssuesHref("/admin"),
-      "/admin/collections/content-issues?where[status][equals]=open"
+      "/admin/collections/content-issues?where%5Bstatus%5D%5Bequals%5D=open"
     );
     assert.equal(
       contentIssuesHref("/admin", "broken_link"),
-      "/admin/collections/content-issues?where[status][equals]=open&where[kind][equals]=broken_link"
+      "/admin/collections/content-issues?where%5Bstatus%5D%5Bequals%5D=open&where%5Bkind%5D%5Bequals%5D=broken_link"
     );
   });
 

@@ -101,15 +101,17 @@ function PostCapture({ adminRoute, apiRoute }: CardProps) {
   return (
     <form className={styles.captureCard} onSubmit={submit}>
       <span className={styles.captureKicker}>New post</span>
-      <input
-        aria-label="New post title"
-        autoFocus
-        className={`${styles.captureInput} ${styles.captureTitleInput}`}
-        onChange={(event) => setTitle(event.target.value)}
-        placeholder="A title to start writing…"
-        type="text"
-        value={title}
-      />
+      <div className={styles.captureFields}>
+        <input
+          aria-label="New post title"
+          autoFocus
+          className={`${styles.captureInput} ${styles.captureTitleInput}`}
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="A title to start writing…"
+          type="text"
+          value={title}
+        />
+      </div>
       <button className={styles.captureSubmit} disabled={busy || !title.trim()} type="submit">
         {busy ? "Starting…" : "Start draft"}
       </button>
@@ -155,14 +157,16 @@ function NowCapture({ adminRoute, apiRoute, initialFocus }: CardProps & { initia
   return (
     <form className={styles.captureCard} onSubmit={submit}>
       <span className={styles.captureKicker}>Now</span>
-      <textarea
-        aria-label="Current focus for the Now page"
-        className={`${styles.captureInput} ${styles.captureTextarea}`}
-        onChange={(event) => setFocusText(event.target.value)}
-        placeholder="What are you focused on right now?"
-        rows={3}
-        value={focusText}
-      />
+      <div className={styles.captureFields}>
+        <textarea
+          aria-label="Current focus for the Now page"
+          className={`${styles.captureInput} ${styles.captureTextarea}`}
+          onChange={(event) => setFocusText(event.target.value)}
+          placeholder="What are you focused on right now?"
+          rows={2}
+          value={focusText}
+        />
+      </div>
       <button
         className={styles.captureSubmit}
         disabled={busy || !focusText.trim() || focusText === initialFocus}
@@ -217,22 +221,24 @@ function BookCapture({ adminRoute, apiRoute }: CardProps) {
   return (
     <form className={styles.captureCard} onSubmit={submit}>
       <span className={styles.captureKicker}>Bookshelf</span>
-      <input
-        aria-label="Book title"
-        className={styles.captureInput}
-        onChange={(event) => setTitle(event.target.value)}
-        placeholder="Book title…"
-        type="text"
-        value={title}
-      />
-      <input
-        aria-label="Book author"
-        className={styles.captureInput}
-        onChange={(event) => setAuthor(event.target.value)}
-        placeholder="Author…"
-        type="text"
-        value={author}
-      />
+      <div className={styles.captureFields}>
+        <input
+          aria-label="Book title"
+          className={styles.captureInput}
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Book title…"
+          type="text"
+          value={title}
+        />
+        <input
+          aria-label="Book author"
+          className={styles.captureInput}
+          onChange={(event) => setAuthor(event.target.value)}
+          placeholder="Author…"
+          type="text"
+          value={author}
+        />
+      </div>
       <button
         className={styles.captureSubmit}
         disabled={busy || !title.trim() || !author.trim()}
@@ -301,23 +307,25 @@ function ImageCapture({ adminRoute, apiRoute }: CardProps) {
   return (
     <div className={styles.captureCard}>
       <span className={styles.captureKicker}>Images</span>
-      <label
-        className={styles.captureDrop}
-        data-active={dragActive ? "true" : "false"}
-        htmlFor="quick-capture-images"
-        onDragLeave={() => setDragActive(false)}
-        onDragOver={(event) => {
-          event.preventDefault();
-          setDragActive(true);
-        }}
-        onDrop={(event) => {
-          event.preventDefault();
-          setDragActive(false);
-          void handleFiles(event.dataTransfer.files);
-        }}
-      >
-        Drop images here, or browse. New images join the alt-text queue.
-      </label>
+      <div className={styles.captureFields}>
+        <label
+          className={styles.captureDrop}
+          data-active={dragActive ? "true" : "false"}
+          htmlFor="quick-capture-images"
+          onDragLeave={() => setDragActive(false)}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragActive(true);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            setDragActive(false);
+            void handleFiles(event.dataTransfer.files);
+          }}
+        >
+          Drop images here, or browse. New images join the alt-text queue.
+        </label>
+      </div>
       <input
         accept={quickImageMimeTypes.join(",")}
         className={styles.captureDropInput}
