@@ -36,7 +36,11 @@ describe("publishing beforeChange hook", () => {
     assert.ok(thrown instanceof FakeAPIError, "expected an APIError, got a plain throw");
     assert.equal(thrown.status, 400);
     assert.equal(thrown.isPublic, true, "the reason must reach the admin UI");
-    assert.match(thrown.message, /publishedAt date/);
+    // Every unfilled field is named, not just the first.
+    assert.match(thrown.message, /a publish date/);
+    assert.match(thrown.message, /an excerpt/);
+    assert.match(thrown.message, /an SEO title/);
+    assert.match(thrown.message, /an SEO description/);
   });
 
   it("names the missing metadata a post needs before publishing", () => {
@@ -46,7 +50,7 @@ describe("publishing beforeChange hook", () => {
           data: { status: "published", visibility: "public", publishedAt: "2026-01-01T00:00:00.000Z" },
           originalDoc: { status: "draft", visibility: "private" }
         }),
-      /requires excerpt/
+      /To publish, fill in an excerpt, an SEO title, and an SEO description\./
     );
   });
 

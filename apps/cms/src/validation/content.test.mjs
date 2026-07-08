@@ -88,8 +88,11 @@ describe("content validation", () => {
     );
   });
 
-  it("rejects invalid publish states", () => {
-    assert.equal(validatePublishingState({ status: "published", visibility: "public" }), "Published content requires a publishedAt date.");
+  it("rejects invalid publish states, listing every unfilled field", () => {
+    assert.equal(
+      validatePublishingState({ status: "published", visibility: "public" }),
+      "To publish, fill in a publish date, an SEO title, and an SEO description."
+    );
     assert.equal(
       validatePublishingState({
         publishedAt: "2026-01-01T00:00:00.000Z",
@@ -108,7 +111,7 @@ describe("content validation", () => {
         status: "scheduled",
         visibility: "public"
       }, { now: "2026-06-12T00:00:00.000Z" }),
-      "Scheduled content requires a future publishedAt date."
+      "To schedule this, fill in a future publish date so it can publish automatically."
     );
   });
 
@@ -120,7 +123,7 @@ describe("content validation", () => {
     };
     assert.equal(
       validatePublishingState({ ...base, seoTitle: "Title" }, { now: "2026-06-12T00:00:00.000Z" }),
-      "Scheduled content requires seoDescription so it can publish automatically."
+      "To schedule this, fill in an SEO description so it can publish automatically."
     );
     assert.equal(
       validatePublishingState(
