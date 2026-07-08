@@ -7,6 +7,7 @@ import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
 import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
 import { collectionPreview } from "../preview/collectionPreview";
+import { createResolvePastedUploadsHook } from "../validation/richTextUploads.mjs";
 
 export const Posts: CollectionConfig = {
   slug: "posts",
@@ -193,6 +194,9 @@ export const Posts: CollectionConfig = {
   hooks: {
     afterChange: [auditCollectionChanges("posts"), publishSignalsAfterChange("posts", "dated")],
     afterDelete: [auditCollectionDeletes("posts"), publishSignalsAfterDelete("posts", "dated")],
+    // Runs before field validation so a pasted-image pending node is
+    // resolved (or stripped) before the upload field can reject it.
+    beforeValidate: [createResolvePastedUploadsHook()],
     beforeChange: [
       createPublishingBeforeChangeHook({
         computeReadingTime: true,

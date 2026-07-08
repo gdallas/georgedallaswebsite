@@ -76,10 +76,17 @@ export function hasUnresolvedImportWork({ unresolvedIssues = 0, awaitingReview =
 // --- Admin list links ---
 
 // Build an admin collection-list URL with `where[field][operator]=value`
-// filters, matching the query syntax Payload's list view reads.
+// filters, matching the query syntax Payload's list view reads. The brackets
+// are percent-encoded: Lambda Function URLs reject raw brackets in query
+// strings with a bare 400 {"message":null}, so hard links with literal
+// `where[...]` die at the infrastructure while looking fine locally
+// (GDW-064). Payload's list view decodes them right back.
 export function collectionListHref(adminRoute, collection, filters = {}) {
   const params = Object.entries(filters)
-    .map(([field, [operator, value]]) => `where[${field}][${operator}]=${encodeURIComponent(value)}`)
+    .map(
+      ([field, [operator, value]]) =>
+        `where%5B${field}%5D%5B${operator}%5D=${encodeURIComponent(value)}`
+    )
     .join("&");
 
   const base = `${adminRoute}/collections/${collection}`;

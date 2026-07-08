@@ -11,9 +11,7 @@ import {
   mergeRecentDocs,
   metadataIssueKinds,
   newCleanContactMessagesWhere,
-  openContentIssuesByKindsWhere,
-  recentlyPublishedWhere,
-  scheduledWhere
+  openContentIssuesByKindsWhere
 } from "../dashboard/dashboardData.mjs";
 import {
   approvedWhere,
@@ -85,15 +83,13 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
       ...(where ? { where: where as Where } : {})
     });
 
-  const [draftPosts, draftPages, publishedPosts, publishedPages, scheduledPosts, mediaNeedingAltText] =
-    await Promise.all([
-      find("posts", draftsWhere(), "-updatedAt", 5),
-      find("pages", draftsWhere(), "-updatedAt", 5),
-      find("posts", recentlyPublishedWhere(), "-publishedAt", 5),
-      find("pages", recentlyPublishedWhere(), "-publishedAt", 5),
-      find("posts", scheduledWhere(), "publishedAt", 5),
-      find("media", mediaNeedingAltTextWhere(), "-updatedAt", 1)
-    ]);
+  // Recently published and Scheduled live behind secondary pills now
+  // (GDW-064), so only drafts and the attention counts are queried.
+  const [draftPosts, draftPages, mediaNeedingAltText] = await Promise.all([
+    find("posts", draftsWhere(), "-updatedAt", 4),
+    find("pages", draftsWhere(), "-updatedAt", 4),
+    find("media", mediaNeedingAltTextWhere(), "-updatedAt", 1)
+  ]);
 
   const [
     unresolvedIssueCount,
@@ -183,16 +179,7 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
       { collection: "pages", docs: draftPages.docs }
     ],
     "updatedAt",
-    6
-  ) as MergedDoc[];
-
-  const recentlyPublished = mergeRecentDocs(
-    [
-      { collection: "posts", docs: publishedPosts.docs },
-      { collection: "pages", docs: publishedPages.docs }
-    ],
-    "publishedAt",
-    6
+    4
   ) as MergedDoc[];
 
   return (
@@ -239,30 +226,6 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
             Recent drafts
           </h2>
           <DocList adminRoute={adminRoute} dateField="updatedAt" docs={recentDrafts} emptyText="No drafts in progress." />
-        </section>
-
-        <section className={styles.section} aria-labelledby="dashboard-published">
-          <h2 id="dashboard-published" className={styles.sectionTitle}>
-            Recently published
-          </h2>
-          <DocList
-            adminRoute={adminRoute}
-            dateField="publishedAt"
-            docs={recentlyPublished}
-            emptyText="Nothing published yet."
-          />
-        </section>
-
-        <section className={styles.section} aria-labelledby="dashboard-scheduled">
-          <h2 id="dashboard-scheduled" className={styles.sectionTitle}>
-            Scheduled
-          </h2>
-          <DocList
-            adminRoute={adminRoute}
-            dateField="publishedAt"
-            docs={(scheduledPosts.docs as DashboardDoc[]).map((doc) => ({ ...doc, collection: "posts" }))}
-            emptyText="No scheduled posts. Give a draft the Scheduled status and a future publish date to queue it."
-          />
         </section>
 
         <section className={styles.section} aria-labelledby="dashboard-attention">

@@ -7,6 +7,7 @@ import { slugField } from "../fields/slug";
 import { createPublishingBeforeChangeHook } from "../hooks/publishing";
 import { publishSignalsAfterChange, publishSignalsAfterDelete } from "../hooks/publishSignals";
 import { collectionPreview } from "../preview/collectionPreview";
+import { createResolvePastedUploadsHook } from "../validation/richTextUploads.mjs";
 
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -129,6 +130,8 @@ export const Pages: CollectionConfig = {
   hooks: {
     afterChange: [auditCollectionChanges("pages"), publishSignalsAfterChange("pages", "dated")],
     afterDelete: [auditCollectionDeletes("pages"), publishSignalsAfterDelete("pages", "dated")],
+    // See Posts: resolve pasted-image pending nodes before validation.
+    beforeValidate: [createResolvePastedUploadsHook()],
     beforeChange: [createPublishingBeforeChangeHook()]
   }
 };
