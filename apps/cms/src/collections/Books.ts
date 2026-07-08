@@ -37,7 +37,19 @@ export const Books: CollectionConfig = {
       name: "isbn",
       type: "text",
       index: true,
-      admin: { description: "Optional ISBN; lookup automation arrives in GDW-046." }
+      admin: { description: "Type or paste an ISBN to look up the title, author, and cover below." }
+    },
+    {
+      // Live ISBN lookup helper (GDW-046). UI field: renders under the ISBN,
+      // stores nothing, no migration. Runs in the browser (the Lambda has no
+      // egress) and only offers suggestions — manual entry is untouched.
+      name: "isbnLookup",
+      type: "ui",
+      admin: {
+        components: {
+          Field: "/components/IsbnLookupField#IsbnLookupField"
+        }
+      }
     },
     {
       name: "coverImage",
