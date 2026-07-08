@@ -92,10 +92,10 @@ describe("import panel visibility", () => {
 });
 
 describe("import review admin links", () => {
-  it("builds a filtered collection list URL", () => {
+  it("builds a filtered collection list URL with brackets encoded for the Function URL", () => {
     assert.equal(
       collectionListHref("/admin", "import-issues", { kind: ["equals", "broken_embed"] }),
-      "/admin/collections/import-issues?where[kind][equals]=broken_embed"
+      "/admin/collections/import-issues?where%5Bkind%5D%5Bequals%5D=broken_embed"
     );
   });
 
@@ -106,19 +106,22 @@ describe("import review admin links", () => {
   it("links the needs-review and ready-to-publish queues", () => {
     assert.equal(
       needsReviewHref("/admin"),
-      "/admin/collections/imported-items?where[reviewStatus][not_equals]=approved"
+      "/admin/collections/imported-items?where%5BreviewStatus%5D%5Bnot_equals%5D=approved"
     );
     assert.equal(
       readyToPublishHref("/admin"),
-      "/admin/collections/imported-items?where[reviewStatus][equals]=approved"
+      "/admin/collections/imported-items?where%5BreviewStatus%5D%5Bequals%5D=approved"
     );
   });
 
   it("links the unresolved-issue queue and per-kind filters", () => {
-    assert.equal(unresolvedIssuesHref("/admin"), "/admin/collections/import-issues?where[resolved][equals]=false");
+    assert.equal(
+      unresolvedIssuesHref("/admin"),
+      "/admin/collections/import-issues?where%5Bresolved%5D%5Bequals%5D=false"
+    );
     assert.equal(
       issuesByKindHref("/admin", "duplicate_slug"),
-      "/admin/collections/import-issues?where[kind][equals]=duplicate_slug"
+      "/admin/collections/import-issues?where%5Bkind%5D%5Bequals%5D=duplicate_slug"
     );
   });
 });

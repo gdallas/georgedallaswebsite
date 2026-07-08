@@ -1,4 +1,4 @@
-import { needsReviewHref, unresolvedIssuesHref } from "./importReview.mjs";
+import { collectionListHref, needsReviewHref, unresolvedIssuesHref } from "./importReview.mjs";
 
 export const draftStatuses = ["draft", "in_review"];
 
@@ -20,7 +20,17 @@ export function buildQuickActions(adminRoute, latestDraft) {
       { label: "Add quick link", href: `${adminRoute}/collections/links/create` },
       { label: "Add project", href: `${adminRoute}/collections/projects/create` },
       { label: "Add timeline entry", href: `${adminRoute}/collections/timeline-entries/create` },
-      { label: "Bulk upload media", href: `${adminRoute}/collections/media/create` }
+      { label: "Bulk upload media", href: `${adminRoute}/collections/media/create` },
+      // Recently published and Scheduled left the dashboard body (GDW-064);
+      // these pills keep the filtered lists one click away.
+      {
+        label: "Recently published",
+        href: collectionListHref(adminRoute, "posts", { status: ["equals", "published"] })
+      },
+      {
+        label: "Scheduled",
+        href: collectionListHref(adminRoute, "posts", { status: ["equals", "scheduled"] })
+      }
     ]
   };
 }
@@ -80,7 +90,10 @@ export function newCleanContactMessagesWhere() {
 }
 
 export function contactInboxHref(adminRoute) {
-  return `${adminRoute}/collections/contact-messages?where[status][equals]=new&where[spamStatus][equals]=clean`;
+  return collectionListHref(adminRoute, "contact-messages", {
+    status: ["equals", "new"],
+    spamStatus: ["equals", "clean"]
+  });
 }
 
 // One consolidated "Needs attention" list: alt text, import cleanup, and the
@@ -94,7 +107,7 @@ export function buildAttentionItems(adminRoute, counts) {
     const n = counts.mediaNeedingAltText;
     items.push({
       label: `${n} media ${plural(n, "item is", "items are")} missing alt text`,
-      href: `${adminRoute}/collections/media?where[reviewStatus][equals]=needs_alt_text`
+      href: collectionListHref(adminRoute, "media", { reviewStatus: ["equals", "needs_alt_text"] })
     });
   }
 
@@ -156,8 +169,11 @@ export function openContentIssuesByKindsWhere(kinds) {
 
 // Link to the content-issues list filtered to open issues, optionally of one kind.
 export function contentIssuesHref(adminRoute, kind) {
-  const base = `${adminRoute}/collections/content-issues?where[status][equals]=open`;
-  return kind ? `${base}&where[kind][equals]=${kind}` : base;
+  return collectionListHref(
+    adminRoute,
+    "content-issues",
+    kind ? { status: ["equals", "open"], kind: ["equals", kind] } : { status: ["equals", "open"] }
+  );
 }
 
 // Build the dashboard "Site health" tiles from pre-counted totals.
