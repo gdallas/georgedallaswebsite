@@ -184,7 +184,8 @@ export async function resolvePendingUploads(root, { allowPrivateHosts = false, c
 // Collection beforeValidate hook for posts/pages: runs before field
 // validation, so the rewrite happens before the upload field can reject a
 // pending node. Guards: image mime types only, the 4 MB media cap, an 8 s
-// timeout, and no private hosts outside local development.
+// timeout, and the shared media size cap (maxMediaUploadBytes), and no private
+// hosts outside local development.
 export function createResolvePastedUploadsHook() {
   return async (args) => {
     const data = args?.data;

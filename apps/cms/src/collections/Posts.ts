@@ -99,14 +99,15 @@ export const Posts: CollectionConfig = {
               type: "text",
               admin: {
                 description:
-                  "Title for search results and link previews. The public page falls back to the post title when previews render. Required before publishing."
+                  "Title for search results and link previews. Optional — leave blank to use the post title (the preview below shows what will be used)."
               }
             },
             {
               name: "seoDescription",
               type: "textarea",
               admin: {
-                description: "Description for search results and link previews. Required before publishing."
+                description:
+                  "Description for search results and link previews. Optional — leave blank to use the excerpt (the preview below shows what will be used)."
               }
             },
             {
@@ -201,7 +202,10 @@ export const Posts: CollectionConfig = {
       createPublishingBeforeChangeHook({
         APIError,
         computeReadingTime: true,
-        requiredMetadata: ["excerpt", "seoTitle", "seoDescription"]
+        // SEO title/description are no longer required to publish (George,
+        // 2026-07-08): the public page and the SEO preview fall back to the
+        // title/excerpt, so those are the suggested values.
+        requiredMetadata: ["excerpt"]
       })
     ]
   }

@@ -86,7 +86,7 @@ describe("quick capture: image gate", () => {
 
     const big = validateQuickImage({ name: "raw.png", type: "image/png", size: maxMediaUploadBytes + 1 });
     assert.match(big, /raw\.png/);
-    assert.match(big, /4 MB/);
+    assert.match(big, /10 MB/);
   });
 
   it("only offers image mime types to the file input", () => {

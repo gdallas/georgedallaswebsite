@@ -16,17 +16,24 @@ editor code:
   first, then decorative/caption/credit/source — all optional at this stage).
   Any *image* saved without alt text and not marked decorative is created
   with `reviewStatus = needs_alt_text` (`initialMediaReviewStatus`), which
-  puts it in the dashboard's Needs attention list immediately. Alt text
-  becomes a hard requirement when the media is flipped to **Approved
-  public** — which is also what the public site requires before it will
-  serve the file at all, so a forgotten alt can't leak into the public site.
+  puts it in the dashboard's Needs attention list immediately.
+- **"Show now, nudge alt later"** (George, 2026-07-08): the public site now
+  serves both `needs_alt_text` **and** `public` media
+  (`requirePublicOrContentReadMedia`), so an image pasted or embedded into a
+  post appears on the published page right away instead of silently vanishing
+  because it was never flipped to Approved public. `needs_alt_text` still sits
+  in the dashboard alt queue as the reminder to add a description; only
+  **Draft** and **Private** stay off the site. Alt text is still asked for and
+  is a hard requirement to *manually* mark something Approved public.
 - **Failure messages**: unsupported types are rejected against the
   collection's `mimeTypes` list; oversized files get "Media file exceeds the
-  4 MB upload limit…" from `validateMediaFileMetadata`. The 4 MB app cap is
-  deliberately below the Lambda Function URL's ~4.5 MB effective body
-  ceiling so that message — not an opaque network error — is the one that
-  fires (see `docs/runbooks/cms-hosting.md`). Larger files would need
-  presigned client uploads, a documented follow-up, not a raised cap.
+  10 MB upload limit…" from `validateMediaFileMetadata`. The 10 MB cap
+  (George, 2026-07-08) exceeds the Lambda Function URL's ~6 MB event ceiling,
+  so media now uploads **straight from the browser to S3 with a presigned URL**
+  (`storage/s3.ts` `clientUploads: true`) — the bytes never traverse the
+  Lambda. The media-bucket CORS must allow `PUT` from the admin origin
+  (`infra/src/media-foundation.mjs`); the metadata create + validation still
+  run server-side.
 - **Pasting an image copied from the web** (GDW-064): when the clipboard
   carries `text/html` (copying from a browser or most apps does), Lexical
   bails on the file path, imports the `<img>` as a *pending* upload node,

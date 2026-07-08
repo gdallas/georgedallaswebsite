@@ -19,6 +19,13 @@ needed.
   saving.** The hard "missing SEO description / missing social image" tasks are
   produced by the content checks (GDW-037), surfaced on the dashboard.
 
+**SEO fields are optional to publish (George, 2026-07-08).** `seoTitle` and
+`seoDescription` are no longer in the publishing hook's `requiredMetadata`
+(Posts require only an excerpt + publish date; Pages require neither). Left
+blank, the public page and this preview fall back to the title/excerpt — so the
+preview *is* the suggested value, and there is nothing to make up before
+publishing.
+
 ## Rules (mirror the public site — `apps/site/src/lib/seo.mjs`)
 
 - **Effective title:** `seoTitle` if set, else `title`.

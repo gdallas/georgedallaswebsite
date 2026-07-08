@@ -86,14 +86,15 @@ export const Pages: CollectionConfig = {
               type: "text",
               admin: {
                 description:
-                  "Title for search results and link previews. Falls back to the page title. Required before publishing."
+                  "Title for search results and link previews. Optional — leave blank to use the page title (the preview below shows what will be used)."
               }
             },
             {
               name: "seoDescription",
               type: "textarea",
               admin: {
-                description: "Description for search results and link previews. Required before publishing."
+                description:
+                  "Description for search results and link previews. Optional (the preview below shows what will be used)."
               }
             },
             {
@@ -132,6 +133,8 @@ export const Pages: CollectionConfig = {
     afterDelete: [auditCollectionDeletes("pages"), publishSignalsAfterDelete("pages", "dated")],
     // See Posts: resolve pasted-image pending nodes before validation.
     beforeValidate: [createResolvePastedUploadsHook()],
-    beforeChange: [createPublishingBeforeChangeHook({ APIError })]
+    // No required SEO metadata to publish (George, 2026-07-08): the page and
+    // the SEO preview fall back to the title, so it is the suggested value.
+    beforeChange: [createPublishingBeforeChangeHook({ APIError, requiredMetadata: [] })]
   }
 };
