@@ -19,6 +19,7 @@ export const COLLECTION_NAV_GROUPS = {
   pages: "Write",
   media: "Write",
   projects: "Library",
+  "github-repos": "Library",
   links: "Library",
   books: "Library",
   "timeline-entries": "Library",
@@ -31,6 +32,7 @@ export const COLLECTION_NAV_GROUPS = {
   "import-jobs": "WordPress import",
   "imported-items": "WordPress import",
   "import-issues": "WordPress import",
+  "github-sync-runs": "System",
   users: "System",
   "audit-events": "System"
 };

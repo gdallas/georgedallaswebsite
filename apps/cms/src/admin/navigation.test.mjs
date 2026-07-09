@@ -19,6 +19,7 @@ const REGISTERED_COLLECTIONS = [
   "pages",
   "media",
   "projects",
+  "github-repos",
   "links",
   "books",
   "timeline-entries",
@@ -31,6 +32,7 @@ const REGISTERED_COLLECTIONS = [
   "import-jobs",
   "imported-items",
   "import-issues",
+  "github-sync-runs",
   "users",
   "audit-events"
 ];
