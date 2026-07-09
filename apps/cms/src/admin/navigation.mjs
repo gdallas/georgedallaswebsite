@@ -34,6 +34,7 @@ export const COLLECTION_NAV_GROUPS = {
   "imported-items": "WordPress import",
   "import-issues": "WordPress import",
   "github-sync-runs": "System",
+  "analytics-events": "System",
   users: "System",
   "audit-events": "System"
 };

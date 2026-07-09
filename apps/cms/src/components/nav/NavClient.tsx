@@ -23,13 +23,14 @@ type Props = {
   groups: NavTierGroup[];
   navPreferences: NavPreferences | null;
   searchHref: string;
+  analyticsHref: string;
 };
 
 // Client half of the custom sidebar: active states need the pathname, and
 // NavGroup owns collapse animation + preference persistence. Links keep
 // Payload's stock nav__link classes (including the exact-match div and the
 // nav__link-indicator) so focus and active styling stay on the stock rails.
-export function NavClient({ groups, navPreferences, searchHref }: Props) {
+export function NavClient({ groups, navPreferences, searchHref, analyticsHref }: Props) {
   const pathname = usePathname();
 
   const renderLink = ({ href, id, label }: NavLinkItem, extraClass?: string) => {
@@ -77,6 +78,7 @@ export function NavClient({ groups, navPreferences, searchHref }: Props) {
       </div>
 
       {renderLink({ href: searchHref, id: "nav-search", label: "Search" }, "gdw-nav__search")}
+      {renderLink({ href: analyticsHref, id: "nav-analytics", label: "Analytics" }, "gdw-nav__search")}
 
       {/* Library and site tools: quiet, folded until asked for. */}
       {tier("quiet").map((group) => (

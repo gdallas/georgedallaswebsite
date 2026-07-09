@@ -11,6 +11,13 @@ import {
   jsonLdToString
 } from "../lib/seo.mjs";
 
+// Privacy-friendly analytics beacon (GDW-048). The collector lives on the CMS
+// (the only backend); baked in at build time from CMS_API_URL, empty when the
+// CMS isn't configured (CI build) so the beacon simply no-ops.
+const analyticsCollectorUrl = process.env.CMS_API_URL
+  ? `${process.env.CMS_API_URL.replace(/\/+$/, "")}/api/analytics/collect`
+  : "";
+
 export interface Props {
   title: string;
   description?: string;
@@ -85,6 +92,22 @@ const rssHref = absoluteUrl("/rss.xml", Astro.site);
       <slot />
     </main>
     <SiteFooter />
+    <script is:inline define:vars={{ analyticsCollectorUrl }}>
+      (function () {
+        try {
+          if (!analyticsCollectorUrl || !navigator.sendBeacon) return;
+          var path = location.pathname;
+          var data = { path: path, referrer: document.referrer || "" };
+          if (path === "/search") {
+            var q = new URLSearchParams(location.search).get("q");
+            if (q) data.query = q;
+          }
+          navigator.sendBeacon(analyticsCollectorUrl, new Blob([JSON.stringify(data)], { type: "text/plain" }));
+        } catch (e) {
+          /* analytics must never break the page */
+        }
+      })();
+    </script>
   </body>
 </html>
 

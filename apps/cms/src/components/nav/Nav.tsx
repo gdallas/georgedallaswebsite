@@ -100,6 +100,7 @@ export async function Nav(props: NavProps) {
     : null;
 
   const searchHref = formatAdminURL({ adminRoute, path: "/search" });
+  const analyticsHref = formatAdminURL({ adminRoute, path: "/analytics" });
   const accountHref = formatAdminURL({
     adminRoute,
     path: payload.config.admin.routes.account
@@ -108,7 +109,12 @@ export async function Nav(props: NavProps) {
   return (
     <NavShell>
       <nav aria-label="Site admin" className="nav__wrap">
-        <NavClient groups={groups} navPreferences={navPreferences} searchHref={searchHref} />
+        <NavClient
+          groups={groups}
+          navPreferences={navPreferences}
+          searchHref={searchHref}
+          analyticsHref={analyticsHref}
+        />
         <div className="nav__controls gdw-nav__footer">
           <div className="gdw-nav__identity">
             <BrandMark className="gdw-nav__mark" />

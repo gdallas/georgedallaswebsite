@@ -34,6 +34,7 @@ const REGISTERED_COLLECTIONS = [
   "imported-items",
   "import-issues",
   "github-sync-runs",
+  "analytics-events",
   "users",
   "audit-events"
 ];
