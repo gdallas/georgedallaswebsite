@@ -9,6 +9,8 @@ import { Categories } from "./collections/Categories";
 import { ContactMessages } from "./collections/ContactMessages";
 import { ContentChecks } from "./collections/ContentChecks";
 import { ContentIssues } from "./collections/ContentIssues";
+import { GithubRepos } from "./collections/GithubRepos";
+import { GithubSyncRuns } from "./collections/GithubSyncRuns";
 import { ImportIssues } from "./collections/ImportIssues";
 import { ImportJobs } from "./collections/ImportJobs";
 import { ImportedItems } from "./collections/ImportedItems";
@@ -103,6 +105,7 @@ export default buildConfig({
     Media,
     NowEntries,
     Projects,
+    GithubRepos,
     Links,
     Books,
     TimelineEntries,
@@ -115,6 +118,7 @@ export default buildConfig({
     ImportJobs,
     ImportedItems,
     ImportIssues,
+    GithubSyncRuns,
     Users,
     AuditEvents
   ]),
