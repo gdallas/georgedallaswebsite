@@ -31,6 +31,7 @@ export const COLLECTION_NAV_GROUPS = {
   "import-jobs": "WordPress import",
   "imported-items": "WordPress import",
   "import-issues": "WordPress import",
+  "analytics-events": "System",
   users: "System",
   "audit-events": "System"
 };

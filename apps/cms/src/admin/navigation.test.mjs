@@ -31,6 +31,7 @@ const REGISTERED_COLLECTIONS = [
   "import-jobs",
   "imported-items",
   "import-issues",
+  "analytics-events",
   "users",
   "audit-events"
 ];

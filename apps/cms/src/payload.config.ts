@@ -3,6 +3,7 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { AnalyticsEvents } from "./collections/AnalyticsEvents";
 import { AuditEvents } from "./collections/AuditEvents";
 import { Books } from "./collections/Books";
 import { Categories } from "./collections/Categories";
@@ -62,6 +63,11 @@ export default buildConfig({
         search: {
           Component: "/components/AdminSearch#AdminSearch",
           path: "/search"
+        },
+        // Privacy-friendly analytics dashboard (GDW-048), linked from the nav.
+        analytics: {
+          Component: "/components/AnalyticsView#AnalyticsView",
+          path: "/analytics"
         }
       },
       // Writer-first sidebar (GDW-059): tiers driven by admin/navigation.mjs,
@@ -113,6 +119,7 @@ export default buildConfig({
     ImportJobs,
     ImportedItems,
     ImportIssues,
+    AnalyticsEvents,
     Users,
     AuditEvents
   ]),
