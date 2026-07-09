@@ -188,6 +188,11 @@ export async function getNowPage(config = {}) {
   return isNowPagePublic(doc) ? doc : null;
 }
 
+// Archived past Now snapshots (public), newest first — powers the /now history.
+export async function getNowHistory(config = {}) {
+  return fetchDocs("now-entries", {}, config, "&sort=-capturedAt");
+}
+
 export async function getSiteSettings(config = {}) {
   const base = resolveBaseUrl(config);
   return fetchJson(`${base}/api/globals/site-settings?depth=1`, config);

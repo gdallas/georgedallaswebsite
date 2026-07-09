@@ -18,6 +18,7 @@ export const COLLECTION_NAV_GROUPS = {
   posts: "Write",
   pages: "Write",
   media: "Write",
+  "now-entries": "Write",
   projects: "Library",
   links: "Library",
   books: "Library",

@@ -8,6 +8,7 @@ import * as migration_20260619_160000_add_contact_messages from './20260619_1600
 import * as migration_20260619_170000_add_books from './20260619_170000_add_books';
 import * as migration_20260619_180000_add_timeline_entries from './20260619_180000_add_timeline_entries';
 import * as migration_20260708_120000_add_book_cover_url from './20260708_120000_add_book_cover_url';
+import * as migration_20260709_120000_add_now_entries from './20260709_120000_add_now_entries';
 
 export const migrations = [
   {
@@ -59,5 +60,10 @@ export const migrations = [
     up: migration_20260708_120000_add_book_cover_url.up,
     down: migration_20260708_120000_add_book_cover_url.down,
     name: '20260708_120000_add_book_cover_url'
+  },
+  {
+    up: migration_20260709_120000_add_now_entries.up,
+    down: migration_20260709_120000_add_now_entries.down,
+    name: '20260709_120000_add_now_entries'
   },
 ];

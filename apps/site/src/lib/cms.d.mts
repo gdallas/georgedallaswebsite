@@ -120,6 +120,17 @@ export type PublicNowPage = {
   updatedAt?: string | null;
 };
 
+export type PublicNowEntry = {
+  id: number | string;
+  capturedAt: string;
+  currentFocus?: string | null;
+  work?: string | null;
+  reading?: string | null;
+  listening?: string | null;
+  watching?: string | null;
+  personal?: string | null;
+};
+
 export type PublicSiteSettings = {
   siteTitle?: string | null;
   ownerName?: string | null;
@@ -147,5 +158,6 @@ export function getPublicBooks(config?: CmsClientConfig): Promise<PublicBook[]>;
 export function getCurrentlyReadingBooks(config?: CmsClientConfig): Promise<PublicBook[]>;
 export function getPublicTimelineEntries(config?: CmsClientConfig): Promise<PublicTimelineEntry[]>;
 export function getNowPage(config?: CmsClientConfig): Promise<PublicNowPage | null>;
+export function getNowHistory(config?: CmsClientConfig): Promise<PublicNowEntry[]>;
 export function getSiteSettings(config?: CmsClientConfig): Promise<PublicSiteSettings>;
 export function getActiveRedirects(config?: CmsClientConfig): Promise<RedirectRecord[]>;
