@@ -10,11 +10,14 @@ import { Categories } from "./collections/Categories";
 import { ContactMessages } from "./collections/ContactMessages";
 import { ContentChecks } from "./collections/ContentChecks";
 import { ContentIssues } from "./collections/ContentIssues";
+import { GithubRepos } from "./collections/GithubRepos";
+import { GithubSyncRuns } from "./collections/GithubSyncRuns";
 import { ImportIssues } from "./collections/ImportIssues";
 import { ImportJobs } from "./collections/ImportJobs";
 import { ImportedItems } from "./collections/ImportedItems";
 import { Links } from "./collections/Links";
 import { Media } from "./collections/Media";
+import { NowEntries } from "./collections/NowEntries";
 import { Pages } from "./collections/Pages";
 import { Posts } from "./collections/Posts";
 import { Projects } from "./collections/Projects";
@@ -106,7 +109,9 @@ export default buildConfig({
     Posts,
     Pages,
     Media,
+    NowEntries,
     Projects,
+    GithubRepos,
     Links,
     Books,
     TimelineEntries,
@@ -119,6 +124,7 @@ export default buildConfig({
     ImportJobs,
     ImportedItems,
     ImportIssues,
+    GithubSyncRuns,
     AnalyticsEvents,
     Users,
     AuditEvents
