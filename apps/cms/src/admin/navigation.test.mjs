@@ -18,6 +18,7 @@ const REGISTERED_COLLECTIONS = [
   "posts",
   "pages",
   "media",
+  "now-entries",
   "projects",
   "github-repos",
   "links",

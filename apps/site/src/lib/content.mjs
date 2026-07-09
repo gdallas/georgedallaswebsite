@@ -100,6 +100,14 @@ export async function loadNowPage() {
   return cms.getNowPage();
 }
 
+export async function loadNowHistory() {
+  if (!cmsConfigured()) {
+    warnOnce();
+    return [];
+  }
+  return cms.getNowHistory();
+}
+
 // getStaticPaths source for the catch-all redirect route: the active redirects,
 // filtered to safe/loop-free and mapped to Astro path entries. Empty when the
 // CMS is not configured (CI build) so the route simply emits nothing.
