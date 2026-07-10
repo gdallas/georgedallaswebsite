@@ -16,6 +16,14 @@ updates:
         patterns:
           - "payload"
           - "@payloadcms/*"
+    ignore:
+      # lexical / @lexical/* must match the exact version
+      # @payloadcms/richtext-lexical bundles (0.41.0). A solo bump of these puts
+      # two Lexical copies in the admin bundle -> the #128 dual-copy crash that
+      # broke every authenticated admin page. Bump them only when Payload itself
+      # moves, and to the same version.
+      - dependency-name: "lexical"
+      - dependency-name: "@lexical/*"
   - package-ecosystem: github-actions
     directory: /
     target-branch: develop
