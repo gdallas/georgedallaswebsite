@@ -25,8 +25,15 @@ export class CmsUnavailableError extends Error {
 }
 
 const TRANSIENT_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
-const DEFAULT_RETRY_ATTEMPTS = 3;
+// The CMS runs on scale-to-zero Aurora + a cold-start Lambda, so the first
+// query of a prod/dev deploy can 500 for ~15-30s while the database resumes.
+// Retry with exponential backoff over a window long enough to outlast that
+// cold start, so the static build doesn't fail on a paused database (2026-07-10:
+// the develop->main promotion's site build hit exactly this). Tests pass
+// retryDelayMs: 0 to skip the real sleeps.
+const DEFAULT_RETRY_ATTEMPTS = 6;
 const DEFAULT_RETRY_DELAY_MS = 2_000;
+const DEFAULT_MAX_RETRY_DELAY_MS = 10_000;
 
 function resolveBaseUrl(config) {
   const raw = config.baseUrl ?? (typeof process !== "undefined" ? process.env?.CMS_API_URL : undefined);
@@ -72,6 +79,22 @@ function retryDelayMs(config) {
   return Number.isFinite(delayMs) ? Math.max(0, delayMs) : DEFAULT_RETRY_DELAY_MS;
 }
 
+function maxRetryDelayMs(config) {
+  const ms = Number(config.maxRetryDelayMs ?? DEFAULT_MAX_RETRY_DELAY_MS);
+  return Number.isFinite(ms) ? Math.max(0, ms) : DEFAULT_MAX_RETRY_DELAY_MS;
+}
+
+// Exponential backoff (base doubles each attempt) capped at maxRetryDelayMs.
+// A base of 0 (tests) yields 0 so no real sleeping happens. With the defaults,
+// the waits are 2s, 4s, 8s, 10s, 10s ≈ 34s of tolerance across 6 attempts.
+export function backoffDelayMs(config, attempt) {
+  const base = retryDelayMs(config);
+  if (base <= 0) {
+    return 0;
+  }
+  return Math.min(base * 2 ** Math.max(0, attempt - 1), maxRetryDelayMs(config));
+}
+
 async function fetchJson(url, config) {
   const fetchImpl = config.fetchImpl ?? fetch;
   const attempts = retryAttempts(config);
@@ -97,7 +120,7 @@ async function fetchJson(url, config) {
     }
 
     if (attempt < attempts) {
-      await sleep(retryDelayMs(config));
+      await sleep(backoffDelayMs(config, attempt));
     }
   }
 

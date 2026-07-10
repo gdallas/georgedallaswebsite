@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   CmsUnavailableError,
+  backoffDelayMs,
   encodeWhere,
   getCurrentlyReadingBooks,
   getNowPage,
@@ -194,6 +195,31 @@ describe("public data layer", () => {
 
     await assert.rejects(getSiteSettings({ baseUrl, fetchImpl, retryDelayMs: 0 }), CmsUnavailableError);
     assert.equal(attempts, 1);
+  });
+
+  it("keeps retrying long enough to outlast an Aurora cold start", async () => {
+    // Scale-to-zero Aurora can 500 for the first ~15-30s of a deploy; the build
+    // must retry past 3 attempts, not give up after ~6s.
+    let attempts = 0;
+    const fetchImpl = async () => {
+      attempts += 1;
+      if (attempts <= 5) {
+        return { ok: false, status: 500, json: async () => ({}) };
+      }
+      return { ok: true, status: 200, json: async () => ({ siteTitle: "George Dallas" }) };
+    };
+
+    assert.equal((await getSiteSettings({ baseUrl, fetchImpl, retryDelayMs: 0 })).siteTitle, "George Dallas");
+    assert.equal(attempts, 6);
+  });
+
+  it("backs off exponentially, capped, and skips sleeping when delay is 0", () => {
+    assert.deepEqual(
+      [1, 2, 3, 4, 5].map((n) => backoffDelayMs({}, n)),
+      [2000, 4000, 8000, 10000, 10000]
+    );
+    assert.equal(backoffDelayMs({ retryDelayMs: 0 }, 4), 0);
+    assert.equal(backoffDelayMs({ retryDelayMs: 1000, maxRetryDelayMs: 3000 }, 5), 3000);
   });
 
   it("requires a configured base URL", async () => {

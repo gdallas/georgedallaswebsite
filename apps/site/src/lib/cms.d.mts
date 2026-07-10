@@ -4,7 +4,12 @@ export type CmsClientConfig = {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
   now?: Date;
+  retryAttempts?: number;
+  retryDelayMs?: number;
+  maxRetryDelayMs?: number;
 };
+
+export function backoffDelayMs(config: CmsClientConfig, attempt: number): number;
 
 export type MediaRef = {
   url?: string | null;
