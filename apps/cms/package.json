@@ -19,7 +19,7 @@
     "@fontsource/ibm-plex-sans": "^5.2.8",
     "@georgedallas/shared": "workspace:*",
     "@lexical/react": "0.41.0",
-    "@lexical/utils": "0.41.0",
+    "@lexical/utils": "0.47.0",
     "@payloadcms/db-postgres": "^3.85.2",
     "@payloadcms/next": "^3.85.2",
     "@payloadcms/richtext-lexical": "^3.85.2",
