@@ -39,8 +39,11 @@ Manager) — no infra change. Set these in the GitHub repo:
 
 - **Variable** `CMS_SYNC_URL` — the CMS origin, e.g. `https://cms.georgedallas.com`
   (or `https://cms-dev.georgedallas.com` for dev).
-- **Variable** `GITHUB_SYNC_USER` — the GitHub username to sync (e.g. `gdallas`).
-- **Secret** `CMS_SYNC_SECRET` — the same value as the CMS webhook secret.
+- **Secret** `CMS_SYNC_SECRET` — the same value as the CMS webhook secret
+  (`/georgedallaswebsite/<env>/webhook-secret` in Secrets Manager, the `placeholder` key).
+- **Variable** `SYNC_GITHUB_USER` *(optional)* — the GitHub username to sync;
+  defaults to `gdallas`. It is **not** named `GITHUB_SYNC_USER` because GitHub
+  reserves the `GITHUB_` prefix for its own variable/secret names.
 
 The Action uses the built-in `GITHUB_TOKEN` only to raise the GitHub API rate limit;
 public repos are readable without it.

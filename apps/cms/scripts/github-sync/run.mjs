@@ -5,13 +5,13 @@
 // the tested mapping so the wire format matches the endpoint exactly.
 //
 // Env: CMS_URL (required), CMS_SYNC_SECRET (required, = the CMS webhook secret),
-// GITHUB_SYNC_USER (default "gdallas"), GITHUB_TOKEN (optional, raises the API
-// rate limit).
+// SYNC_GITHUB_USER (default "gdallas"; GitHub reserves GITHUB_* for its own
+// variable names), GITHUB_TOKEN (optional, raises the API rate limit).
 
 import { publishSignatureHeader, signPayload } from "@georgedallas/shared/scheduling";
 import { buildSyncBody } from "../../src/github/githubSync.mjs";
 
-const user = process.env.GITHUB_SYNC_USER || "gdallas";
+const user = process.env.SYNC_GITHUB_USER || "gdallas";
 const cmsUrl = (process.env.CMS_URL || "").replace(/\/+$/, "");
 const secret = process.env.CMS_SYNC_SECRET || "";
 
