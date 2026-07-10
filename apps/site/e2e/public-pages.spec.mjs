@@ -37,6 +37,14 @@ test("projects page lists the published project", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Seed Project" })).toBeVisible();
 });
 
+test("project card links through to its own detail page", async ({ page }) => {
+  await page.goto("/projects");
+  await page.getByRole("link", { name: "Seed Project" }).click();
+  await expect(page).toHaveURL(/\/projects\/seed-project\/?$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Seed Project" })).toBeVisible();
+  await expect(page.getByText("A seeded project for the smoke tests.")).toBeVisible();
+});
+
 test("links page lists a published link", async ({ page }) => {
   await page.goto("/links");
   await expect(page.getByRole("heading", { level: 1, name: "Links" })).toBeVisible();
