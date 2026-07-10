@@ -3,17 +3,21 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { AnalyticsEvents } from "./collections/AnalyticsEvents";
 import { AuditEvents } from "./collections/AuditEvents";
 import { Books } from "./collections/Books";
 import { Categories } from "./collections/Categories";
 import { ContactMessages } from "./collections/ContactMessages";
 import { ContentChecks } from "./collections/ContentChecks";
 import { ContentIssues } from "./collections/ContentIssues";
+import { GithubRepos } from "./collections/GithubRepos";
+import { GithubSyncRuns } from "./collections/GithubSyncRuns";
 import { ImportIssues } from "./collections/ImportIssues";
 import { ImportJobs } from "./collections/ImportJobs";
 import { ImportedItems } from "./collections/ImportedItems";
 import { Links } from "./collections/Links";
 import { Media } from "./collections/Media";
+import { NowEntries } from "./collections/NowEntries";
 import { Pages } from "./collections/Pages";
 import { Posts } from "./collections/Posts";
 import { Projects } from "./collections/Projects";
@@ -62,6 +66,11 @@ export default buildConfig({
         search: {
           Component: "/components/AdminSearch#AdminSearch",
           path: "/search"
+        },
+        // Privacy-friendly analytics dashboard (GDW-048), linked from the nav.
+        analytics: {
+          Component: "/components/AnalyticsView#AnalyticsView",
+          path: "/analytics"
         }
       },
       // Writer-first sidebar (GDW-059): tiers driven by admin/navigation.mjs,
@@ -100,7 +109,9 @@ export default buildConfig({
     Posts,
     Pages,
     Media,
+    NowEntries,
     Projects,
+    GithubRepos,
     Links,
     Books,
     TimelineEntries,
@@ -113,6 +124,8 @@ export default buildConfig({
     ImportJobs,
     ImportedItems,
     ImportIssues,
+    GithubSyncRuns,
+    AnalyticsEvents,
     Users,
     AuditEvents
   ]),

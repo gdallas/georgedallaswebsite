@@ -3,6 +3,7 @@ import { isNowPagePublic } from "@georgedallas/shared/visibility";
 import { globalNavGroup } from "../admin/navigation.mjs";
 import { auditGlobalChanges } from "../audit/auditEvents";
 import { publishSignalsGlobalAfterChange } from "../hooks/publishSignals";
+import { createNowHistoryAfterChangeHook } from "../hooks/nowHistory.mjs";
 import { allowPublicRead, requireContentMutation } from "../access/payloadAccess";
 import { canReadContent } from "../access/roles.mjs";
 import { listingStatusField } from "../fields/publishing";
@@ -66,7 +67,12 @@ export const NowPage: GlobalConfig = {
     listingStatusField
   ],
   hooks: {
-    afterChange: [auditGlobalChanges("now-page"), publishSignalsGlobalAfterChange("now-page")],
+    afterChange: [
+      auditGlobalChanges("now-page"),
+      publishSignalsGlobalAfterChange("now-page"),
+      // Archive a snapshot into now-entries when a changed Now is published.
+      createNowHistoryAfterChangeHook()
+    ],
     afterRead: [hideUnpublishedNowFromPublic]
   }
 };

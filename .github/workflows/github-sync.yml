@@ -1,0 +1,50 @@
+name: GitHub Project Sync
+
+# Fetches the owner's public repos and pushes their metadata to the CMS
+# (GDW-045). The CMS Lambda has no internet egress, so this runs where GitHub
+# and the CMS are both reachable. Weekly, plus on demand. Repos land in the
+# github-repos review list; nothing is published automatically.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync repositories to the CMS
+    runs-on: ubuntu-latest
+    env:
+      CMS_URL: ${{ vars.CMS_SYNC_URL }}
+      CMS_SYNC_SECRET: ${{ secrets.CMS_SYNC_SECRET }}
+      # Optional: defaults to "gdallas" in the runner. (GitHub reserves the
+      # GITHUB_ prefix for variable/secret names, so this is SYNC_GITHUB_USER.)
+      SYNC_GITHUB_USER: ${{ vars.SYNC_GITHUB_USER }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync
+        run: node apps/cms/scripts/github-sync/run.mjs

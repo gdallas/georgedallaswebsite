@@ -1,20 +1,34 @@
 ---
+import type { PublicNowEntry, PublicNowPage } from "../lib/cms.mjs";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { loadNowPage } from "../lib/content.mjs";
+import { loadNowHistory, loadNowPage } from "../lib/content.mjs";
 
 const now = await loadNowPage();
-const sections = now
-  ? [
-      ["Current focus", now.currentFocus],
-      ["Work", now.work],
-      ["Reading", now.reading],
-      ["Listening", now.listening],
-      ["Watching", now.watching],
-      ["Personal", now.personal]
-    ].filter(([, value]) => value)
-  : [];
+const rows = (entry: PublicNowPage | PublicNowEntry) =>
+  [
+    ["Current focus", entry.currentFocus],
+    ["Work", entry.work],
+    ["Reading", entry.reading],
+    ["Listening", entry.listening],
+    ["Watching", entry.watching],
+    ["Personal", entry.personal]
+  ].filter(([, value]) => value);
+
+const sections = now ? rows(now) : [];
 
 const updated = now?.updatedAt ? new Date(now.updatedAt).toLocaleDateString("en-CA", { dateStyle: "long" }) : "";
+
+// Public archive of past Now entries (George, 2026-07-09). Drop the most recent
+// snapshot if it is identical to what's live, so the current Now isn't echoed.
+const history = await loadNowHistory();
+const currentSignature = sections.map(([, value]) => String(value ?? "").trim()).join(" ");
+const pastEntries = history
+  .map((entry) => ({ entry, rows: rows(entry) }))
+  .filter(({ rows: r }) => r.length > 0)
+  .filter(({ rows: r }, index) => !(index === 0 && r.map(([, v]) => String(v ?? "").trim()).join(" ") === currentSignature));
+
+const formatCaptured = (value: string | null | undefined) =>
+  value ? new Date(value).toLocaleDateString("en-CA", { dateStyle: "long" }) : "";
 ---
 
 <BaseLayout title="Now — George Dallas" description="What George Dallas is focused on right now.">
@@ -37,6 +51,28 @@ const updated = now?.updatedAt ? new Date(now.updatedAt).toLocaleDateString("en-
           </div>
         ))}
       </dl>
+    )
+  }
+
+  {
+    pastEntries.length > 0 && (
+      <section class="now-history">
+        <h2 class="cc-heading cc-heading--section">Previously</h2>
+        <p class="cc-muted">Earlier snapshots of this page.</p>
+        {pastEntries.map(({ entry, rows: entryRows }) => (
+          <article class="now-past">
+            <h3 class="now-past__date">{formatCaptured(entry.capturedAt)}</h3>
+            <dl class="now-list">
+              {entryRows.map(([label, value]) => (
+                <div class="now-row">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+        ))}
+      </section>
     )
   }
 </BaseLayout>
@@ -67,5 +103,21 @@ const updated = now?.updatedAt ? new Date(now.updatedAt).toLocaleDateString("en-
   .now-row dd {
     margin: 0;
     white-space: pre-line;
+  }
+  .now-history {
+    margin-block-start: 3.5rem;
+    border-block-start: 1px solid var(--border);
+    padding-block-start: 2rem;
+  }
+  .now-history > p {
+    margin-block: 0.25rem 2rem;
+  }
+  .now-past {
+    margin-block-end: 2.5rem;
+  }
+  .now-past__date {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-block-end: 1rem;
   }
 </style>

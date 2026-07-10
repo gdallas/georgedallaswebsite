@@ -1,6 +1,7 @@
 import type {
   PublicBook,
   PublicLink,
+  PublicNowEntry,
   PublicNowPage,
   PublicPage,
   PublicPost,
@@ -19,6 +20,7 @@ export function loadBooks(): Promise<PublicBook[]>;
 export function loadCurrentlyReadingBooks(): Promise<PublicBook[]>;
 export function loadTimelineEntries(): Promise<PublicTimelineEntry[]>;
 export function loadNowPage(): Promise<PublicNowPage | null>;
+export function loadNowHistory(): Promise<PublicNowEntry[]>;
 export function loadActiveRedirectRoutes(): Promise<
   Array<{ params: { redirect: string }; props: { source: string; destination: string; statusCode: string } }>
 >;
