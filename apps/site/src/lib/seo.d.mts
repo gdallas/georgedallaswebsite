@@ -1,4 +1,4 @@
-import type { PublicPost, PublicSiteSettings } from "./cms.mjs";
+import type { PublicPost, PublicProject, PublicSiteSettings } from "./cms.mjs";
 
 export const SITE_NAME: string;
 export const DEFAULT_DESCRIPTION: string;
@@ -43,6 +43,11 @@ export function personJsonLd(options?: {
 
 export function articleJsonLd(
   post: PublicPost,
+  options?: { site?: URL | string; settings?: PublicSiteSettings | null }
+): Record<string, unknown>;
+
+export function projectJsonLd(
+  project: PublicProject,
   options?: { site?: URL | string; settings?: PublicSiteSettings | null }
 ): Record<string, unknown>;
 

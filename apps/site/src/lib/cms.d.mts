@@ -65,6 +65,12 @@ export type PublicProject = {
   liveUrl?: string | null;
   caseStudyUrl?: string | null;
   image?: MediaRef | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  updatedAt?: string | null;
+  // Depth=1 responses resolve related posts to objects; deeper truncation or a
+  // reader that can't see a post can leave bare ids.
+  relatedPosts?: PublicPost[] | Array<number | string> | null;
   sortOrder?: number | null;
 };
 

@@ -1,0 +1,189 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import type { PublicPost } from "../../lib/cms.mjs";
+import { loadProjects } from "../../lib/content.mjs";
+import { renderRichText } from "../../lib/richText.mjs";
+import { projectJsonLd } from "../../lib/seo.mjs";
+
+export async function getStaticPaths() {
+  const projects = await loadProjects();
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const bodyHtml = renderRichText(project.description);
+const jsonLd = [projectJsonLd(project, { site: Astro.site })];
+const technologies = Array.isArray(project.technologies) ? project.technologies : [];
+
+// At depth=1 the CMS populates related posts as full docs; anything the public
+// reader can't see comes back as a bare id, so keep only real, linkable posts.
+function isLinkablePost(post: unknown): post is PublicPost {
+  return Boolean(post) && typeof post === "object" && Boolean((post as PublicPost).slug);
+}
+const relatedPostsInput: unknown[] = Array.isArray(project.relatedPosts) ? project.relatedPosts : [];
+const relatedPosts = relatedPostsInput.filter(isLinkablePost);
+const image = project.image;
+
+function formatMonth(value: string | null | undefined) {
+  return value ? new Date(value).toLocaleDateString("en-CA", { year: "numeric", month: "short" }) : "";
+}
+function dateRange(p: Record<string, any>) {
+  const start = formatMonth(p.startDate);
+  const end = formatMonth(p.endDate);
+  if (start && end) return `${start} – ${end}`;
+  if (start) return `${start} – Present`;
+  return end;
+}
+const range = dateRange(project);
+---
+
+<BaseLayout
+  title={`${project.title} — George Dallas`}
+  description={project.summary ?? undefined}
+  image={image?.url ?? undefined}
+  ogType="article"
+  jsonLd={jsonLd}
+>
+  <article class="cc-content project">
+    <p class="cc-eyebrow"><a href="/projects">Projects</a></p>
+    <h1 class="cc-heading cc-heading--hero">{project.title}</h1>
+    {range && <p class="cc-muted project__meta">{range}</p>}
+    {project.summary && <p class="project__lede">{project.summary}</p>}
+
+    {(project.githubUrl || project.liveUrl || project.caseStudyUrl) && (
+      <p class="project__actions">
+        {project.githubUrl && (
+          <a class="project__action" href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+            View on GitHub ↗
+          </a>
+        )}
+        {project.liveUrl && (
+          <a class="project__action" href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+            Live site ↗
+          </a>
+        )}
+        {project.caseStudyUrl && (
+          <a class="project__action" href={project.caseStudyUrl} target="_blank" rel="noopener noreferrer">
+            Case study ↗
+          </a>
+        )}
+      </p>
+    )}
+
+    {technologies.length > 0 && (
+      <ul class="tech" aria-label="Technologies">
+        {technologies.map((tech: string) => (
+          <li class="cc-chip" data-tone="systems">{tech}</li>
+        ))}
+      </ul>
+    )}
+
+    {image?.url && (
+      <figure class="project__figure">
+        <img
+          src={image.url}
+          alt={image.alt || project.title}
+          loading="lazy"
+          width={image.width || 1200}
+          height={image.height || 675}
+        />
+      </figure>
+    )}
+
+    {bodyHtml ? (
+      <div class="cc-prose" set:html={bodyHtml} />
+    ) : (
+      <p class="cc-muted">A write-up for this project is coming soon.</p>
+    )}
+
+    {relatedPosts.length > 0 && (
+      <section class="project__related" aria-labelledby="related-writing">
+        <h2 id="related-writing" class="cc-heading cc-heading--section">Related writing</h2>
+        <ul>
+          {relatedPosts.map((post) => (
+            <li>
+              <a href={`/writing/${post.slug}`}>{post.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </article>
+</BaseLayout>
+
+<style>
+  .cc-eyebrow a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .cc-eyebrow a:hover {
+    color: var(--accent);
+  }
+  .project__meta {
+    margin-block: 0.5rem 0;
+  }
+  .project__lede {
+    font-size: 1.1rem;
+    color: var(--text-strong);
+    margin-block: 1rem 1.5rem;
+    max-width: 60ch;
+  }
+  .project__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block: 0 1.5rem;
+  }
+  .project__action {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+    border-radius: var(--radius-pill);
+    color: var(--text-strong);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 650;
+    transition:
+      border-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+  .project__action:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .tech {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-block: 0 1.5rem;
+    padding: 0;
+  }
+  .project__figure {
+    margin: 0 0 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .project__figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .project__related {
+    margin-block-start: 2.5rem;
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid var(--border);
+  }
+  .project__related ul {
+    list-style: none;
+    padding: 0;
+    margin-block: 1rem 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .project__related a {
+    color: var(--link);
+  }
+</style>
