@@ -24,7 +24,9 @@ jobs:
     env:
       CMS_URL: ${{ vars.CMS_SYNC_URL }}
       CMS_SYNC_SECRET: ${{ secrets.CMS_SYNC_SECRET }}
-      GITHUB_SYNC_USER: ${{ vars.GITHUB_SYNC_USER }}
+      # Optional: defaults to "gdallas" in the runner. (GitHub reserves the
+      # GITHUB_ prefix for variable/secret names, so this is SYNC_GITHUB_USER.)
+      SYNC_GITHUB_USER: ${{ vars.SYNC_GITHUB_USER }}
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
