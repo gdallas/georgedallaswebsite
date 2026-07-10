@@ -1,0 +1,170 @@
+---
+// A project preview card for the /projects index. The whole card is a single
+// link to the project's own page (/projects/<slug>); the external GitHub/Live
+// links sit outside that anchor as siblings so they stay independently
+// clickable without nesting anchors. Pass `featured` for the wide, media-beside-
+// text layout used above the grid.
+interface Props {
+  project: Record<string, any>;
+  featured?: boolean;
+}
+
+const { project, featured = false } = Astro.props;
+
+function formatMonth(value: string | null | undefined) {
+  return value ? new Date(value).toLocaleDateString("en-CA", { year: "numeric", month: "short" }) : "";
+}
+function dateRange(p: Record<string, any>) {
+  const start = formatMonth(p.startDate);
+  const end = formatMonth(p.endDate);
+  if (start && end) return `${start} – ${end}`;
+  if (start) return `${start} – Present`;
+  return end;
+}
+
+const href = `/projects/${project.slug}`;
+const range = dateRange(project);
+const image = project.image;
+const technologies = Array.isArray(project.technologies) ? project.technologies : [];
+---
+
+<article class:list={["cc-card", "cc-card--interactive", "project-card", { "project-card--featured": featured }]}>
+  <a class="project-card__hitbox" href={href} aria-label={project.title}>
+    {image?.url && (
+      <div class="project-card__media">
+        <img
+          src={image.url}
+          alt={image.alt || ""}
+          loading="lazy"
+          width={image.width || 800}
+          height={image.height || 450}
+        />
+      </div>
+    )}
+    <div class="project-card__body">
+      {project.featured && <p class="cc-eyebrow">Featured</p>}
+      <h2 class="cc-heading cc-heading--card project-card__title">{project.title}</h2>
+      {range && <p class="cc-muted project-card__meta">{range}</p>}
+      {project.summary && <p class="project-card__summary">{project.summary}</p>}
+      {technologies.length > 0 && (
+        <ul class="tech">
+          {technologies.map((tech: string) => (
+            <li class="cc-chip" data-tone="systems">{tech}</li>
+          ))}
+        </ul>
+      )}
+      <span class="project-card__more">View project →</span>
+    </div>
+  </a>
+  {(project.githubUrl || project.liveUrl) && (
+    <p class="project-card__links">
+      {project.githubUrl && (
+        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      )}
+      {project.liveUrl && (
+        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Live ↗</a>
+      )}
+    </p>
+  )}
+</article>
+
+<style>
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: clamp(1.25rem, 2vw, 1.75rem);
+  }
+  .project-card--featured {
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  .project-card__hitbox {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+  }
+  .project-card__media {
+    aspect-ratio: 16 / 9;
+    margin: calc(-1 * clamp(1.25rem, 2vw, 1.75rem));
+    margin-block-end: clamp(1.25rem, 2vw, 1.75rem);
+    overflow: hidden;
+    background: color-mix(in srgb, var(--surface-raised) 60%, var(--surface));
+    border-block-end: 1px solid var(--border);
+  }
+  .project-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .project-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .project-card__body .cc-eyebrow {
+    margin: 0 0 0.5rem;
+  }
+  .project-card__title {
+    margin: 0;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .project-card:hover .project-card__title,
+  .project-card__hitbox:focus-visible .project-card__title {
+    color: var(--accent);
+  }
+  .project-card__meta {
+    font-size: 0.85rem;
+    margin-block: 0.35rem 0;
+  }
+  .project-card__summary {
+    margin-block: 0.75rem 0;
+  }
+  .tech {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.9rem 0 0;
+    padding: 0;
+  }
+  .project-card__more {
+    margin-block-start: auto;
+    padding-block-start: 1rem;
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 650;
+  }
+  .project-card__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.1rem;
+    margin: 1rem 0 0;
+    /* Sit above the card-covering hitbox so these external links stay clickable. */
+    position: relative;
+    z-index: 1;
+    font-size: 0.9rem;
+  }
+
+  /* Wide, media-beside-text treatment for featured projects. */
+  @media (min-width: 46rem) {
+    .project-card--featured .project-card__hitbox {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      align-items: stretch;
+    }
+    .project-card--featured .project-card__media {
+      aspect-ratio: auto;
+      margin: calc(-1 * clamp(1.5rem, 3vw, 2.25rem));
+      margin-inline-end: clamp(1.5rem, 3vw, 2.25rem);
+      border-block-end: none;
+      border-inline-end: 1px solid var(--border);
+    }
+    .project-card--featured .project-card__body {
+      justify-content: center;
+    }
+  }
+</style>

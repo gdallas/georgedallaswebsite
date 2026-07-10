@@ -7,6 +7,7 @@ import {
   canonicalUrl,
   jsonLdToString,
   personJsonLd,
+  projectJsonLd,
   resolveSeo,
   websiteJsonLd
 } from "./seo.mjs";
@@ -90,6 +91,33 @@ describe("JSON-LD", () => {
     assert.equal(article.datePublished, "2026-06-01T00:00:00.000Z");
     assert.equal(article.dateModified, "2026-06-05T00:00:00.000Z");
     assert.equal(article.author["@type"], "Person");
+  });
+
+  it("builds a SoftwareSourceCode node for a project with a repo, dropping empties", () => {
+    const project = projectJsonLd(
+      {
+        slug: "my-tool",
+        title: "My Tool",
+        summary: "A handy tool.",
+        technologies: ["Astro", "AWS"],
+        githubUrl: "https://github.com/example/my-tool",
+        startDate: "2026-01-01T00:00:00.000Z"
+      },
+      { site }
+    );
+    assert.equal(project["@type"], "SoftwareSourceCode");
+    assert.equal(project.name, "My Tool");
+    assert.equal(project.url, "https://georgedallas.com/projects/my-tool");
+    assert.equal(project.codeRepository, "https://github.com/example/my-tool");
+    assert.equal(project.keywords, "Astro, AWS");
+    assert.equal(project.dateCreated, "2026-01-01T00:00:00.000Z");
+    assert.equal("dateModified" in project, false);
+  });
+
+  it("falls back to CreativeWork when a project has no repo", () => {
+    const project = projectJsonLd({ slug: "notes", title: "Notes" }, { site });
+    assert.equal(project["@type"], "CreativeWork");
+    assert.equal("codeRepository" in project, false);
   });
 
   it("escapes < so JSON-LD cannot break out of the script tag", () => {

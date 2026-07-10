@@ -112,6 +112,29 @@ export function articleJsonLd(post, options = {}) {
   return JSON.parse(JSON.stringify(data));
 }
 
+export function projectJsonLd(project, options = {}) {
+  const { site, settings } = options;
+  const canonical = canonicalUrl(`/projects/${project.slug}`, site);
+  const author = settings?.ownerName ?? SITE_NAME;
+  const technologies = Array.isArray(project.technologies) ? project.technologies.filter(Boolean) : [];
+  const data = {
+    "@context": "https://schema.org",
+    "@type": project.githubUrl ? "SoftwareSourceCode" : "CreativeWork",
+    name: project.title,
+    description: project.summary ?? undefined,
+    url: canonical,
+    mainEntityOfPage: canonical,
+    author: { "@type": "Person", name: author },
+    image: mediaUrl(project.image, site) ?? undefined,
+    keywords: technologies.length > 0 ? technologies.join(", ") : undefined,
+    codeRepository: project.githubUrl ?? undefined,
+    dateCreated: project.startDate ? new Date(project.startDate).toISOString() : undefined,
+    dateModified: project.updatedAt ? new Date(project.updatedAt).toISOString() : undefined
+  };
+  // Drop keys that resolved to undefined so the emitted JSON-LD stays clean.
+  return JSON.parse(JSON.stringify(data));
+}
+
 // Serialize JSON-LD for embedding in a <script> tag, escaping "<" so a value
 // can never close the script element early.
 export function jsonLdToString(data) {
